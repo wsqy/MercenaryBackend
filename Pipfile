@@ -1,20 +1,14 @@
 [[source]]
-
 url = "https://pypi.douban.com/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 requests = "*"
 django = "==1.11"
-
+mysqlclient = "*"
 
 [dev-packages]
 
-
-
 [requires]
-
 python_version = "3.6"
