@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -34,6 +35,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'xadmin',
     'crispy_forms',
+    'reversion',
 ]
 
 MIDDLEWARE = [
@@ -85,7 +88,8 @@ DATABASES = {
         'PASSWORD': "tRFy7z8ht",
         'HOST': "127.0.0.1",
         'OPTIONS': {
-            'init_command': 'SET storage_engine=INNODB;',
+            'autocommit': True,
+            'init_command': 'SET default_storage_engine=INNODB',
             'charset': 'utf8mb4',
         }
     }
