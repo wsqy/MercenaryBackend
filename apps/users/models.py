@@ -38,15 +38,15 @@ class ProfileInfo(AbstractUser):
     """
     用户
     """
-    nickname = models.CharField(max_length=30, null=True, blank=True,
+    nickname = models.CharField(max_length=30, blank=True,
                                 verbose_name="用户昵称",
                                 help_text='用户昵称 默认 用户+手机号后4位',)
 
     gender = models.NullBooleanField(null=True, blank=True, verbose_name='性别',
                                      help_text='未知时设置为 null')
-    mobile = models.CharField(null=True, blank=True, max_length=15,
+    mobile = models.CharField(blank=True, max_length=15,
                               verbose_name='电话', help_text='用户手机号')
-    portrait = models.CharField(null=True, blank=True, max_length=254,
+    portrait = models.CharField(blank=True, max_length=254,
                                 verbose_name='头像',
                                 help_text='用户头像地址 现阶段是阿里云OSS地址')
 
@@ -55,4 +55,26 @@ class ProfileInfo(AbstractUser):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.mobile
+        return self.nickname
+
+
+class ProfileExtendInfo(models.Model):
+    """
+    用户扩展信息
+    """
+    user = models.ForeignKey(ProfileInfo, blank=True, null=True)
+    device_join = models.ForeignKey(DeviceInfo, blank=True, null=True,
+                                    verbose_name="用户注册时的设备")
+    origin_mobile = models.CharField(blank=True, max_length=15,
+                                     verbose_name='推荐人手机号')
+    rongcloud_token = models.CharField(blank=True, max_length=100,
+                                       verbose_name='融云IM Token')
+    jpush_token = models.CharField(blank=True, max_length=100,
+                                   verbose_name='极光推送Token')
+
+    class Meta:
+        verbose_name = "用户扩展信息"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.user
