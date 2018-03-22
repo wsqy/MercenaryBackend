@@ -1,9 +1,12 @@
 [[source]]
+
 url = "https://pypi.douban.com/simple"
 verify_ssl = true
 name = "pypi"
 
+
 [packages]
+
 requests = "*"
 django = "==1.11"
 mysqlclient = "*"
@@ -12,8 +15,13 @@ six = "==1.10.0"
 django-import-export = "*"
 django-reversion = "*"
 
+
 [dev-packages]
+
 "fabric3" = "*"
+"flake8" = "*"
+
 
 [requires]
+
 python_version = "3.6"
