@@ -26,6 +26,7 @@ django-filter = "*"
 "fabric3" = "*"
 "flake8" = "*"
 markdown = "*"
+coreapi = "*"
 
 
 [requires]

@@ -13,9 +13,13 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 import xadmin
+
+from rest_framework.documentation import include_docs_urls
 
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),
+    url(r'^users/', include('users.urls')),
+    url(r'docs/', include_docs_urls(title="mercenary")),
 ]
