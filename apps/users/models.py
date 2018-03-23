@@ -78,3 +78,26 @@ class ProfileExtendInfo(models.Model):
 
     def __str__(self):
         return self.user
+
+
+class VerifyCode(models.Model):
+    """
+    短信验证码
+    """
+    CODE_TYPE = (
+        ('SMS_76310006', '注册验证码'),
+        ('SMS_76270012', '找回密码验证码'),
+    )
+    type = models.CharField(max_length=12, verbose_name='验证码类别', choices=CODE_TYPE)
+    code = models.CharField(max_length=10, verbose_name='验证码')
+    mobile = models.CharField(max_length=11, verbose_name='手机号')
+    try_time = models.PositiveSmallIntegerField(default=3, verbose_name='剩余尝试次数',
+                                                help_text='默认3,当验证成功时删除,0时删除',)
+    expire_time = models.DateTimeField(default=timezone.now, verbose_name='过期时间')
+
+    class Meta:
+        verbose_name = "短信验证码"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.code
