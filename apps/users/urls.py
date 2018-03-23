@@ -1,14 +1,12 @@
-from .views import DeviceRegisterViewset
-from django.conf.urls import include, url
-
 from rest_framework.routers import DefaultRouter
 
-app_name = 'users'
+from .views import DeviceRegisterViewset, SmsCodeViewset
+
+app_name = 'user'
 
 router = DefaultRouter()
-router.register(r'device', DeviceRegisterViewset, base_name="users")
+router.register(r'device', DeviceRegisterViewset, base_name="device")
+router.register(r'code', SmsCodeViewset, base_name="code")
 
-urlpatterns = [
-    # rest framework 的路由
-    url(r'^', include(router.urls)),
-]
+
+urlpatterns = router.urls

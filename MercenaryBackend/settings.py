@@ -136,3 +136,7 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# 验证码过期时间
+VERIFY_CODE_EXPIRE_TIME = 5 * 60
+VERIFY_CODE_EXPIRE_TIME_DEFAULT = 5 * 60

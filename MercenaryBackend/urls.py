@@ -20,6 +20,6 @@ from rest_framework.documentation import include_docs_urls
 
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),
-    url(r'^users/', include('users.urls')),
+    url(r'^user/', include('users.urls')),
     url(r'docs/', include_docs_urls(title="mercenary")),
 ]
