@@ -130,7 +130,6 @@ USE_L10N = True
 # 默认是Ture，时间是utc时间，由于我们要用本地时间，所用手动修改为false！！！！
 USE_TZ = False
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
@@ -140,3 +139,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # 验证码过期时间
 VERIFY_CODE_EXPIRE_TIME = 5 * 60
 VERIFY_CODE_EXPIRE_TIME_DEFAULT = 5 * 60
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}

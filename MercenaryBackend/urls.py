@@ -17,9 +17,13 @@ from django.conf.urls import url, include
 import xadmin
 
 from rest_framework.documentation import include_docs_urls
+from rest_framework_jwt.views import obtain_jwt_token
 
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),
     url(r'^user/', include('users.urls')),
+    # 文档
     url(r'docs/', include_docs_urls(title="mercenary")),
+    # 使用jwt登录的接口
+    url(r'^login/', obtain_jwt_token),
 ]
