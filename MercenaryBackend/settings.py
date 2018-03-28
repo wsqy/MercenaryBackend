@@ -140,6 +140,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 VERIFY_CODE_EXPIRE_TIME = 5 * 60
 VERIFY_CODE_EXPIRE_TIME_DEFAULT = 5 * 60
 
+# 验证后端
+AUTHENTICATION_BACKENDS = (
+    'users.views.CustomBackend',
+)
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
