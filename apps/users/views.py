@@ -10,13 +10,24 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 
 from .serializers import DeviceRegisterSerializer, SmsSerializer
-from .models import VerifyCode
+from .models import VerifyCode, DeviceInfo
 
 User = get_user_model()
 
 
 class DeviceRegisterViewset(CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = DeviceRegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        deviceid = serializer.validated_data["deviceid"]
+        try:
+            DeviceInfo.objects.get(deviceid=deviceid)
+            return Response({"deviceid": deviceid}, status=status.HTTP_202_ACCEPTED)
+        except DeviceInfo.DoesNotExist:
+            self.perform_create(serializer)
+            return Response({"deviceid": deviceid}, status=status.HTTP_201_CREATED)
 
 
 class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
