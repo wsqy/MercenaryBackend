@@ -141,6 +141,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 VERIFY_CODE_EXPIRE_TIME = 5 * 60
 VERIFY_CODE_EXPIRE_TIME_DEFAULT = 5 * 60
 
+# 注册短信有效期
+REGEISTER_SMS_EXPIRE_TIME_DEFAULT = '5分钟'
+
 # 验证后端
 AUTHENTICATION_BACKENDS = (
     'users.views.CustomBackend',
@@ -158,3 +161,7 @@ JWT_AUTH = {
     # token过期时间
     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
 }
+
+# 阿里大于短信配置
+ACCESS_KEY_ID = "LTAISSYn8u9H4Q4u"
+ACCESS_KEY_SECRET = "rXFZmpAFgmiIUGxtaPW9Ron0nd8YQ4"

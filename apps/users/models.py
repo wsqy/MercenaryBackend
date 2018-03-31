@@ -91,9 +91,10 @@ class VerifyCode(models.Model):
                                                 help_text='默认3,当验证成功时删除,0时删除',)
     expire_time = models.DateTimeField(default=timezone.now, verbose_name='过期时间')
 
+    def __str__(self):
+        return self.code
+
     class Meta:
         verbose_name = "短信验证码"
         verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return self.code
+        ordering = ['-expire_time']
