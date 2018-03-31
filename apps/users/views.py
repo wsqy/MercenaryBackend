@@ -11,7 +11,7 @@ from django.contrib.auth.backends import ModelBackend
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
 from utils.dayu import DaYuSMS
@@ -35,6 +35,10 @@ class CustomBackend(ModelBackend):
 
 
 class DeviceRegisterViewset(CreateModelMixin, viewsets.GenericViewSet):
+    """
+    create:
+        设备注册
+    """
     serializer_class = DeviceRegisterSerializer
 
     def create(self, request, *args, **kwargs):
@@ -51,7 +55,8 @@ class DeviceRegisterViewset(CreateModelMixin, viewsets.GenericViewSet):
 
 class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
     """
-    发送短信验证
+    create:
+        发送短信验证
     """
     serializer_class = SmsSerializer
 
@@ -95,7 +100,13 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
             return Response({'msg': '短信服务异常, 请稍后重试'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserViewset(CreateModelMixin, viewsets.GenericViewSet):
+class UserViewset(CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+    """用户相关接口
+    create:
+        用户注册
+    retrieve:
+        获取用户信息
+    """
     serializer_class = UserRegSerializer
 
     def create(self, request, *args, **kwargs):
@@ -112,3 +123,6 @@ class UserViewset(CreateModelMixin, viewsets.GenericViewSet):
 
     def perform_create(self, serializer):
         return serializer.save()
+
+    def get_object(self):
+        return self.request.user
