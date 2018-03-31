@@ -43,7 +43,7 @@ class ProfileInfo(AbstractUser):
                                 help_text='用户昵称 默认 用户+手机号后4位',)
     gender = models.NullBooleanField(null=True, blank=True, verbose_name='性别',
                                      help_text='未知时设置为 null')
-    mobile = models.CharField(blank=True, max_length=15, verbose_name='手机号码')
+    mobile = models.CharField(blank=True, max_length=15, verbose_name='手机号码', help_text='手机号码')
     portrait = models.URLField(blank=True, max_length=254, verbose_name='头像',
                                help_text='用户头像地址 现阶段是阿里云OSS地址')
 
@@ -81,12 +81,15 @@ class VerifyCode(models.Model):
     """
     短信验证码
     """
-    type = models.CharField(max_length=12, verbose_name='验证码类别', choices=tuple(settings.CODE_TYPE.items()))
-    code = models.CharField(max_length=10, verbose_name='验证码')
-    mobile = models.CharField(max_length=11, verbose_name='手机号')
+    type = models.CharField(max_length=12, verbose_name='验证码类别',
+                            choices=tuple(settings.CODE_TYPE.items()),
+                            help_text='验证码类型')
+    code = models.CharField(max_length=10, verbose_name='验证码', help_text='验证码')
+    mobile = models.CharField(max_length=11, verbose_name='手机号', help_text='手机号')
     try_time = models.PositiveSmallIntegerField(default=3, verbose_name='剩余尝试次数',
                                                 help_text='默认3,当验证成功时删除,0时删除',)
-    expire_time = models.DateTimeField(default=timezone.now, verbose_name='过期时间')
+    expire_time = models.DateTimeField(default=timezone.now, verbose_name='过期时间',
+                                       help_text='过期时间')
 
     def __str__(self):
         return self.code
