@@ -13,17 +13,27 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url, include
+
 import xadmin
 
+from django.conf.urls import url, include
+from rest_framework.routers import DefaultRouter
 from rest_framework.documentation import include_docs_urls
 from rest_framework_jwt.views import obtain_jwt_token
 
+from users.views import DeviceRegisterViewset, SmsCodeViewset, UserViewset
+
+router = DefaultRouter()
+
+router.register(r'users', UserViewset, base_name="users")
+router.register(r'devices', DeviceRegisterViewset, base_name="devices")
+router.register(r'codes', SmsCodeViewset, base_name="codes")
+
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),
-    url(r'^user/', include('users.urls')),
     # 文档
     url(r'docs/', include_docs_urls(title="mercenary")),
     # 使用jwt登录的接口
     url(r'^login/', obtain_jwt_token),
+    url(r'^', include(router.urls)),
 ]
