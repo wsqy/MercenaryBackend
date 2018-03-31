@@ -49,15 +49,23 @@ class UserRegSerializer(serializers.ModelSerializer):
         if verify_records:
             last_record = verify_records[0]
             if last_record.code != code:
-                raise serializers.ValidationError('验证码错误')
+                if last_record.try_time <= 1:
+                    last_record.try_time = 0
+                    last_record.save()
+                    raise serializers.ValidationError('验证码错误, 请重新获取')
+                else:
+                    last_record.try_time -= 1
+                    last_record.save()
+                    raise serializers.ValidationError('验证码错误, 还剩{}次重试机会'.format(last_record.try_time))
         else:
-            raise serializers.ValidationError('验证码错误')
+            raise serializers.ValidationError('请先获取验证码')
 
     def validate(self, params):
         params['mobile'] = params['username']
+        params['nickname'] = '用户{}'.format(params['username'][-4:])
         del params['code']
         return params
 
     class Meta:
         model = User
-        fields = ('username', 'code', 'mobile', 'password')
+        fields = ('username', 'code', 'mobile', 'password', 'nickname')
