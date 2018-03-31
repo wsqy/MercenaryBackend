@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
@@ -80,11 +81,7 @@ class VerifyCode(models.Model):
     """
     短信验证码
     """
-    CODE_TYPE = (
-        ('SMS_76310006', '注册验证码'),
-        ('SMS_76270012', '找回密码验证码'),
-    )
-    type = models.CharField(max_length=12, verbose_name='验证码类别', choices=CODE_TYPE)
+    type = models.CharField(max_length=12, verbose_name='验证码类别', choices=tuple(settings.CODE_TYPE.items()))
     code = models.CharField(max_length=10, verbose_name='验证码')
     mobile = models.CharField(max_length=11, verbose_name='手机号')
     try_time = models.PositiveSmallIntegerField(default=3, verbose_name='剩余尝试次数',

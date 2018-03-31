@@ -165,3 +165,10 @@ JWT_AUTH = {
 # 阿里大于短信配置
 ACCESS_KEY_ID = "LTAISSYn8u9H4Q4u"
 ACCESS_KEY_SECRET = "rXFZmpAFgmiIUGxtaPW9Ron0nd8YQ4"
+
+# 验证码类别
+REGISTER_CODE_TYPE = 'SMS_76310006'
+CODE_TYPE = {
+    REGISTER_CODE_TYPE: '注册验证码',
+    'SMS_76270012': '找回密码验证码',
+}

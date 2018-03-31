@@ -2,16 +2,16 @@ import json
 import string
 import random
 
-from django.utils import timezone
+from django.db.models import Q
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
-from django.db.models import Q
 
-from rest_framework import viewsets
 from rest_framework import status
-from rest_framework.mixins import CreateModelMixin
+from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.mixins import CreateModelMixin
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
 from utils.dayu import DaYuSMS
@@ -66,25 +66,28 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        mobile = serializer.validated_data['mobile']
-        type = serializer.validated_data['type']
-        code = self.generate_code()
+        sms_mobile = serializer.validated_data['mobile']
+        sms_type = serializer.validated_data['type']
+        sms_code = self.generate_code()
 
         dayun_sms = DaYuSMS(settings.ACCESS_KEY_ID, settings.ACCESS_KEY_SECRET)
         sms_params = {
-            'code': code,
+            'code': sms_code,
             'time': settings.REGEISTER_SMS_EXPIRE_TIME_DEFAULT
         }
-        sms_ststus = dayun_sms.send_sms(phone_numbers=mobile, template_code='SMS_76310006', template_param=json.dumps(sms_params))
+        sms_status = dayun_sms.send_sms(phone_numbers=sms_mobile,
+                                        template_code=sms_type,
+                                        template_param=json.dumps(sms_params))
 
         try:
-            sms_ststus_dict = json.loads(bytes.decode(sms_ststus))
-            sms_code = sms_ststus_dict.get('Code', None)
+            sms_status_dict = json.loads(bytes.decode(sms_status))
+            sms_code = sms_status_dict.get('Code', None)
             assert sms_code is not None
             sms_status_msg = DaYuSMS.DaYuSMS_STATUS.get(sms_code, 'UNKNOWN_ERROR')
             if sms_code == 'OK':
-                expire_time = timezone.now() + timezone.timedelta(seconds=settings.VERIFY_CODE_EXPIRE_TIME)
-                VerifyCode.objects.create(code=code, mobile=mobile, type=type, expire_time=expire_time)
+                sms_expire_time = timezone.now() + timezone.timedelta(seconds=settings.VERIFY_CODE_EXPIRE_TIME)
+                VerifyCode.objects.create(code=sms_code, mobile=sms_mobile,
+                                          type=sms_type, expire_time=sms_expire_time)
                 return Response({'msg': sms_status_msg}, status=status.HTTP_201_CREATED)
             else:
                 return Response({'msg': sms_status_msg}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,6 +1,7 @@
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.utils import timezone
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
 
 from .models import DeviceInfo, VerifyCode
@@ -18,24 +19,30 @@ class DeviceRegisterSerializer(serializers.ModelSerializer):
 
 
 class SmsSerializer(serializers.ModelSerializer):
+    def validate_type(self, _type):
+        if _type not in settings.CODE_TYPE:
+            raise serializers.ValidationError('验证码类型错误')
+        return _type
+
     class Meta:
         model = VerifyCode
         fields = ('type', 'mobile')
 
 
 class UserRegSerializer(serializers.ModelSerializer):
-    code = serializers.CharField(required=True, write_only=True, max_length=4, min_length=4, label='验证码',
+    code = serializers.CharField(required=True, write_only=True, max_length=4, min_length=4,
+                                 label='验证码',help_text='验证码',
                                  error_messages={
                                      'blank': '请输入验证码',
                                      'required': '请输入验证码',
                                      'max_length': '验证码格式错误',
                                      'min_length': '验证码格式错误'
-                                 },
-                                 help_text='验证码')
+                                 })
     username = serializers.CharField(label='用户名', help_text='用户名', required=True, allow_blank=False,
                                      validators=[UniqueValidator(queryset=User.objects.all(), message='用户已经存在')])
 
-    password = serializers.CharField(style={'input_type': 'password'}, help_text='密码', label='密码', write_only=True)
+    password = serializers.CharField(style={'input_type': 'password'}, help_text='密码',
+                                     label='密码', write_only=True)
 
     def create(self, validated_data):
         user = super(UserRegSerializer, self).create(validated_data=validated_data)
@@ -45,7 +52,8 @@ class UserRegSerializer(serializers.ModelSerializer):
 
     def validate_code(self, code):
         verify_records = VerifyCode.objects.filter(mobile=self.initial_data['username'],
-                                                   type='SMS_76310006', expire_time__gte=timezone.now())
+                                                   type=settings.REGISTER_CODE_TYPE,
+                                                   expire_time__gte=timezone.now())
         if verify_records:
             last_record = verify_records[0]
             if last_record.code != code:
