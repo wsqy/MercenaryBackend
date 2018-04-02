@@ -11,13 +11,15 @@ from django.contrib.auth.backends import ModelBackend
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
+from rest_framework import authentication
 from rest_framework.response import Response
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
 from utils.dayu import DaYuSMS
-from .serializers import DeviceRegisterSerializer, SmsSerializer, UserRegSerializer, UserDetailSerializer
+from .serializers import DeviceRegisterSerializer, SmsSerializer
+from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer
 from .models import VerifyCode, DeviceInfo
 
 User = get_user_model()
@@ -112,19 +114,21 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         用户信息修改
     """
     serializer_class = UserRegSerializer
-    authentication_classes = (JSONWebTokenAuthentication,)
-
+    # authentication_classes = (JSONWebTokenAuthentication,)
+    authentication_classes = (JSONWebTokenAuthentication, authentication.SessionAuthentication)
     def get_serializer_class(self):
-        if self.action == "retrieve":
+        if self.action == 'retrieve':
             return UserDetailSerializer
-        elif self.action == "create":
+        elif self.action == 'create':
             return UserRegSerializer
+        elif self.action == 'update':
+            return UserUpdateSerializer
         return UserDetailSerializer
 
     def get_permissions(self):
-        if self.action == "retrieve":
+        if self.action == 'retrieve':
             return [permissions.IsAuthenticated()]
-        elif self.action == "create":
+        elif self.action == 'create':
              return []
         return []
 

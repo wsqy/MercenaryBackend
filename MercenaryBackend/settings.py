@@ -165,8 +165,8 @@ JWT_AUTH = {
 }
 
 # 阿里大于短信配置
-ACCESS_KEY_ID = "LTAISSYn8u9H4Q4u"
-ACCESS_KEY_SECRET = "rXFZmpAFgmiIUGxtaPW9Ron0nd8YQ4"
+ACCESS_KEY_ID = 'LTAISSYn8u9H4Q4u'
+ACCESS_KEY_SECRET = 'rXFZmpAFgmiIUGxtaPW9Ron0nd8YQ4'
 
 # 验证码类别
 REGISTER_CODE_TYPE = 'SMS_76310006'
@@ -174,3 +174,10 @@ CODE_TYPE = {
     REGISTER_CODE_TYPE: '注册验证码',
     'SMS_76270012': '找回密码验证码',
 }
+
+# 阿里云oss相关配置
+ACCESS_KEY_ID = 'LTAIgl1IpdAdgnJX'
+ACCESS_KEY_SECRET = 'm5ohdxa6L04acDrYmauLRKbs69CTOC'
+END_POINT = 'oss-cn-shenzhen.aliyuncs.com'
+BUCKET_NAME = 'mercenary-user-up'
+BUCKET_ACL_TYPE = 'public-read'

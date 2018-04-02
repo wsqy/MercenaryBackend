@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
 
 from .models import DeviceInfo, VerifyCode
+from utils.aliyun_oss import Oss
 
 User = get_user_model()
 
@@ -86,3 +87,18 @@ class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name', 'email', 'nickname', 'gender', 'portrait', 'mobile')
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """
+    用户信息修改序列化类
+    """
+    portrait = serializers.ImageField(max_length=79, allow_empty_file=True)
+
+    def validate_portrait(self, portrait):
+        oss = Oss()
+        oss.user_upload_portrait(portrait.file, portrait._name)
+
+    class Meta:
+        model = User
+        fields = ('nickname', 'gender', 'portrait')
