@@ -19,7 +19,7 @@ import xadmin
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.documentation import include_docs_urls
-from rest_framework_jwt.views import obtain_jwt_token
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 
 from users.views import DeviceRegisterViewset, SmsCodeViewset, UserViewset
 
@@ -35,5 +35,7 @@ urlpatterns = [
     url(r'docs/', include_docs_urls(title="mercenary")),
     # 使用jwt登录的接口
     url(r'^login/', obtain_jwt_token),
+    # 刷新token
+    url(r'^refresh_token/', refresh_jwt_token),
     url(r'^', include(router.urls)),
 ]
