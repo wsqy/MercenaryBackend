@@ -10,12 +10,14 @@ from django.contrib.auth.backends import ModelBackend
 
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework import permissions
 from rest_framework.response import Response
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
 from utils.dayu import DaYuSMS
-from .serializers import DeviceRegisterSerializer, SmsSerializer, UserRegSerializer
+from .serializers import DeviceRegisterSerializer, SmsSerializer, UserRegSerializer, UserDetailSerializer
 from .models import VerifyCode, DeviceInfo
 
 User = get_user_model()
@@ -100,14 +102,31 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
             return Response({'msg': '短信服务异常, 请稍后重试'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserViewset(CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     """用户相关接口
     create:
         用户注册
     retrieve:
         获取用户信息
+    Update:
+        用户信息修改
     """
     serializer_class = UserRegSerializer
+    authentication_classes = (JSONWebTokenAuthentication,)
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return UserDetailSerializer
+        elif self.action == "create":
+            return UserRegSerializer
+        return UserDetailSerializer
+
+    def get_permissions(self):
+        if self.action == "retrieve":
+            return [permissions.IsAuthenticated()]
+        elif self.action == "create":
+             return []
+        return []
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
