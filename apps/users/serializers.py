@@ -47,7 +47,7 @@ class UserRegSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = super(UserRegSerializer, self).create(validated_data=validated_data)
-        user.set_password(validated_data["password"])
+        user.set_password(validated_data['password'])
         user.save()
         return user
 
@@ -97,7 +97,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     def validate_portrait(self, portrait):
         oss = Oss()
-        oss.user_upload_portrait(portrait.file, portrait._name)
+        return oss.user_upload_portrait(portrait.file)
 
     class Meta:
         model = User

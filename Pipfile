@@ -20,7 +20,6 @@ django-formtools = "*"
 djangorestframework = "*"
 django-filter = "*"
 djangorestframework-jwt = "*"
-"oss2" = "*"
 pillow = "*"
 
 

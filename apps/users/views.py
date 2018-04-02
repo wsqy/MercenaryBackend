@@ -149,3 +149,10 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
 
     def get_object(self):
         return self.request.user
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        re_dict = serializer.data
+        re_dict['portrait'] = "{}/{}".format(settings.BUCKET_URL,re_dict['portrait'])
+        return Response(re_dict)
