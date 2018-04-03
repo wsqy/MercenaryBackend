@@ -181,7 +181,6 @@ OSS_ACCESS_KEY_SECRET = 'm5ohdxa6L04acDrYmauLRKbs69CTOC'
 END_POINT = 'oss-cn-shenzhen.aliyuncs.com'
 BUCKET_NAME = 'mercenary-user-up'
 BUCKET_ACL_TYPE = 'public-read'
-BUCKET_URL = 'https://mercenary-user-up.oss-cn-shenzhen.aliyuncs.com'
 
 # 日志配置
 LOGGING = {

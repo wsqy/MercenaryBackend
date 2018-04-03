@@ -152,12 +152,15 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
     def get_object(self):
         return self.request.user
 
+    def get_user_info(self, instance):
+        serializer = UserDetailSerializer(instance)
+        re_dict = serializer.data
+        re_dict['portrait'] = "https://{}.{}/{}".format(settings.BUCKET_NAME, settings.END_POINT, re_dict['portrait'])
+        return re_dict
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        re_dict = serializer.data
-        re_dict['portrait'] = "{}/{}".format(settings.BUCKET_URL, re_dict['portrait'])
-        return Response(re_dict)
+        return Response(self.get_user_info(instance))
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -171,7 +174,4 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
-        serializer = UserDetailSerializer(instance)
-        re_dict = serializer.data
-        re_dict['portrait'] = "{}/{}".format(settings.BUCKET_URL, re_dict['portrait'])
-        return Response(re_dict)
+        return Response(self.get_user_info(instance))
