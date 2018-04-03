@@ -165,8 +165,8 @@ JWT_AUTH = {
 }
 
 # 阿里大于短信配置
-ACCESS_KEY_ID = 'LTAISSYn8u9H4Q4u'
-ACCESS_KEY_SECRET = 'rXFZmpAFgmiIUGxtaPW9Ron0nd8YQ4'
+SMS_ACCESS_KEY_ID = 'LTAISSYn8u9H4Q4u'
+SMS_ACCESS_KEY_SECRET = 'rXFZmpAFgmiIUGxtaPW9Ron0nd8YQ4'
 
 # 验证码类别
 REGISTER_CODE_TYPE = 'SMS_76310006'
@@ -176,10 +176,100 @@ CODE_TYPE = {
 }
 
 # 阿里云oss相关配置
-ACCESS_KEY_ID = 'LTAIgl1IpdAdgnJX'
-ACCESS_KEY_SECRET = 'm5ohdxa6L04acDrYmauLRKbs69CTOC'
+OSS_ACCESS_KEY_ID = 'LTAIgl1IpdAdgnJX'
+OSS_ACCESS_KEY_SECRET = 'm5ohdxa6L04acDrYmauLRKbs69CTOC'
 END_POINT = 'oss-cn-shenzhen.aliyuncs.com'
 BUCKET_NAME = 'mercenary-user-up'
 BUCKET_ACL_TYPE = 'public-read'
 BUCKET_URL = 'https://mercenary-user-up.oss-cn-shenzhen.aliyuncs.com'
 
+# 日志配置
+LOGGING = {
+    'version': 1,
+    # 使用True代表 默认配置中的所有logger 都将禁用，小心使用  一般都是Flase
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+        # 正常只使用下面这种
+        'standard': {
+            'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] [%(levelname)s %(message)s]'
+        },
+    },
+    'filters': {
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
+        'default': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join("log", 'all.log'),
+            'maxBytes': 1024 * 1024 * 10,
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+        'error': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join("log", 'error.log'),
+            'maxBytes': 1024 * 1024 * 10,
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+        'request_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join("log", 'script.log'),
+            'maxBytes': 1024 * 1024 * 10,
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+        'scprits_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join("log", 'script.log'),
+            'maxBytes': 1024 * 1024 * 10,
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['default', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['request_handler'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'scripts': {
+            'handlers': ['scprits_handler'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'users.views': {
+            'handlers': ['default', 'error'],
+            'level': 'DEBUG',
+            'propagate': True,
+        }
+    }
+}

@@ -6,8 +6,8 @@ from django.utils import timezone
 
 class Oss:
     def __init__(self):
-        self.__ACCESS_KEY_ID = settings.ACCESS_KEY_ID
-        self.__ACCESS_KEY_SECRET = settings.ACCESS_KEY_SECRET
+        self.__ACCESS_KEY_ID = settings.OSS_ACCESS_KEY_ID
+        self.__ACCESS_KEY_SECRET = settings.OSS_ACCESS_KEY_SECRET
         self.__END_POINT = settings.END_POINT
         self.__BUCKET_NAME = settings.BUCKET_NAME
         self.__oss_auth = oss2.Auth(self.__ACCESS_KEY_ID, self.__ACCESS_KEY_SECRET)

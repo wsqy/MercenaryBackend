@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 import json
+from django.conf import settings
 from aliyunsdkdysmsapi.request.v20170525 import SendSmsRequest
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkcore.profile import region_provider
@@ -32,9 +33,9 @@ class DaYuSMS:
         'UNKNOWN_ERROR': '未知错误',
     }
 
-    def __init__(self, ACCESS_KEY_ID, ACCESS_KEY_SECRET):
-        self.__ACCESS_KEY_ID = ACCESS_KEY_ID
-        self.__ACCESS_KEY_SECRET = ACCESS_KEY_SECRET
+    def __init__(self):
+        self.__ACCESS_KEY_ID = settings.SMS_ACCESS_KEY_ID
+        self.__ACCESS_KEY_SECRET = settings.SMS_ACCESS_KEY_SECRET
         self.REGION = 'cn-hangzhou'
         self.PRODUCT_NAME = 'Dysmsapi'
         self.DOMAIN = 'dysmsapi.aliyuncs.com'

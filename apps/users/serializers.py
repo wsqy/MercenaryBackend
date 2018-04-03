@@ -93,7 +93,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     """
     用户信息修改序列化类
     """
-    portrait = serializers.ImageField(max_length=79, allow_empty_file=True)
+    portrait = serializers.ImageField(max_length=79, allow_empty_file=False, required=False)
 
     def validate_portrait(self, portrait):
         oss = Oss()

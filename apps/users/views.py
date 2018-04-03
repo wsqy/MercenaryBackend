@@ -64,7 +64,8 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
     """
     serializer_class = SmsSerializer
 
-    def generate_code(self, CODE_LENGTH=4):
+    @staticmethod
+    def generate_code(CODE_LENGTH=4):
         """
         生成四位数字的验证码
         :return:
@@ -79,7 +80,7 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
         sms_type = serializer.validated_data['type']
         sms_code = self.generate_code()
 
-        dayun_sms = DaYuSMS(settings.ACCESS_KEY_ID, settings.ACCESS_KEY_SECRET)
+        dayun_sms = DaYuSMS()
         sms_params = {
             'code': sms_code,
             'time': settings.REGEISTER_SMS_EXPIRE_TIME_DEFAULT
@@ -90,10 +91,10 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
 
         try:
             sms_status_dict = json.loads(bytes.decode(sms_status))
-            sms_code = sms_status_dict.get('Code', None)
-            assert sms_code is not None
-            sms_status_msg = DaYuSMS.DaYuSMS_STATUS.get(sms_code, 'UNKNOWN_ERROR')
-            if sms_code == 'OK':
+            sms_status_code = sms_status_dict.get('Code', None)
+            assert sms_status_code is not None
+            sms_status_msg = DaYuSMS.DaYuSMS_STATUS.get(sms_status_code, 'UNKNOWN_ERROR')
+            if sms_status_code == 'OK':
                 sms_expire_time = timezone.now() + timezone.timedelta(seconds=settings.VERIFY_CODE_EXPIRE_TIME)
                 VerifyCode.objects.create(code=sms_code, mobile=sms_mobile,
                                           type=sms_type, expire_time=sms_expire_time)
@@ -116,6 +117,7 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
     serializer_class = UserRegSerializer
     # authentication_classes = (JSONWebTokenAuthentication,)
     authentication_classes = (JSONWebTokenAuthentication, authentication.SessionAuthentication)
+
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return UserDetailSerializer
@@ -129,7 +131,7 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         if self.action == 'retrieve':
             return [permissions.IsAuthenticated()]
         elif self.action == 'create':
-             return []
+            return []
         return []
 
     def create(self, request, *args, **kwargs):
@@ -154,5 +156,22 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         re_dict = serializer.data
-        re_dict['portrait'] = "{}/{}".format(settings.BUCKET_URL,re_dict['portrait'])
+        re_dict['portrait'] = "{}/{}".format(settings.BUCKET_URL, re_dict['portrait'])
+        return Response(re_dict)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        serializer = UserDetailSerializer(instance)
+        re_dict = serializer.data
+        re_dict['portrait'] = "{}/{}".format(settings.BUCKET_URL, re_dict['portrait'])
         return Response(re_dict)
