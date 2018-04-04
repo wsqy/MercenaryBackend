@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.backends import ModelBackend
 
 from rest_framework import status
@@ -65,13 +66,13 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = SmsSerializer
 
     @staticmethod
-    def generate_code(CODE_LENGTH=4):
+    def generate_code(code_len=4):
         """
         生成四位数字的验证码
         :return:
         random.sample 从指定的序列中，随机的截取指定长度的片断
         """
-        return ''.join(random.sample(string.digits, CODE_LENGTH))
+        return ''.join(random.sample(string.digits, code_len))
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -132,6 +133,12 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
             return [permissions.IsAuthenticated()]
         elif self.action == 'create':
             return []
+        elif self.action == 'update':
+            # 重置密码才不需要登录
+            if self.request.data.get('method') == 'reset_passwd':
+                return []
+            else:
+                return [permissions.IsAuthenticated()]
         return []
 
     def create(self, request, *args, **kwargs):
@@ -150,12 +157,18 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         return serializer.save()
 
     def get_object(self):
-        return self.request.user
+        if self.request.data.get('method') == 'reset_passwd':
+            return AnonymousUser()
+        else:
+            return self.request.user
 
     def get_user_info(self, instance):
         serializer = UserDetailSerializer(instance)
         re_dict = serializer.data
-        re_dict['portrait'] = "https://{}.{}/{}".format(settings.BUCKET_NAME, settings.END_POINT, re_dict['portrait'])
+        if re_dict.get('portrait'):
+            re_dict['portrait'] = 'https://{}.{}/{}'.format(settings.BUCKET_NAME,
+                                                            settings.END_POINT,
+                                                            re_dict['portrait'])
         return re_dict
 
     def retrieve(self, request, *args, **kwargs):
@@ -167,7 +180,13 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+
+        if request.data.get('method') == 'reset_passwd':
+            instance = User.objects.filter(username=request.data.get('mobile'))[0]
+        elif request.data.get('method') == 'modify_passwd':
+            pass
+        else:
+            self.perform_update(serializer)
 
         if getattr(instance, '_prefetched_objects_cache', None):
             # If 'prefetch_related' has been applied to a queryset, we need to
