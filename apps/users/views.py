@@ -86,6 +86,7 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
             'code': sms_code,
             'time': settings.REGEISTER_SMS_EXPIRE_TIME_DEFAULT
         }
+
         sms_status = dayun_sms.send_sms(phone_numbers=sms_mobile,
                                         template_code=sms_type,
                                         template_param=json.dumps(sms_params))
@@ -113,7 +114,7 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
     retrieve:
         获取用户信息
     Update:
-        用户信息修改
+        用户信息修改,忘记密码，修改密码
     """
     serializer_class = UserRegSerializer
     # authentication_classes = (JSONWebTokenAuthentication,)

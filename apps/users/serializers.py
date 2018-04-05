@@ -25,6 +25,20 @@ class SmsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('验证码类型错误')
         return _type
 
+    def validate(self, attrs):
+        _type = attrs.get('type')
+        _mobile = attrs.get('mobile')
+        user_count = User.objects.filter(username=_mobile)
+        # 注册 要求 手机号不存在
+        if _type == settings.REGISTER_CODE_TYPE:
+            if user_count:
+                raise serializers.ValidationError('该手机号已注册')
+        # 重置密码 要求 手机号已存在
+        elif _type == settings.FORGET_PASSWD_CODE_TYPE:
+            if not user_count:
+                raise serializers.ValidationError('该手机号未在平台注册')
+        return attrs
+
     class Meta:
         model = VerifyCode
         fields = ('type', 'mobile')
