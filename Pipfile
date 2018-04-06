@@ -21,6 +21,7 @@ djangorestframework = "*"
 django-filter = "*"
 djangorestframework-jwt = "*"
 pillow = "*"
+crcmod = "*"
 
 
 [dev-packages]
