@@ -14,13 +14,14 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework import authentication
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
 from utils.dayu import DaYuSMS
 from .serializers import DeviceRegisterSerializer, SmsSerializer
-from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer
+from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer, PasswordResetSerializer
 from .models import VerifyCode, DeviceInfo
 
 User = get_user_model()
@@ -195,3 +196,12 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
             instance._prefetched_objects_cache = {}
 
         return Response(self.get_user_info(instance))
+
+    @action(methods=['put', 'patch'], detail=True)
+    def reset_password(self, request, pk=None):
+        serializer = PasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = User.objects.filter(username=request.data.get('mobile'))[0]
+        user.set_password(serializer.data['password_new'])
+        user.save()
+        return Response(self.get_user_info(user))
