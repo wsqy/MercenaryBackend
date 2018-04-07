@@ -109,93 +109,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     """
     portrait = serializers.ImageField(max_length=79, allow_empty_file=False, required=False)
 
-    mobile = serializers.CharField(max_length=11, min_length=11, required=False,
-                                   help_text='用户名', label='用户名')
-    password_old = serializers.CharField(style={'input_type': 'password'},
-                                         help_text='密码', label='密码', required=False)
-
-    password_new = serializers.CharField(style={'input_type': 'password'},
-                                         help_text='新密码', label='新密码',
-                                         min_length=6,
-                                         error_messages={
-                                             'blank': '请输入新密码',
-                                             'required': '请输入新密码',
-                                             'min_length': '密码至少6位'
-                                         }, required=False)
-    code = serializers.CharField(required=False, label='验证码',
-                                 help_text='验证码', max_length=4, min_length=4,
-                                 error_messages={
-                                     'max_length': '验证码格式错误',
-                                     'min_length': '验证码格式错误'
-                                 })
-
-    method = serializers.ChoiceField(required=False, label='方法', help_text='方法',
-                                     choices=(('reset_passwd', '忘记密码'),
-                                              ('modify_passwd', '修改密码')))
-
     def validate_portrait(self, portrait):
         oss = Oss()
         return oss.user_upload_portrait(portrait.file)
 
-    def validate_mobile(self, mobile):
-        users = User.objects.filter(username=mobile)
-        if not users.count():
-            raise serializers.ValidationError('用户名不存在')
-        return mobile
-
-    def validate_code(self, code):
-        verify_records = VerifyCode.objects.filter(mobile=self.initial_data['mobile'],
-                                                   type=settings.FORGET_PASSWD_CODE_TYPE,
-                                                   expire_time__gte=timezone.now())
-        if verify_records:
-            last_record = verify_records[0]
-            if last_record.code != code:
-                if last_record.try_time <= 1:
-                    last_record.try_time = 0
-                    last_record.save()
-                    raise serializers.ValidationError('验证码错误, 请重新获取')
-                else:
-                    last_record.try_time -= 1
-                    last_record.save()
-                    raise serializers.ValidationError('验证码错误, 还剩{}次重试机会'.format(last_record.try_time))
-        else:
-            raise serializers.ValidationError('请先获取验证码')
-        return code
-
-    def validate(self, attrs):
-        _method = attrs.get('method')
-        _password_new = attrs.get('password_new')
-        # 修改密码
-        if _method == 'modify_passwd':
-            _password_old = attrs.get('password_old')
-            if not _password_old:
-                raise serializers.ValidationError('请填写原密码')
-            user = self._args[0]
-            check_user = authenticate(username=user.username, password=_password_old)
-            if check_user is None:
-                raise serializers.ValidationError('原密码错误')
-            else:
-                user.set_password(_password_new)
-                user.save()
-        # 重置密码
-        elif _method == 'reset_passwd':
-            _code = attrs.get('code')
-            # 没有验证码必错
-            if not _code:
-                raise serializers.ValidationError('请输入验证码')
-            _mobile = attrs.get('mobile')
-            # 没有手机号必错
-            if not _mobile:
-                raise serializers.ValidationError('请输入手机号')
-            _user = User.objects.filter(username=_mobile)[0]
-            _user.set_password(_password_new)
-            _user.save()
-
-        return attrs
-
     class Meta:
         model = User
-        fields = ('nickname', 'gender', 'portrait', 'mobile', 'password_old', 'password_new', 'code', 'method')
+        fields = ('nickname', 'gender', 'portrait',)
 
 
 class PasswordResetSerializer(serializers.Serializer):
@@ -248,3 +168,25 @@ class PasswordResetSerializer(serializers.Serializer):
         else:
             raise serializers.ValidationError('请先获取验证码')
         return code
+
+
+class PasswordModifySerializer(serializers.Serializer):
+    password_old = serializers.CharField(style={'input_type': 'password'},
+                                         help_text='密码', label='密码',
+                                         error_messages={
+                                             'blank': '请输入原始密码',
+                                             'required': '请输入原始密码',
+                                         })
+    password_new = serializers.CharField(style={'input_type': 'password'},
+                                         help_text='新密码', label='新密码',
+                                         min_length=6,
+                                         error_messages={
+                                             'blank': '请输入新密码',
+                                             'required': '请输入新密码',
+                                             'min_length': '密码至少6位'
+                                         })
+
+    def validate(self, attrs):
+        if attrs.get('password_old') == attrs.get('password_new'):
+            raise serializers.ValidationError('两次密码不能一致')
+        return attrs

@@ -5,7 +5,7 @@ import random
 from django.db.models import Q
 from django.conf import settings
 from django.utils import timezone
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.backends import ModelBackend
 
@@ -21,7 +21,8 @@ from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handl
 
 from utils.dayu import DaYuSMS
 from .serializers import DeviceRegisterSerializer, SmsSerializer
-from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer, PasswordResetSerializer
+from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer
+from .serializers import PasswordResetSerializer, PasswordModifySerializer
 from .models import VerifyCode, DeviceInfo
 
 User = get_user_model()
@@ -128,20 +129,16 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
             return UserRegSerializer
         elif self.action == 'update':
             return UserUpdateSerializer
+        elif self.action == 'reset_password':
+            return PasswordResetSerializer
+        elif self.action == 'modify_password':
+            return PasswordModifySerializer
         return UserDetailSerializer
 
     def get_permissions(self):
-        if self.action == 'retrieve':
-            return [permissions.IsAuthenticated()]
-        elif self.action == 'create':
+        if self.action == 'reset_password':
             return []
-        elif self.action == 'update':
-            # 重置密码才不需要登录
-            if self.request.data.get('method') == 'reset_passwd':
-                return []
-            else:
-                return [permissions.IsAuthenticated()]
-        return []
+        return [permissions.IsAuthenticated()]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -159,10 +156,7 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         return serializer.save()
 
     def get_object(self):
-        if self.request.data.get('method') == 'reset_passwd':
-            return AnonymousUser()
-        else:
-            return self.request.user
+        return self.request.user
 
     def get_user_info(self, instance):
         serializer = UserDetailSerializer(instance)
@@ -182,26 +176,30 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-
-        if request.data.get('method') == 'reset_passwd':
-            instance = User.objects.filter(username=request.data.get('mobile'))[0]
-        elif request.data.get('method') == 'modify_passwd':
-            pass
-        else:
-            self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
+        self.perform_update(serializer)
         return Response(self.get_user_info(instance))
 
-    @action(methods=['put', 'patch'], detail=True)
-    def reset_password(self, request, pk=None):
-        serializer = PasswordResetSerializer(data=request.data)
+    @action(methods=['patch'], detail=True)
+    def reset_password(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        user = User.objects.filter(username=request.data.get('mobile'))[0]
-        user.set_password(serializer.data['password_new'])
+        user = User.objects.filter(username=serializer.validated_data.get('mobile'))[0]
+        user.set_password(serializer.validated_data.get('password_new'))
         user.save()
         return Response(self.get_user_info(user))
+
+    @action(methods=['patch'], detail=True)
+    def modify_password(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        _password_new = serializer.validated_data.get('password_new')
+        _password_old = serializer.validated_data.get('password_old')
+        check_user = authenticate(username=instance.username, password=_password_old)
+        if check_user is None:
+            return Response({'msg': '原密码错误'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            instance.set_password(_password_new)
+            instance.save()
+        return Response(self.get_user_info(instance))
