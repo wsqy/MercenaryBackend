@@ -6,18 +6,20 @@ from django.db.models import Q
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import get_user_model, authenticate
-from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.backends import ModelBackend
 
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework import authentication
-from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework_jwt.settings import api_settings
+from rest_framework_jwt.serializers import JSONWebTokenSerializer
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
+
 
 from utils.dayu import DaYuSMS
 from .serializers import DeviceRegisterSerializer, SmsSerializer
@@ -133,24 +135,14 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
             return PasswordResetSerializer
         elif self.action == 'modify_password':
             return PasswordModifySerializer
+        elif self.action == 'login':
+            return JSONWebTokenSerializer
         return UserDetailSerializer
 
     def get_permissions(self):
-        if self.action == 'reset_password':
+        if self.action in ['create', 'reset_password', 'login']:
             return []
         return [permissions.IsAuthenticated()]
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = self.perform_create(serializer)
-
-        payload = jwt_payload_handler(user)
-        re_dict = serializer.data
-        re_dict['token'] = jwt_encode_handler(payload)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(re_dict, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
         return serializer.save()
@@ -159,6 +151,8 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         return self.request.user
 
     def get_user_info(self, instance):
+        instance.last_login = timezone.now()
+        instance.save()
         serializer = UserDetailSerializer(instance)
         re_dict = serializer.data
         if re_dict.get('portrait'):
@@ -166,6 +160,18 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
                                                             settings.END_POINT,
                                                             re_dict['portrait'])
         return re_dict
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = self.perform_create(serializer)
+
+        payload = jwt_payload_handler(user)
+        re_dict = self.get_user_info(user)
+        re_dict['token'] = jwt_encode_handler(payload)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(re_dict, status=status.HTTP_201_CREATED, headers=headers)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -186,7 +192,8 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         user = User.objects.filter(username=serializer.validated_data.get('mobile'))[0]
         user.set_password(serializer.validated_data.get('password_new'))
         user.save()
-        return Response(self.get_user_info(user))
+        re_dict = {'msg': '密码重置成功'}
+        return Response(re_dict)
 
     @action(methods=['patch'], detail=True)
     def modify_password(self, request, *args, **kwargs):
@@ -203,3 +210,23 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
             instance.set_password(_password_new)
             instance.save()
         return Response(self.get_user_info(instance))
+
+    @action(methods=['post'], detail=False)
+    def login(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.object.get('user') or request.user
+        token = serializer.object.get('token')
+        response_data = self.get_user_info(user)
+        response_data['token'] = serializer.object.get('token')
+        response = Response(response_data)
+
+        if api_settings.JWT_AUTH_COOKIE:
+            expiration = (datetime.utcnow() +
+                          api_settings.JWT_EXPIRATION_DELTA)
+            response.set_cookie(api_settings.JWT_AUTH_COOKIE,
+                                token,
+                                expires=expiration,
+                                httponly=True)
+        return response

@@ -34,8 +34,6 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     # 文档
     url(r'docs/', include_docs_urls(title="mercenary")),
-    # 使用jwt登录的接口
-    url(r'^login/', obtain_jwt_token),
     # 刷新token
     url(r'^refresh_token/', refresh_jwt_token),
     url(r'^', include(router.urls)),
