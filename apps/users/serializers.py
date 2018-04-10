@@ -119,6 +119,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         fields = ('nickname', 'gender', 'portrait',)
 
 
+class UserPortraitSerializer(serializers.Serializer):
+    """
+    用户信息修改序列化类
+    """
+    portrait = serializers.ImageField(max_length=79, allow_empty_file=False, required=False)
+
+
 class PasswordResetSerializer(serializers.Serializer):
     mobile = serializers.CharField(max_length=11, min_length=11, label='手机号',
                                    help_text='注册手机号',

@@ -2,6 +2,7 @@ import json
 
 from celery import shared_task
 from utils.dayu import DaYuSMS
+from utils.aliyun_oss import Oss
 
 
 @shared_task
@@ -12,3 +13,9 @@ def dayu_send_sms(phone, type, params):
     except Exception as e:
         res = {'Code': 'UNKNOWN_ERROR'}
     return res
+
+
+@shared_task
+def oss_upload_portrait(portrait):
+    oss = Oss()
+    return oss.user_upload_portrait(portrait)

@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'extra_apps'))
 SECRET_KEY = 'wiih3k9w*b!3gmu05g8s*387l5&z@*!ie5idka9w%)jn#!5o+%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = 'users.ProfileInfo'
@@ -185,10 +185,10 @@ BUCKET_NAME = 'mercenary-user-up'
 BUCKET_ACL_TYPE = 'public-read'
 
 CELERY_BROKER_URL = 'redis://:f886Yjhvuyfy76grhgdFYrtf@123.206.210.196:6379/9'
-CELERY_RESULT_BACKEND = 'redis://:f886Yjhvuyfy76grhgdFYrtf@123.206.210.196:6379/9'
+CELERY_RESULT_BACKEND = 'redis://:f886Yjhvuyfy76grhgdFYrtf@123.206.210.196:6379/10'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_ACCEPT_CONTENT = ['application/x-python-serialize']
 CELERY_ENABLE_UTC = False  # 不用UTC.
 CELERY_TIMEZONE = 'Asia/Shanghai'  # 指定上海时区
 

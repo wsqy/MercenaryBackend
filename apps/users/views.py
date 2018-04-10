@@ -21,11 +21,11 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
 from .serializers import DeviceRegisterSerializer, SmsSerializer
-from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer
+from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer, UserPortraitSerializer
 from .serializers import PasswordResetSerializer, PasswordModifySerializer
 from .models import VerifyCode, DeviceInfo
 from utils.dayu import DaYuSMS
-from .tasks import dayu_send_sms
+from .tasks import dayu_send_sms, oss_upload_portrait
 
 
 User = get_user_model()
@@ -147,6 +147,8 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
             return PasswordModifySerializer
         elif self.action == 'login':
             return JSONWebTokenSerializer
+        elif self.action == 'portrait_upload':
+            return UserPortraitSerializer
         return UserDetailSerializer
 
     def get_permissions(self):
@@ -220,6 +222,16 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
             instance.set_password(_password_new)
             instance.save()
         return Response(self.get_user_info(instance))
+
+    @action(methods=['patch'], detail=True)
+    def portrait_upload(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        portrait = serializer.validated_data.get('portrait')
+        celery_res = oss_upload_portrait.delay(portrait.file)
+        return Response({'celery_task_id': celery_res.id}, status.HTTP_202_ACCEPTED)
 
     @action(methods=['post'], detail=False)
     def login(self, request, *args, **kwargs):
