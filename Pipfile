@@ -22,6 +22,7 @@ django-filter = "*"
 djangorestframework-jwt = "*"
 pillow = "*"
 crcmod = "*"
+celery = {extras = ["redis"]}
 
 
 [dev-packages]
@@ -30,6 +31,7 @@ crcmod = "*"
 "flake8" = "*"
 markdown = "*"
 coreapi = "*"
+eventlet = "*"
 
 
 [requires]

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'xadmin',
     'crispy_forms',
     'rest_framework',
+    'django_celery_results',
     'users.apps.UsersConfig',
 ]
 
@@ -182,6 +183,14 @@ OSS_ACCESS_KEY_SECRET = 'm5ohdxa6L04acDrYmauLRKbs69CTOC'
 END_POINT = 'oss-cn-shenzhen.aliyuncs.com'
 BUCKET_NAME = 'mercenary-user-up'
 BUCKET_ACL_TYPE = 'public-read'
+
+CELERY_BROKER_URL = 'redis://:f886Yjhvuyfy76grhgdFYrtf@123.206.210.196:6379/9'
+CELERY_RESULT_BACKEND = 'redis://:f886Yjhvuyfy76grhgdFYrtf@123.206.210.196:6379/9'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_ENABLE_UTC = False  # 不用UTC.
+CELERY_TIMEZONE = 'Asia/Shanghai'  # 指定上海时区
 
 # 日志配置
 LOGGING = {

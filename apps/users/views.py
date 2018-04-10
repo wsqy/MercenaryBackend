@@ -20,12 +20,13 @@ from rest_framework_jwt.serializers import JSONWebTokenSerializer
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
-
-from utils.dayu import DaYuSMS
 from .serializers import DeviceRegisterSerializer, SmsSerializer
 from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer
 from .serializers import PasswordResetSerializer, PasswordModifySerializer
 from .models import VerifyCode, DeviceInfo
+from utils.dayu import DaYuSMS
+from .tasks import dayu_send_sms
+
 
 User = get_user_model()
 
@@ -84,13 +85,22 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
         sms_mobile = serializer.validated_data['mobile']
         sms_type = serializer.validated_data['type']
         sms_code = self.generate_code()
+        # sms_expire_time = timezone.now() + timezone.timedelta(seconds=settings.VERIFY_CODE_EXPIRE_TIME)
+        #
+        # VerifyCode.objects.create(code=sms_code, mobile=sms_mobile,
+        #                           type=sms_type, expire_time=sms_expire_time)
+        # sms_params = {
+        #     'code': sms_code,
+        #     'time': settings.REGEISTER_SMS_EXPIRE_TIME_DEFAULT
+        # }
+        # celery_res = dayu_send_sms.delay(sms_mobile, sms_type, json.dumps(sms_params))
+        # return Response({'celery_task_id': celery_res.id}, status=status.HTTP_202_ACCEPTED)
 
         dayun_sms = DaYuSMS()
         sms_params = {
             'code': sms_code,
             'time': settings.REGEISTER_SMS_EXPIRE_TIME_DEFAULT
         }
-
         sms_status = dayun_sms.send_sms(phone_numbers=sms_mobile,
                                         template_code=sms_type,
                                         template_param=json.dumps(sms_params))
