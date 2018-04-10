@@ -127,8 +127,16 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         用户注册
     retrieve:
         获取用户信息
-    Update:
-        用户信息修改,忘记密码，修改密码
+    update:
+        用户信息修改
+    partial_update:
+        用户信息修改
+    login:
+        用户登录
+    reset_password:
+        重置密码
+    modify_password:
+        修改密码
     """
     serializer_class = UserRegSerializer
     # authentication_classes = (JSONWebTokenAuthentication,)
