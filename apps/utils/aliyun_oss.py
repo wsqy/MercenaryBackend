@@ -1,7 +1,5 @@
 import oss2
-import time, random
 from django.conf import settings
-from django.utils import timezone
 
 
 class Oss:
@@ -13,8 +11,6 @@ class Oss:
         self.__oss_auth = oss2.Auth(self.__ACCESS_KEY_ID, self.__ACCESS_KEY_SECRET)
         self.__bucket = oss2.Bucket(self.__oss_auth, self.__END_POINT, self.__BUCKET_NAME)
 
-    def user_upload_portrait(self, file_obj):
-        mulu = timezone.now().strftime('%Y%m%d')
-        oss_filename = '{}/{}{}.png'.format(mulu, int(time.time() * 100000000), random.randrange(1000, 9999))
+    def user_upload_portrait(self, file_obj, oss_filename):
         self.__bucket.put_object(oss_filename, file_obj)
         return oss_filename

@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'extra_apps'))
 SECRET_KEY = 'wiih3k9w*b!3gmu05g8s*387l5&z@*!ie5idka9w%)jn#!5o+%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = 'users.ProfileInfo'
@@ -184,8 +184,16 @@ END_POINT = 'oss-cn-shenzhen.aliyuncs.com'
 BUCKET_NAME = 'mercenary-user-up'
 BUCKET_ACL_TYPE = 'public-read'
 
-CELERY_BROKER_URL = 'redis://:f886Yjhvuyfy76grhgdFYrtf@123.206.210.196:6379/9'
-CELERY_RESULT_BACKEND = 'redis://:f886Yjhvuyfy76grhgdFYrtf@123.206.210.196:6379/10'
+REDIS_HOST = '123.206.210.196'
+REDIS_PORT = '6379'
+REDIS_CELERY_BROKER_URL = '1'
+REDIS_RESULT_BACKEND = '1'
+REDIS_PASSWD = 'f886Yjhvuyfy76grhgdFYrtf'
+REDIS_CONN_NOPASSWD = "redis://%s:%s/%s"
+REDIS_CONN_WITHPASS = "redis://:%s@%s:%s/%s"
+
+CELERY_BROKER_URL = REDIS_CONN_WITHPASS % (REDIS_PASSWD, REDIS_HOST, REDIS_PORT, REDIS_CELERY_BROKER_URL)
+CELERY_RESULT_BACKEND = REDIS_CONN_WITHPASS % (REDIS_PASSWD, REDIS_HOST, REDIS_PORT, REDIS_RESULT_BACKEND)
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['application/x-python-serialize']
@@ -282,3 +290,9 @@ LOGGING = {
         }
     }
 }
+
+
+try:
+    from .local_settings import *
+except:
+    pass

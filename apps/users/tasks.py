@@ -16,6 +16,6 @@ def dayu_send_sms(phone, type, params):
 
 
 @shared_task
-def oss_upload_portrait(portrait):
+def oss_upload_portrait(portrait, oss_filename):
     oss = Oss()
-    return oss.user_upload_portrait(portrait)
+    return oss.user_upload_portrait(portrait, oss_filename)

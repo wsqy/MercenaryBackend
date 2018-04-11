@@ -108,12 +108,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     """
     用户信息修改序列化类
     """
-    portrait = serializers.ImageField(max_length=79, allow_empty_file=False, required=False)
-
-    def validate_portrait(self, portrait):
-        oss = Oss()
-        return oss.user_upload_portrait(portrait.file)
-
     class Meta:
         model = User
         fields = ('nickname', 'gender', 'portrait',)
@@ -121,7 +115,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class UserPortraitSerializer(serializers.Serializer):
     """
-    用户信息修改序列化类
+    异步头像上传
     """
     portrait = serializers.ImageField(max_length=79, allow_empty_file=False, required=False)
 

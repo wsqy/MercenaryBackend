@@ -1,3 +1,4 @@
+import time
 import json
 import string
 import random
@@ -25,7 +26,7 @@ from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSeri
 from .serializers import PasswordResetSerializer, PasswordModifySerializer
 from .models import VerifyCode, DeviceInfo
 from utils.dayu import DaYuSMS
-from .tasks import dayu_send_sms, oss_upload_portrait
+from .tasks import oss_upload_portrait
 
 
 User = get_user_model()
@@ -137,6 +138,8 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         重置密码
     modify_password:
         修改密码
+    portrait_upload:
+        头像上传
     """
     serializer_class = UserRegSerializer
     # authentication_classes = (JSONWebTokenAuthentication,)
@@ -238,7 +241,11 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         serializer.is_valid(raise_exception=True)
 
         portrait = serializer.validated_data.get('portrait')
-        celery_res = oss_upload_portrait.delay(portrait.file)
+        oss_filename = '{}/{}/{}{}.png'.format(timezone.now().strftime('%Y%m%d'),
+                                               instance.id,
+                                               int(time.time() * 100000000),
+                                               random.randrange(1000, 9999))
+        celery_res = oss_upload_portrait.delay(portrait.file, oss_filename)
         return Response({'celery_task_id': celery_res.id}, status.HTTP_202_ACCEPTED)
 
     @action(methods=['post'], detail=False)

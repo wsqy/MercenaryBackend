@@ -22,7 +22,7 @@ from rest_framework.documentation import include_docs_urls
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 
 from users.views import DeviceRegisterViewset, SmsCodeViewset, UserViewset
-from utils.views import get_celery_status
+from utils.views import get_celery_task_status
 
 router = DefaultRouter()
 
@@ -38,6 +38,6 @@ urlpatterns = [
     # 刷新token
     url(r'^refresh_token/', refresh_jwt_token),
     # celery 查询任务状态
-    url(r'^get_celery_task_status', get_celery_status, name='get_celery_task_status'),
+    url(r'^get_celery_task_status/$', get_celery_task_status),
     url(r'^', include(router.urls)),
 ]
