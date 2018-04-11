@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_celery_results',
     'users.apps.UsersConfig',
+    'area.apps.AreaConfig',
 ]
 
 MIDDLEWARE = [
