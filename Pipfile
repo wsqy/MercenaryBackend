@@ -23,6 +23,7 @@ djangorestframework-jwt = "*"
 pillow = "*"
 crcmod = "*"
 celery = {extras = ["redis"]}
+xlsxwriter = "*"
 
 
 [dev-packages]
