@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'xadmin',
     'crispy_forms',
+    'django_filters',
     'rest_framework',
     'django_celery_results',
     'users.apps.UsersConfig',

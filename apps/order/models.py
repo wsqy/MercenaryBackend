@@ -17,7 +17,7 @@ class Classification(models.Model):
     class Meta:
         verbose_name = '一级分类'
         verbose_name_plural = verbose_name
-        ordering = ['weight']
+        ordering = ['-weight']
 
 
 class SubCategory(models.Model):
@@ -36,4 +36,4 @@ class SubCategory(models.Model):
     class Meta:
         verbose_name = '二级分类'
         verbose_name_plural = verbose_name
-        ordering = ['weight']
+        ordering = ['-weight']

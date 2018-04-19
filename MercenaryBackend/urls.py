@@ -24,6 +24,7 @@ from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 from users.views import DeviceRegisterViewset, SmsCodeViewset, UserViewset
 from utils.views import get_celery_task_status
 from area.views import DistrictViewset
+from order.views import ClassificationViewset, SubCategoryViewset
 
 router = DefaultRouter()
 
@@ -31,6 +32,8 @@ router.register(r'users', UserViewset, base_name="users")
 router.register(r'devices', DeviceRegisterViewset, base_name="devices")
 router.register(r'codes', SmsCodeViewset, base_name="codes")
 router.register(r'district', DistrictViewset, base_name="district")
+router.register(r'classification', ClassificationViewset, base_name="classification")
+router.register(r'sub-category', SubCategoryViewset, base_name="sub-category")
 
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),
