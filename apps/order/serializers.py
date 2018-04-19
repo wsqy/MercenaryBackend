@@ -1,12 +1,6 @@
 from rest_framework import serializers
 
-from .models import Classification, SubCategory
-
-
-class ClassificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Classification
-        fields = ('id', 'name', )
+from .models import SubCategory
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
