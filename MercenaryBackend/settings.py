@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'users.apps.UsersConfig',
     'area.apps.AreaConfig',
+    'order.apps.OrderConfig',
 ]
 
 MIDDLEWARE = [
