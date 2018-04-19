@@ -1,5 +1,5 @@
 import xadmin
-from .models import Province, City, Country
+from .models import Province, City, District
 
 
 class ProvinceAdmin:
@@ -13,7 +13,7 @@ class CityAdmin:
     list_filter = ['province', ]
 
 
-class CountryAdmin:
+class DistrictAdmin:
     list_display = ['id', 'name', 'city']
     search_fields = ['name', 'id']
     list_filter = ['city', ]
@@ -21,4 +21,4 @@ class CountryAdmin:
 
 xadmin.site.register(Province, ProvinceAdmin)
 xadmin.site.register(City, CityAdmin)
-xadmin.site.register(Country, CountryAdmin)
+xadmin.site.register(District, DistrictAdmin)

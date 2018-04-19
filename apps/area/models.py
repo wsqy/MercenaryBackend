@@ -54,7 +54,7 @@ class City(models.Model):
         return name
 
 
-class Country(models.Model):
+class District(models.Model):
     """
     城市
     """
