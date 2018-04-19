@@ -6,4 +6,4 @@ from .models import SubCategory
 class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = SubCategory
-        fields = ('id', 'name', 'classification')
+        fields = ('id', 'name', 'template')
