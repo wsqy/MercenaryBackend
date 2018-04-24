@@ -8,6 +8,7 @@ from .models import SubCategory, OrderInfo
 from .serializers import SubCategorySerializer, OrderInfoCreateSerializer, OrderInfoListSerializer
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
+from .cost import service_cost_calc
 
 
 class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
@@ -43,6 +44,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
             rec_dict['employer_receive_name'] = rec_dict['employer_user'].nickname
         if not rec_dict.get('employer_receive_mobile'):
             rec_dict['employer_receive_mobile'] = rec_dict['employer_user'].mobile
+        rec_dict['reward'] = rec_dict['pay_cost'] - service_cost_calc.calc(rec_dict['pay_cost'])
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)

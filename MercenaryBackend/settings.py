@@ -294,6 +294,10 @@ LOGGING = {
     }
 }
 
+# 项目的基本配置
+# 手续费(百分制)
+SERVICE_COST = 15
+
 
 try:
     from .local_settings import *
