@@ -18,3 +18,9 @@ class OrderInfoCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderInfo
         fields = '__all__'
+
+
+class OrderInfoListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderInfo
+        fields = '__all__'

@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import SubCategory, OrderInfo
-from .serializers import SubCategorySerializer, OrderInfoCreateSerializer
+from .serializers import SubCategorySerializer, OrderInfoCreateSerializer, OrderInfoListSerializer
 
 
 class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
@@ -18,5 +18,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return OrderInfoCreateSerializer
-        return OrderInfoCreateSerializer
+        elif self.action == 'list':
+            return OrderInfoListSerializer
+        return OrderInfoListSerializer
 
