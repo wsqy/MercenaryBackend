@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from .models import SubCategory, OrderInfo
-from utils.common import generate_order_id
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -11,13 +10,15 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
 
 class OrderInfoCreateSerializer(serializers.ModelSerializer):
-    def validate(self, attrs):
-        attrs['id'] = generate_order_id(order_type='10')
-        return attrs
+    employer_user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         model = OrderInfo
-        fields = '__all__'
+        read_only_fields = ('id', 'status', 'create_time', 'description', 'reward',)
+        exclude = ('complete_time', 'employer_complete_time', 'receiver_confirm_time',
+                   'receiver_complete_time', 'receiver_user')
 
 
 class OrderInfoListSerializer(serializers.ModelSerializer):

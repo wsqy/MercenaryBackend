@@ -105,9 +105,9 @@ class OrderInfo(models.Model):
     employer_user = models.ForeignKey(User, verbose_name='雇主', help_text='雇主',
                                       related_name='employer_user')
     employer_receive_name = models.CharField(max_length=30, verbose_name='联系人姓名',
-                                             help_text='联系人姓名')
+                                             help_text='联系人姓名', null=True)
     employer_receive_mobile = models.CharField(max_length=15, verbose_name='联系人手机号',
-                                               help_text='联系人手机号')
+                                               help_text='联系人手机号', null=True)
     employer_complete_time = models.DateTimeField(null=True,
                                                   verbose_name='雇主确认完成时间',
                                                   help_text='雇主确认完成时间')
