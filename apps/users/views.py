@@ -12,13 +12,11 @@ from django.contrib.auth.backends import ModelBackend
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework import authentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework_jwt.settings import api_settings
 from rest_framework_jwt.serializers import JSONWebTokenSerializer
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
 from .serializers import DeviceRegisterSerializer, SmsSerializer
@@ -27,6 +25,7 @@ from .serializers import PasswordResetSerializer, PasswordModifySerializer
 from .models import VerifyCode, DeviceInfo
 from utils.dayu import DaYuSMS
 from .tasks import oss_upload_portrait
+from utils.authentication import CommonAuthentication
 
 
 User = get_user_model()
@@ -142,8 +141,7 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         头像上传
     """
     serializer_class = UserRegSerializer
-    # authentication_classes = (JSONWebTokenAuthentication,)
-    authentication_classes = (JSONWebTokenAuthentication, authentication.SessionAuthentication)
+    authentication_classes = CommonAuthentication()
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

@@ -1,14 +1,13 @@
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework import authentication
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import SubCategory, OrderInfo
 from .serializers import SubCategorySerializer, OrderInfoCreateSerializer, OrderInfoListSerializer
 from utils.common import generate_order_id
+from utils.authentication import CommonAuthentication
 
 
 class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
@@ -20,7 +19,7 @@ class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
 
 class OrderViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     queryset = OrderInfo.objects.all()
-    authentication_classes = (JSONWebTokenAuthentication, authentication.SessionAuthentication)
+    authentication_classes = CommonAuthentication()
 
     def get_permissions(self):
         if self.action in ['create', ]:
