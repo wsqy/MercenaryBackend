@@ -80,9 +80,9 @@ class OrderInfo(models.Model):
     id = models.CharField(max_length=30, unique=True, verbose_name='订单号',
                           help_text='订单号', primary_key=True)
     status = models.SmallIntegerField(choices=ORDER_STATUS, default=1,
-                                      verbose_name="订单状态")
+                                      verbose_name='订单状态', help_text='订单状态')
     category = models.ForeignKey(SubCategory, verbose_name='分类', help_text='订单分类')
-    create_time = models.DateTimeField(default=timezone.now, verbose_name="订单创建时间",
+    create_time = models.DateTimeField(default=timezone.now, verbose_name='订单创建时间',
                                        help_text='订单创建时间')
     complete_time = models.DateTimeField(null=True, help_text='订单完成时间',
                                          verbose_name='订单完成时间')
