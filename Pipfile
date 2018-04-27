@@ -1,12 +1,9 @@
 [[source]]
-
 url = "https://pypi.douban.com/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 requests = "*"
 django = "==1.11"
 mysqlclient = "*"
@@ -24,17 +21,14 @@ pillow = "*"
 crcmod = "*"
 celery = {extras = ["redis"]}
 xlsxwriter = "*"
-
+pycrypto = "*"
 
 [dev-packages]
-
 "fabric3" = "*"
 "flake8" = "*"
 markdown = "*"
 coreapi = "*"
 eventlet = "*"
 
-
 [requires]
-
 python_version = "3.6"

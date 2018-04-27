@@ -187,7 +187,7 @@ END_POINT = 'oss-cn-shenzhen.aliyuncs.com'
 BUCKET_NAME = 'mercenary-user-up'
 BUCKET_ACL_TYPE = 'public-read'
 
-REDIS_HOST = '123.206.210.196'
+REDIS_HOST = '127.0.0.1'
 REDIS_PORT = '6379'
 REDIS_CELERY_BROKER_URL = '1'
 REDIS_RESULT_BACKEND = '1'
@@ -298,6 +298,13 @@ LOGGING = {
 # 手续费(百分制)
 SERVICE_COST = 15
 
+#####  支付相关  #####
+ALIPAY_APPID = '2017080508049336'
+ALIPAY_NOTIFY_URL = 'http://118.24.157.119:8000/alipay/return/'
+ALIPAY_PRIVATE_KEY_PATH = '/www/MercenaryBackend/apps/utils/keys/private_2048.txt'
+ALIPAY_ALI_PUBLIC_KEY_PATH = '/www/MercenaryBackend/apps/utils/keys/alipay_public_2048.txt'
+ALIPAY_RETURN_URL = 'http://118.24.157.119:8000/alipay/return/'
+#####  支付相关  #####
 
 try:
     from .local_settings import *
