@@ -18,7 +18,7 @@ class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
     filter_fields = ('classification', )
 
 
-class OrderViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
+class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = OrderInfo.objects.all()
     authentication_classes = CommonAuthentication()
 
