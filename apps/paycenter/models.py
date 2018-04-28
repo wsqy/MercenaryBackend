@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 
@@ -41,7 +40,7 @@ class PayOrder(models.Model):
                                                   help_text='支付方式')
     pay_cost = models.PositiveIntegerField(verbose_name='支付金额(分)',
                                            help_text='支付金额(分)')
-    status = models.PositiveSmallIntegerField(choices=STATUS,
+    status = models.PositiveSmallIntegerField(choices=STATUS, default=1,
                                               verbose_name='支付状态',
                                               help_text='支付状态')
     create_time = models.DateTimeField(default=timezone.now, verbose_name='支付订单创建时间',
