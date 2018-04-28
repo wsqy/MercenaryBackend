@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'area.apps.AreaConfig',
     'order.apps.OrderConfig',
+    'paycenter.apps.PaycenterConfig',
 ]
 
 MIDDLEWARE = [
@@ -304,6 +305,7 @@ ALIPAY_NOTIFY_URL = 'http://118.24.157.119:8000/alipay/return/'
 ALIPAY_PRIVATE_KEY_PATH = '/www/MercenaryBackend/apps/utils/keys/private_2048.txt'
 ALIPAY_ALI_PUBLIC_KEY_PATH = '/www/MercenaryBackend/apps/utils/keys/alipay_public_2048.txt'
 ALIPAY_RETURN_URL = 'http://118.24.157.119:8000/alipay/return/'
+ALIPAT_EXPIRE_TIME = 30 * 60
 #####  支付相关  #####
 
 try:
