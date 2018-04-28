@@ -7,10 +7,10 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from .models import PayOrder
-from order.models import OrderInfo
 from .serializers import PayOrderCreateSerializer
 from utils.common import generate_pay_order_id
 from utils.authentication import CommonAuthentication
+from utils.pay import alipay
 
 
 class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
@@ -50,6 +50,15 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
         # 填充 expire_time
         rec_dict['expire_time'] = timezone.now() + timezone.timedelta(seconds=settings.ALIPAT_EXPIRE_TIME)
 
+        # 生成支付信息
+        pay_info = alipay.app_pay(
+            subject='雇佣兵-佣金支付',
+            out_trade_no=rec_dict['id'],
+            total_amount=rec_dict['pay_cost'],
+        )
+
         self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        headers = self.get_success_headers({'pay_info': pay_info})
+        # rec_dict['pay_info'] = pay_info
+        return Response({'pay_info': pay_info}, status=status.HTTP_201_CREATED, headers=headers)
