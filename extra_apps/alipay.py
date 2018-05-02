@@ -106,36 +106,23 @@ class AliPay:
             'subject': subject,
             'out_trade_no': out_trade_no,
             'total_amount': total_amount,
-            'product_code': 'FAST_INSTANT_TRADE_PAY',
         }
 
         biz_content.update(kwargs)
         data = self.build_body(method, biz_content, self.return_url)
         return self.sign_data(data)
 
-    def page_pay(self, subject, out_trade_no, total_amount, return_url=None, **kwargs):
+    def page_pay(self, **kwargs):
         """
         电脑网站支付
-        :param subject:
-        :param out_trade_no:
-        :param total_amount:
-        :param return_url:
-        :param kwargs:
-        :return:
         """
-        return self.common_pay('alipay.trade.page.pay', subject, out_trade_no, total_amount, return_url=None, **kwargs)
+        return self.common_pay('alipay.trade.page.pay', **kwargs)
 
-    def app_pay(self, subject, out_trade_no, total_amount, return_url=None, **kwargs):
+    def app_pay(self, **kwargs):
         """
         app支付
-        :param subject:
-        :param out_trade_no:
-        :param total_amount:
-        :param return_url:
-        :param kwargs:
-        :return:
         """
-        return self.common_pay('alipay.trade.app.pay', subject, out_trade_no, total_amount, return_url=None, **kwargs)
+        return self.common_pay('alipay.trade.app.pay', **kwargs)
 
 
 def test():

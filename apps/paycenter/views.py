@@ -37,7 +37,7 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
         # 根据 订单号和order_type 判断user信息是否合法
         # 填充 pay_cost
         if pay_order_type == 1:
-            rec_dict['pay_cost'] = rec_dict['order'].eposit
+            rec_dict['pay_cost'] = rec_dict['order'].deposit
             if rec_dict['order'].receiver_user is not rec_dict['user']:
                 return Response({'user': '当前支付用户不是接单者'}, status=status.HTTP_400_BAD_REQUEST)
         elif pay_order_type == 3:
@@ -50,14 +50,13 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
         # 填充 expire_time
         rec_dict['expire_time'] = timezone.now() + timezone.timedelta(seconds=settings.ALIPAT_EXPIRE_TIME)
 
+        self.perform_create(serializer)
         # 生成支付信息
         pay_info = alipay.app_pay(
             subject='雇佣兵-佣金支付',
             out_trade_no=rec_dict['id'],
-            total_amount=rec_dict['pay_cost'],
+            total_amount=rec_dict['pay_cost'] / 100,
         )
-
-        self.perform_create(serializer)
 
         headers = self.get_success_headers({'pay_info': pay_info})
         # rec_dict['pay_info'] = pay_info
