@@ -25,8 +25,7 @@ from users.views import DeviceRegisterViewset, SmsCodeViewset, UserViewset
 from utils.views import get_celery_task_status
 from area.views import DistrictViewset
 from order.views import SubCategoryViewset, OrderViewSet
-from paycenter.views import PayOrderViewSet
-
+from paycenter.views import PayOrderViewSet, AlipayView
 router = DefaultRouter()
 
 router.register(r'users', UserViewset, base_name='users')
@@ -46,5 +45,7 @@ urlpatterns = [
     url(r'^refresh_token/', refresh_jwt_token),
     # celery 查询任务状态
     url(r'^get_celery_task_status/$', get_celery_task_status),
+    # 支付宝支付回调
+    url(r'^alipay/return/', AlipayView.as_view(), name="alipay"),
     url(r'^', include(router.urls)),
 ]

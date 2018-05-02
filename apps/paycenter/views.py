@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from .models import PayOrder
@@ -50,6 +51,8 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
         # 填充 expire_time
         rec_dict['expire_time'] = timezone.now() + timezone.timedelta(seconds=settings.ALIPAT_EXPIRE_TIME)
 
+        rec_dict['status'] = 2
+
         self.perform_create(serializer)
         # 生成支付信息
         pay_info = alipay.app_pay(
@@ -61,3 +64,48 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
         headers = self.get_success_headers({'pay_info': pay_info})
         # rec_dict['pay_info'] = pay_info
         return Response({'pay_info': pay_info}, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class AlipayView(APIView):
+    """
+    支付宝支付相关处理
+    """
+    def post(self, request):
+        """
+        处理支付宝的notify_url
+        :param request:
+        :return:
+        """
+        processed_dict = {}
+        for key, value in request.POST.items():
+            processed_dict[key] = value
+
+        sign = processed_dict.pop("sign", None)
+
+        verify_re = alipay.verify(processed_dict, sign)
+
+        # 验签不过的消息不管
+        if verify_re is False:
+            return Response({'msg': 'verify error'}, status.HTTP_401_UNAUTHORIZED)
+
+        pay_order_id = processed_dict.get('out_trade_no', None)
+        trade_status = processed_dict.get('trade_status', None)
+        pay_total_amount = float(processed_dict.get('total_amount', 0)) * 100
+        # 只接受 交易成功的消息
+        if trade_status != 'TRADE_SUCCESS':
+            return Response({'msg': 'status unsuccess'}, status.HTTP_100_CONTINUE)
+
+        existed_pay_orders = PayOrder.objects.filter(id=pay_order_id)
+        for existed_pay_order in existed_pay_orders:
+            # 金额不符合 跳过
+            if existed_pay_order.pay_cost != pay_total_amount:
+                continue
+            existed_pay_order.status = 3
+            existed_pay_order.pay_time = timezone.now()
+            existed_pay_order.save()
+            if existed_pay_order.order_type == 3:
+                # 如果是佣金支付成功则设置订单状态为 待接单
+                existed_pay_order.order.status = 11
+                existed_pay_order.order.save()
+
+        return Response("success")
