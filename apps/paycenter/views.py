@@ -38,13 +38,32 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
         # 根据 订单号和order_type 判断user信息是否合法
         # 填充 pay_cost
         if pay_order_type == 1:
-            rec_dict['pay_cost'] = rec_dict['order'].deposit
+            # 这里是支付押金
+
+            # 判断当前用户是否为接单者
             if rec_dict['order'].receiver_user is not rec_dict['user']:
                 return Response({'user': '当前支付用户不是接单者'}, status=status.HTTP_400_BAD_REQUEST)
+            # 填充支付订单金额为押金
+            rec_dict['pay_cost'] = rec_dict['order'].deposit
+            # 订单状态改变
+            if rec_dict['order'].status == 12:
+                rec_dict['order'].status = 13
+                rec_dict['order'].save()
         elif pay_order_type == 3:
-            rec_dict['pay_cost'] = rec_dict['order'].pay_cost
+            # 这里是支付佣金
+
+            # 判断当前用户是否为下单者
             if rec_dict['order'].employer_user.id is not rec_dict['user'].id:
                 return Response({'user': '当前支付用户不是订单创建者'}, status=status.HTTP_400_BAD_REQUEST)
+            # 填充支付订单金额为佣金
+            rec_dict['pay_cost'] = rec_dict['order'].pay_cost
+            # 订单状态改变
+            if rec_dict['order'].status == 1:
+                rec_dict['order'].status = 2
+                rec_dict['order'].save()
+        elif pay_order_type == 2:
+            # 这里是加赏
+            pass
 
         # 填充 id
         rec_dict['id'] = generate_pay_order_id(order_type='10')
