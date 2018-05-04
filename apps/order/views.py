@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from django.conf import settings
 from rest_framework import status
 from rest_framework import viewsets
@@ -51,7 +52,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         # 下单30分钟后查看订单佣金支付状态
-        order_reward_pay_timeout_monitor.apply_async(args=[rec_dict['id']],
-                                                     countdown=settings.PAY_DEFAULT_EXPIRE_TIME)
+        order_reward_pay_timeout_monitor.apply_async(args=(rec_dict['id'],),
+                                                     eta=datetime.utcnow() + timedelta(seconds=settings.PAY_DEFAULT_EXPIRE_TIME))
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
