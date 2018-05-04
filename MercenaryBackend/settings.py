@@ -299,6 +299,8 @@ LOGGING = {
 # 手续费(百分制)
 SERVICE_COST = 15
 
+# 订单付款超时时间
+PAY_DEFAULT_EXPIRE_TIME = 30 * 60
 #####  支付相关  #####
 ALIPAY_APPID = '2017080508049336'
 ALIPAY_NOTIFY_URL = 'http://118.24.157.119:8000/alipay/return/'
