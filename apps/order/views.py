@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
@@ -22,18 +23,18 @@ class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
 
 
 class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = OrderInfo.objects.all()
+
     authentication_classes = CommonAuthentication()
 
     def get_permissions(self):
-        if self.action in ['create', ]:
+        if self.action in ['create', 'release', 'service']:
             return [permissions.IsAuthenticated()]
         return []
 
     def get_serializer_class(self):
         if self.action == 'create':
             return OrderInfoCreateSerializer
-        elif self.action == 'list':
+        elif self.action in ['list', 'release', 'service']:
             return OrderInfoListSerializer
         return OrderInfoListSerializer
 
@@ -56,3 +57,21 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
                                                      eta=datetime.utcnow() + timedelta(seconds=settings.PAY_DEFAULT_EXPIRE_TIME))
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def get_queryset(self):
+        if self.action == 'release':
+            queryset = OrderInfo.objects.filter(employer_user=self.request.user.id)
+        elif self.action == 'service':
+            queryset = OrderInfo.objects.filter(receiver_user=self.request.user.id)
+        else:
+            queryset = OrderInfo.objects.all()
+        return queryset
+
+    @action(methods=['get'], detail=False)
+    def release(self, request, *args, **kwargs):
+        # 我发布的订单
+        return self.list(request, *args, **kwargs)
+
+    @action(methods=['get'], detail=False)
+    def service(self, request, *args, **kwargs):
+        # 我服务的订单
+        return self.list(request, *args, **kwargs)
