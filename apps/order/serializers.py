@@ -16,7 +16,7 @@ class OrderInfoCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderInfo
-        read_only_fields = ('id', 'status', 'create_time', 'description', 'reward',)
+        read_only_fields = ('id', 'status', 'create_time', 'reward',)
         exclude = ('complete_time', 'employer_complete_time', 'receiver_confirm_time',
                    'receiver_complete_time', 'receiver_user')
 
