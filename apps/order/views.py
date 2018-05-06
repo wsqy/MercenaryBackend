@@ -44,9 +44,9 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
     ordering_fields = ('reward', )
 
     def get_permissions(self):
-        if self.action in ['create', 'release', 'service']:
-            return [permissions.IsAuthenticated()]
-        return []
+        if self.action in ['list', ]:
+            return []
+        return [permissions.IsAuthenticated()]
 
     def get_serializer_class(self):
         if self.action == 'create':
