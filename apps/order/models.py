@@ -150,6 +150,7 @@ class OrderInfo(models.Model):
     class Meta:
         verbose_name = '订单'
         verbose_name_plural = verbose_name
+        ordering = ('-create_time',)
 
     def __str__(self):
         return self.id
