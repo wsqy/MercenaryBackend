@@ -25,3 +25,10 @@ class OrderInfoListSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderInfo
         fields = '__all__'
+
+
+class OrderInfoReceiptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderInfo
+        fields = ('id', 'status', 'deposit', 'reward', 'pay_cost')
+        read_only_fields = ('status', 'deposit', 'reward', 'pay_cost')

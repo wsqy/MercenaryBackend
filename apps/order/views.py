@@ -12,7 +12,7 @@ from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import SubCategory, OrderInfo
-from .serializers import SubCategorySerializer, OrderInfoCreateSerializer, OrderInfoListSerializer
+from .serializers import SubCategorySerializer, OrderInfoCreateSerializer, OrderInfoListSerializer, OrderInfoReceiptSerializer
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
 from .cost import service_cost_calc
@@ -45,6 +45,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         我发布订单列表
     service:
         我服务订单列表
+    receipt:
+        接单
     """
     authentication_classes = CommonAuthentication()
     pagination_class = GoodsPagination
@@ -60,6 +62,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
     def get_serializer_class(self):
         if self.action == 'create':
             return OrderInfoCreateSerializer
+        elif self.action == 'receipt':
+            return OrderInfoReceiptSerializer
         elif self.action in ['list', 'release', 'service']:
             return OrderInfoListSerializer
         return OrderInfoListSerializer
@@ -103,3 +107,9 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
     def service(self, request, *args, **kwargs):
         # 我服务的订单
         return self.list(request, *args, **kwargs)
+
+    @action(methods=['patch'], detail=True)
+    def receipt(self, request, *args, **kwargs):
+        # 接单
+        instance = self.get_object()
+        return Response(instance)
