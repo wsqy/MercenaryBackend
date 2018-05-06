@@ -34,8 +34,17 @@ class GoodsPagination(PageNumberPagination):
 
 
 class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
-    """
-
+    """订单相关接口
+    list:
+        订单发现页列表
+    create:
+        下单
+    retrieve:
+        获取订单信息
+    release:
+        我发布订单列表
+    service:
+        我服务订单列表
     """
     authentication_classes = CommonAuthentication()
     pagination_class = GoodsPagination
