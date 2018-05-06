@@ -1,12 +1,16 @@
 from datetime import datetime, timedelta
 from django.conf import settings
+
 from rest_framework import status
+from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
+
 from .models import SubCategory, OrderInfo
 from .serializers import SubCategorySerializer, OrderInfoCreateSerializer, OrderInfoListSerializer
 from utils.common import generate_order_id
@@ -22,9 +26,22 @@ class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
     filter_fields = ('classification', )
 
 
-class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+class GoodsPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    page_query_param = 'page'
+    max_page_size = 10
 
+
+class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+    """
+
+    """
     authentication_classes = CommonAuthentication()
+    pagination_class = GoodsPagination
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_fields = ('status', 'deposit')
+    ordering_fields = ('reward', )
 
     def get_permissions(self):
         if self.action in ['create', 'release', 'service']:
@@ -62,6 +79,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             queryset = OrderInfo.objects.filter(employer_user=self.request.user.id)
         elif self.action == 'service':
             queryset = OrderInfo.objects.filter(receiver_user=self.request.user.id)
+        elif self.action == 'list':
+            queryset = OrderInfo.objects.filter(status=11)
         else:
             queryset = OrderInfo.objects.all()
         return queryset
