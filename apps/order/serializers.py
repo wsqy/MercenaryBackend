@@ -9,6 +9,12 @@ class SubCategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'template')
 
 
+class OrderInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderInfo
+        fields = '__all__'
+
+
 class OrderInfoCreateSerializer(serializers.ModelSerializer):
     employer_user = serializers.HiddenField(
         default=serializers.CurrentUserDefault()

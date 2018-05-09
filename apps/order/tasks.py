@@ -19,4 +19,6 @@ def order_deposit_pay_timeout_monitor(order_id):
     for order in order_list:
         if order.status in (12, 13):
             order.status = -22
+            instance.receiver_user = None
+            instance.receiver_confirm_time = None
             order.save()

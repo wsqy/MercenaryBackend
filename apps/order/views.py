@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from django.conf import settings
+from django.utils import timezone
+
 
 from rest_framework import status
 from rest_framework import filters
@@ -7,12 +9,12 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import SubCategory, OrderInfo
-from .serializers import SubCategorySerializer, OrderInfoCreateSerializer, OrderInfoListSerializer, OrderInfoReceiptSerializer
+from .serializers import SubCategorySerializer, OrderInfoSerializer, OrderInfoCreateSerializer, OrderInfoListSerializer, OrderInfoReceiptSerializer
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
 from .cost import service_cost_calc
@@ -68,6 +70,11 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             return OrderInfoListSerializer
         return OrderInfoListSerializer
 
+    @staticmethod
+    def get_order_info(instance):
+        serializer = OrderInfoSerializer(instance)
+        return serializer.data
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -111,5 +118,35 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
     @action(methods=['patch'], detail=True)
     def receipt(self, request, *args, **kwargs):
         # 接单
-        instance = self.get_object()
-        return Response(instance)
+        try:
+            instance = self.get_object()
+        except Exception as e:
+            return Response({'msg': '订单不存在'}, status=status.HTTP_400_BAD_REQUEST)
+        # 判断接单者是否是订单创建者
+        if request.user is instance.employer_user:
+            return Response({'msg': '不能接自己的订单'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 订单状态判断
+        if instance.status < 0:
+            return Response({'msg': '订单已被取消,换个订单看下吧'}, status=status.HTTP_400_BAD_REQUEST)
+        elif instance.status != 11:
+            return Response({'msg': '订单已被接走,换个订单看下吧'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 设置接单者
+        instance.receiver_user = request.user
+        instance.receiver_confirm_time = timezone.now()
+
+        # 根据是否要押金 设置订单状态
+        if instance.deposit:
+            # 需要押金
+            instance.status = 12
+            # 增加押金支付监控
+            order_deposit_pay_timeout_monitor.apply_async(args=(rec_dict['id'],),
+                                                          eta=datetime.utcnow() + timedelta(
+                                                             seconds=settings.PAY_DEPOSIT_EXPIRE_TIME))
+        else:
+            # 不需要押金
+            instance.status = 20
+        instance.save()
+        rec_dict = self.get_order_info(instance)
+        return Response(rec_dict)
