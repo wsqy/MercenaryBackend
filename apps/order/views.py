@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
 
-
 from rest_framework import status
 from rest_framework import filters
 from rest_framework import viewsets
@@ -19,6 +18,7 @@ from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
 from .cost import service_cost_calc
 from .tasks import order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor
+from .filters import OrderFilter
 
 
 class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
@@ -53,7 +53,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
     authentication_classes = CommonAuthentication()
     pagination_class = GoodsPagination
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
-    filter_fields = ('status', 'deposit')
+    filter_class = OrderFilter
+    # filter_fields = ('status', 'deposit')
     ordering_fields = ('reward', )
 
     def get_permissions(self):
