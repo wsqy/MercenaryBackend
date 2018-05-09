@@ -126,5 +126,8 @@ class AlipayView(APIView):
                 # 如果是佣金支付成功则设置订单状态为 待接单
                 existed_pay_order.order.status = 11
                 existed_pay_order.order.save()
-
+            elif existed_pay_order.order_type == 1:
+                # 如果是押金支付则设置订单状态为 进行中
+                existed_pay_order.order.status = 20
+                existed_pay_order.order.save()
         return Response("success")
