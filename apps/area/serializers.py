@@ -25,3 +25,13 @@ class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
         model = District
         fields = ('id', 'province', 'city', 'district')
+
+
+class DistrictInfoSerializer(serializers.ModelSerializer):
+    province = serializers.CharField(source='city.province.name')
+    city = serializers.CharField(source='city.name')
+    district = serializers.CharField(source='name')
+
+    class Meta:
+        model = District
+        fields = ('province', 'city', 'district')
