@@ -21,10 +21,25 @@ class OrderInfoSerializer(serializers.ModelSerializer):
     from_addr_district = DistrictInfoSerializer()
     to_addr_district = DistrictInfoSerializer()
     create_district = DistrictInfoSerializer()
+    reward = serializers.SerializerMethodField()
+    is_employer_user = serializers.SerializerMethodField()
+    is_receiver_user = serializers.SerializerMethodField()
+
+    def get_is_employer_user(self, obj):
+        return self.context.get('request').user == obj.employer_user
+
+    def get_is_receiver_user(self, obj):
+        return self.context.get('request').user == obj.receiver_user
+
+    def get_reward(self, obj):
+        if self.context.get('request').user == obj.employer_user:
+            return obj.pay_cost
+        else:
+            return obj.reward
 
     class Meta:
         model = OrderInfo
-        fields = '__all__'
+        exclude = ('pay_cost', )
 
 
 class OrderInfoCreateSerializer(serializers.ModelSerializer):
