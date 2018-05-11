@@ -6,13 +6,15 @@ from area.serializers import DistrictInfoSerializer
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
+    classification = serializers.CharField(source='get_classification_display')
+
     class Meta:
         model = SubCategory
-        fields = ('id', 'name', 'template')
+        fields = ('id', 'name', 'template', 'classification')
 
 
 class OrderInfoSerializer(serializers.ModelSerializer):
-    category = serializers.CharField(source='category.name')
+    category = SubCategorySerializer()
     status_name = serializers.CharField(source='get_status_display')
     employer_user = UserDetailSerializer()
     receiver_user = UserDetailSerializer()
@@ -38,13 +40,8 @@ class OrderInfoCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderInfoListSerializer(serializers.ModelSerializer):
-    category = serializers.CharField(source='category.name')
+    category = SubCategorySerializer()
     status_name = serializers.CharField(source='get_status_display')
-    employer_user = UserDetailSerializer()
-    receiver_user = UserDetailSerializer()
-    from_addr_district = DistrictInfoSerializer()
-    to_addr_district = DistrictInfoSerializer()
-    create_district = DistrictInfoSerializer()
 
     class Meta:
         model = OrderInfo
