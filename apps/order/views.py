@@ -69,7 +69,9 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             return OrderInfoReceiptSerializer
         elif self.action in ['list', 'release', 'service']:
             return OrderInfoListSerializer
-        return OrderInfoListSerializer
+        elif self.action in ['retrieve']:
+            return OrderInfoSerializer
+        return OrderInfoSerializer
 
     @staticmethod
     def get_order_info(instance):
