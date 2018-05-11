@@ -13,7 +13,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
 class OrderInfoSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='category.name')
-    status = serializers.CharField(source='get_status_display')
+    status_name = serializers.CharField(source='get_status_display')
     employer_user = UserDetailSerializer()
     receiver_user = UserDetailSerializer()
     from_addr_district = DistrictInfoSerializer()
@@ -39,7 +39,7 @@ class OrderInfoCreateSerializer(serializers.ModelSerializer):
 
 class OrderInfoListSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source='category.name')
-    status = serializers.CharField(source='get_status_display')
+    status_name = serializers.CharField(source='get_status_display')
     employer_user = UserDetailSerializer()
     receiver_user = UserDetailSerializer()
     from_addr_district = DistrictInfoSerializer()

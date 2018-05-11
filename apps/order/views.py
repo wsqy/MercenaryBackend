@@ -100,7 +100,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             queryset = OrderInfo.objects.filter(employer_user=self.request.user.id)
         elif self.action == 'service':
             queryset = OrderInfo.objects.filter(receiver_user=self.request.user.id)
-        elif self.action == 'list':
+        elif self.action == 'find':
             queryset = OrderInfo.objects.filter(status=11)
         else:
             queryset = OrderInfo.objects.all()
@@ -114,6 +114,11 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
     @action(methods=['get'], detail=False)
     def service(self, request, *args, **kwargs):
         # 我服务的订单
+        return self.list(request, *args, **kwargs)
+
+    @action(methods=['get'], detail=False)
+    def find(self, request, *args, **kwargs):
+        # 发现页订单列表
         return self.list(request, *args, **kwargs)
 
     @action(methods=['patch'], detail=True)
