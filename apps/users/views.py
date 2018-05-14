@@ -175,12 +175,7 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         instance.last_login = timezone.now()
         instance.save()
         serializer = UserDetailSerializer(instance)
-        re_dict = serializer.data
-        if re_dict.get('portrait'):
-            re_dict['portrait'] = 'https://{}.{}/{}'.format(settings.BUCKET_NAME,
-                                                            settings.END_POINT,
-                                                            re_dict['portrait'])
-        return re_dict
+        return serializer.data
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

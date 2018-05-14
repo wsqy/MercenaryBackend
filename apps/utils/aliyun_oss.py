@@ -13,4 +13,4 @@ class Oss:
 
     def user_upload_portrait(self, file_obj, oss_filename):
         self.__bucket.put_object(oss_filename, file_obj)
-        return oss_filename
+        return 'https://{}.{}/{}'.format(settings.BUCKET_NAME, settings.END_POINT, oss_filename)
