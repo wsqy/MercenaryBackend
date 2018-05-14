@@ -1,4 +1,5 @@
 import json
+import requests
 from datetime import datetime
 from urllib.parse import quote_plus
 from urllib.parse import urlparse, parse_qs
@@ -123,6 +124,29 @@ class AliPay:
         app支付
         """
         return self.common_pay('alipay.trade.app.pay', **kwargs)
+
+    def refund(self, out_trade_no, refund_amount, **kwargs):
+        """
+        统一退款接口
+            out_trade_no: 订单支付号
+            refund_amount: 退款金额(元)
+            refund_reason: 退款原因(可选值 默认:正常退款)
+        """
+        biz_content = {
+            'out_trade_no': out_trade_no,
+            'refund_amount': refund_amount,
+        }
+        biz_content.update(kwargs)
+        data = self.build_body('alipay.trade.refund', biz_content, self.return_url)
+        return self.sign_data(data)
+
+    def refund_request(self, **kwargs):
+        """
+        退款请求方法
+        """
+        sign_data = self.refund(**kwargs)
+        r_dict = requests.get('{}?{}'.format(self.__gateway, sign_data))
+        return r_dict.json()
 
 
 def test():
