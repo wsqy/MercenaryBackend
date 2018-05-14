@@ -103,7 +103,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         elif self.action == 'service':
             queryset = OrderInfo.objects.filter(receiver_user=self.request.user.id)
         elif self.action == 'find':
-            queryset = OrderInfo.objects.filter(status=11)
+            queryset = OrderInfo.objects.filter(status=11, to_time__gt=timezone.now())
         else:
             queryset = OrderInfo.objects.all()
         return queryset
