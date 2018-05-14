@@ -156,5 +156,4 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             # 不需要押金
             instance.status = 20
         instance.save()
-        rec_dict = self.get_order_info(instance)
-        return Response(rec_dict)
+        return Response({'msg': '接单成功'})
