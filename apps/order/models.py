@@ -75,6 +75,7 @@ class OrderInfo(models.Model):
         # 支付超时取消
         (-21, '赏金支付超时取消'),
         (-22, '押金支付超时取消'),
+        (-23, '接单超时取消')
     )
     # 订单相关信息
     id = models.CharField(max_length=30, unique=True, verbose_name='订单号',
