@@ -149,7 +149,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             # 需要押金
             instance.status = 12
             # 增加押金支付监控
-            order_deposit_pay_timeout_monitor.apply_async(args=(rec_dict['id'],),
+            order_deposit_pay_timeout_monitor.apply_async(args=(instance.id,),
                                                           eta=datetime.utcnow() + timedelta(
                                                              seconds=settings.PAY_DEPOSIT_EXPIRE_TIME))
         else:
