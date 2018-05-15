@@ -17,7 +17,7 @@ from .serializers import SubCategorySerializer, OrderInfoSerializer, OrderInfoCr
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
 from .cost import service_cost_calc
-from .tasks import order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor
+from .tasks import order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor, order_reward_pay_refund_monitor
 from .filters import OrderFilter
 
 
@@ -94,7 +94,9 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         headers = self.get_success_headers(serializer.data)
         # 下单30分钟后查看订单佣金支付状态
         order_reward_pay_timeout_monitor.apply_async(args=(rec_dict['id'],),
-                                                     eta=datetime.utcnow() + timedelta(seconds=settings.PAY_DEFAULT_EXPIRE_TIME))
+                                                     countdown=settings.PAY_DEFAULT_EXPIRE_TIME)
+        # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
+        order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'],), eta=rec_dict['to_time'])
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_queryset(self):
