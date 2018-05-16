@@ -22,7 +22,7 @@ def order_deposit_pay_timeout_monitor(order_id):
     order_list = OrderInfo.objects.filter(id=order_id)
     for order in order_list:
         if order.status in (12, 13):
-            order.status = -22
+            order.status = 11
             order.receiver_user = None
             order.receiver_confirm_time = None
             order.save()
