@@ -90,11 +90,13 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             rec_dict['employer_receive_mobile'] = rec_dict['employer_user'].mobile
         rec_dict['reward'] = rec_dict['pay_cost'] - service_cost_calc.calc(rec_dict['pay_cost'])
 
+
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         # 下单30分钟后查看订单佣金支付状态
         order_reward_pay_timeout_monitor.apply_async(args=(rec_dict['id'],),
-                                                     countdown=settings.PAY_DEFAULT_EXPIRE_TIME)
+                                                     eta=datetime.utcnow() +
+                                                     timedelta(seconds=settings.PAY_DEFAULT_EXPIRE_TIME))
         # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
         order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'],), eta=rec_dict['to_time'])
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -159,3 +161,4 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             instance.status = 20
         instance.save()
         return Response({'msg': '接单成功'})
+

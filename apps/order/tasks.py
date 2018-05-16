@@ -1,4 +1,5 @@
-from celery import shared_task
+from datetime import datetime, timedelta
+from celery import shared_task, task
 
 from .models import OrderInfo
 from paycenter.models import PayOrder
@@ -27,7 +28,7 @@ def order_deposit_pay_timeout_monitor(order_id):
             order.save()
 
 
-@shared_task
+@task
 def order_reward_pay_refund_monitor(self, order_id):
     # 佣金/赏金退款接口
     try:
@@ -48,11 +49,14 @@ def order_reward_pay_refund_monitor(self, order_id):
                 refund_reason='订单未被接单, 全额退款'
             )
 
-            if r_dict.get('code') != '10000':
-                self.retry(exc=r_dict.get('code'), countdown=5, max_retries=5)
+            try:
+                if r_dict.get('code') != '10000':
+                    raise Exception('alipay order: {} reward refound error'.format(order_id))
+            except Exception as e:
+                raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
 
 
-@shared_task
+@task
 def order_deposit_pay_refund_monitor(self, order_id):
     # 押金退款接口
     try:
@@ -71,7 +75,9 @@ def order_deposit_pay_refund_monitor(self, order_id):
                 refund_amount=reward_pay_order.pay_cost / 100,
                 refund_reason='订单已完成, 退还押金'
             )
-            if r_dict.get('code') != '10000':
-                self.retry(exc=r_dict.get('code'), countdown=5, max_retries=5)
 
-
+            try:
+                if r_dict.get('code') != '10000':
+                    raise Exception('alipay order: {} deposit refound error'.format(order_id))
+            except Exception as e:
+                raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)

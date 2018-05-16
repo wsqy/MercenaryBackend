@@ -135,8 +135,7 @@ USE_I18N = True
 
 USE_L10N = True
 # 默认是Ture，时间是utc时间，由于我们要用本地时间，所用手动修改为false！！！！
-# USE_TZ = False
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
