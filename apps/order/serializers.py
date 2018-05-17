@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import SubCategory, OrderInfo
-from users.serializers import UserDetailSerializer, UserDetailSimpeSerializer
+from users.serializers import UserDetailSerializer, UserOrderListSerializer, UserOrderDetailSerializer
 from area.serializers import DistrictInfoSerializer
 
 
@@ -16,8 +16,8 @@ class SubCategorySerializer(serializers.ModelSerializer):
 class OrderInfoSerializer(serializers.ModelSerializer):
     category = SubCategorySerializer()
     status_name = serializers.CharField(source='get_status_display')
-    employer_user = UserDetailSerializer()
-    receiver_user = UserDetailSerializer()
+    employer_user = UserOrderDetailSerializer()
+    receiver_user = UserOrderDetailSerializer()
     from_addr_district = DistrictInfoSerializer()
     to_addr_district = DistrictInfoSerializer()
     create_district = DistrictInfoSerializer()
@@ -55,7 +55,7 @@ class OrderInfoCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderInfoListSerializer(serializers.ModelSerializer):
-    employer_user = UserDetailSimpeSerializer()
+    employer_user = UserOrderListSerializer()
     category = SubCategorySerializer()
     status_name = serializers.CharField(source='get_status_display')
 

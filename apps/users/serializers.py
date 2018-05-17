@@ -104,13 +104,22 @@ class UserDetailSerializer(serializers.ModelSerializer):
                   'portrait', 'first_name', 'date_joined', 'last_login')
 
 
-class UserDetailSimpeSerializer(serializers.ModelSerializer):
+class UserOrderListSerializer(serializers.ModelSerializer):
     """
-    用户详情简略序列化类
+    订单列表用户序列化类
     """
     class Meta:
         model = User
         fields = ('nickname', 'portrait',)
+
+
+class UserOrderDetailSerializer(serializers.ModelSerializer):
+    """
+    订单详情用户序列化类
+    """
+    class Meta:
+        model = User
+        fields = ('id', 'mobile', 'nickname', 'gender', 'portrait',)
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
