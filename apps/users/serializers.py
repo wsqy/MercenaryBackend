@@ -104,6 +104,15 @@ class UserDetailSerializer(serializers.ModelSerializer):
                   'portrait', 'first_name', 'date_joined', 'last_login')
 
 
+class UserDetailSimpeSerializer(serializers.ModelSerializer):
+    """
+    用户详情简略序列化类
+    """
+    class Meta:
+        model = User
+        fields = ('nickname', 'portrait',)
+
+
 class UserUpdateSerializer(serializers.ModelSerializer):
     """
     用户信息修改序列化类

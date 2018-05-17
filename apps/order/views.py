@@ -58,7 +58,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
     ordering_fields = ('reward', )
 
     def get_permissions(self):
-        if self.action in ['list', ]:
+        if self.action in ['find', ]:
             return []
         return [permissions.IsAuthenticated()]
 
@@ -67,7 +67,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             return OrderInfoCreateSerializer
         elif self.action == 'receipt':
             return OrderInfoReceiptSerializer
-        elif self.action in ['list', 'release', 'service']:
+        elif self.action in ['find', 'release', 'service']:
             return OrderInfoListSerializer
         elif self.action in ['retrieve']:
             return OrderInfoSerializer

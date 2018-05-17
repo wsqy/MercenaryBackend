@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import SubCategory, OrderInfo
-from users.serializers import UserDetailSerializer
+from users.serializers import UserDetailSerializer, UserDetailSimpeSerializer
 from area.serializers import DistrictInfoSerializer
 
 
@@ -55,6 +55,7 @@ class OrderInfoCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderInfoListSerializer(serializers.ModelSerializer):
+    employer_user = UserDetailSimpeSerializer()
     category = SubCategorySerializer()
     status_name = serializers.CharField(source='get_status_display')
 
