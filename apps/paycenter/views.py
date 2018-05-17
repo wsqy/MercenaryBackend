@@ -37,9 +37,10 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
 
         # 根据 订单号和order_type 判断user信息是否合法
         # 填充 pay_cost
+        pay_info = ''
         if pay_order_type == 1:
             # 这里是支付押金
-
+            pay_info = '押金支付'
             # 判断当前用户是否为接单者
             if rec_dict['order'].receiver_user.id != rec_dict['user'].id:
                 return Response({'user': '当前支付用户不是接单者'}, status=status.HTTP_400_BAD_REQUEST)
@@ -51,7 +52,7 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
                 rec_dict['order'].save()
         elif pay_order_type == 3:
             # 这里是支付佣金
-
+            pay_info = '佣金支付'
             # 判断当前用户是否为下单者
             if rec_dict['order'].employer_user.id != rec_dict['user'].id:
                 return Response({'user': '当前支付用户不是订单创建者'}, status=status.HTTP_400_BAD_REQUEST)
@@ -63,6 +64,7 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
                 rec_dict['order'].save()
         elif pay_order_type == 2:
             # 这里是加赏
+            pay_info = '加赏支付'
             pass
 
         # 填充 id
@@ -75,7 +77,7 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
         self.perform_create(serializer)
         # 生成支付信息
         pay_info = alipay.app_pay(
-            subject='雇佣兵-佣金支付',
+            subject='雇佣兵-{}-{}'.format(pay_info, rec_dict['order'].description),
             out_trade_no=rec_dict['id'],
             total_amount=rec_dict['pay_cost'] / 100,
         )
