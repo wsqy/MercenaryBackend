@@ -81,3 +81,12 @@ def order_deposit_pay_refund_monitor(self, order_id):
                     raise Exception('alipay order: {} deposit refound error'.format(order_id))
             except Exception as e:
                 raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
+
+
+@task
+def order_complete_monitor(order_id):
+    # 佣兵点击完成后
+    order_list = OrderInfo.objects.filter(id=order_id, status=21)
+    for order in order_list:
+        order.status = 50
+        order.save()

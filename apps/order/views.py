@@ -17,7 +17,7 @@ from .serializers import SubCategorySerializer, OrderInfoSerializer, OrderInfoCr
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
 from utils.cost import service_cost_calc
-from .tasks import order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor, order_reward_pay_refund_monitor
+from .tasks import order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor, order_reward_pay_refund_monitor, order_complete_monitor
 from .filters import OrderFilter
 
 
@@ -210,6 +210,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         elif request.user is instance.receiver_user:
             instance.status = 21
             instance.save()
-            # todo 监听两个小时之后设置订单已完成
-        # todo 监听订单状态为50后的 1.佣兵账户余额增加;2.押金退回
+            order_complete_monitor.apply_async(args=(instance.id,), eta=datetime.utcnow() +
+                                                     timedelta(seconds=settings.PAY_COMPLETE_EXPIRE_TIME))
+
         return Response({'msg': '确认成功'})
