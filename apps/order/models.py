@@ -51,8 +51,8 @@ class OrderInfo(models.Model):
     """
     ORDER_STATUS = (
         # 任务发布前
-        (1, '待付赏金'),
-        (2, '赏金支付中'),
+        (1, '待付佣金'),
+        (2, '佣金支付中'),
         # 任务开始前
         (11, '待接单'),
         (12, '待付押金'),
@@ -73,8 +73,8 @@ class OrderInfo(models.Model):
         (-14, '佣兵主动取消'),
         (-15, '客服操作取消'),
         # 支付超时取消
-        (-21, '赏金支付超时取消'),
-        (-22, '押金支付超时取消'),
+        (-21, '佣金支付超时取消'),
+        (-22, '押金支付超时取消(不使用)'),
         (-23, '接单超时取消')
     )
     # 订单相关信息
@@ -97,7 +97,7 @@ class OrderInfo(models.Model):
     # 金额相关信息
     deposit = models.PositiveSmallIntegerField(default=0, verbose_name='押金',
                                                help_text='押金(分)')
-    reward = models.PositiveSmallIntegerField(verbose_name='赏金', default=1,
+    reward = models.PositiveSmallIntegerField(verbose_name='佣金', default=1,
                                               help_text='佣兵应得赏金(分)')
     pay_cost = models.PositiveSmallIntegerField(verbose_name='实付金额', default=1,
                                                 help_text='雇主实付金额(分)')
