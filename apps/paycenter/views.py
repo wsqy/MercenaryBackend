@@ -12,7 +12,7 @@ from .serializers import PayOrderCreateSerializer
 from utils.common import generate_pay_order_id
 from utils.authentication import CommonAuthentication
 from utils.pay import alipay
-from order.cost import service_cost_calc
+from utils.cost import service_cost_calc
 
 
 class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):

@@ -16,7 +16,7 @@ from .models import SubCategory, OrderInfo
 from .serializers import SubCategorySerializer, OrderInfoSerializer, OrderInfoCreateSerializer, OrderInfoListSerializer, OrderInfoReceiptSerializer
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
-from .cost import service_cost_calc
+from utils.cost import service_cost_calc
 from .tasks import order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor, order_reward_pay_refund_monitor
 from .filters import OrderFilter
 
@@ -49,6 +49,12 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         我服务订单列表
     receipt:
         接单
+    find:
+        发现页列表
+    cancel:
+        取消订单
+    complete:
+        订单确认完成
     """
     authentication_classes = CommonAuthentication()
     pagination_class = GoodsPagination
@@ -186,3 +192,24 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             instance.save()
             order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
             return Response({'msg': '订单已被成功取消'})
+
+    @action(methods=['patch'], detail=True)
+    def complete(self, request, *args, **kwargs):
+        # 订单确认完成
+        try:
+            instance = self.get_object()
+        except Exception as e:
+            return Response({'msg': '订单不存在'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 雇主确认完成
+        if request.user is instance.employer_user:
+            # 本来应该是改为22 雇主确认  现在直接更改为 订单已完成 50
+            instance.status = 50
+            instance.save()
+        # 佣兵确认完成
+        elif request.user is instance.receiver_user:
+            instance.status = 21
+            instance.save()
+            # todo 监听两个小时之后设置订单已完成
+        # todo 监听订单状态为50后的 1.佣兵账户余额增加;2.押金退回
+        return Response({'msg': '确认成功'})
