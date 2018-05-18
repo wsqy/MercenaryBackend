@@ -12,6 +12,7 @@ from .serializers import PayOrderCreateSerializer
 from utils.common import generate_pay_order_id
 from utils.authentication import CommonAuthentication
 from utils.pay import alipay
+from order.cost import service_cost_calc
 
 
 class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
@@ -65,7 +66,12 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
         elif pay_order_type == 2:
             # 这里是加赏
             pay_info = '加赏支付'
-            pass
+
+            # 判断当前用户是否为下单者
+            if rec_dict['order'].employer_user.id != rec_dict['user'].id:
+                return Response({'user': '当前支付用户不是订单创建者'}, status=status.HTTP_400_BAD_REQUEST)
+            # 填充支付订单金额为佣金
+            rec_dict['pay_cost'] = int(rec_dict.pay_cost) * 100
 
         # 填充 id
         rec_dict['id'] = generate_pay_order_id(order_type='10')
@@ -132,4 +138,15 @@ class AlipayView(APIView):
                 # 如果是押金支付则设置订单状态为 进行中
                 existed_pay_order.order.status = 20
                 existed_pay_order.order.save()
+            elif existed_pay_order.order_type == 2:
+                # 加赏
+                # 接单前 有抽成
+                if existed_pay_order.order.status == 11:
+                    existed_pay_order.order.pay_cost += pay_total_amount
+                    existed_pay_order.order.reward += (pay_total_amount - service_cost_calc.calc(pay_total_amount))
+                # 接单后加赏 等同于打赏 不需要抽成
+                else:
+                    existed_pay_order.order.pay_cost += pay_total_amount
+                    existed_pay_order.order.reward += pay_total_amount
+
         return Response("success")
