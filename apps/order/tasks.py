@@ -29,7 +29,7 @@ def order_deposit_pay_timeout_monitor(order_id):
 
 
 @task
-def order_reward_pay_refund_monitor(self, order_id):
+def order_reward_pay_refund_monitor(self, order_id, status=-23):
     # 佣金/赏金退款接口
     try:
         order = OrderInfo.objects.get(id=order_id)
@@ -37,7 +37,7 @@ def order_reward_pay_refund_monitor(self, order_id):
         print('订单不存在')
     if order.status != 11:
         return
-    order.status = -23
+    order.status = status
     order.save()
     reward_pay_order_list = PayOrder.objects.filter(order=order, STATUS=3)
     reward_pay_order_list = reward_pay_order_list.filter(Q(ORDER_TYPE=3) | Q(ORDER_TYPE=2))

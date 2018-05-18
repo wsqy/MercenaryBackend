@@ -90,7 +90,6 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             rec_dict['employer_receive_mobile'] = rec_dict['employer_user'].mobile
         rec_dict['reward'] = rec_dict['pay_cost'] - service_cost_calc.calc(rec_dict['pay_cost'])
 
-
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         # 下单30分钟后查看订单佣金支付状态
@@ -98,7 +97,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
                                                      eta=datetime.utcnow() +
                                                      timedelta(seconds=settings.PAY_DEFAULT_EXPIRE_TIME))
         # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
-        order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'],), eta=rec_dict['to_time'])
+        order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23), eta=rec_dict['to_time'])
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_queryset(self):
@@ -162,3 +161,28 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         instance.save()
         return Response({'msg': '接单成功'})
 
+    @action(methods=['patch'], detail=True)
+    def cancel(self, request, *args, **kwargs):
+        # 取消订单
+        try:
+            instance = self.get_object()
+        except Exception as e:
+            return Response({'msg': '订单不存在'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 判断接单者是否是订单创建者
+        # todo 佣兵取消订单
+        if request.user is not instance.employer_user:
+            return Response({'msg': '只有佣兵才能取消订单'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 订单状态判断
+        if instance.status < 0:
+            return Response({'msg': '订单已被取消'}, status=status.HTTP_400_BAD_REQUEST)
+        elif instance.status > 11:
+            return Response({'msg': '订单正在进行中, 不能直接取消, 请联系客服'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        elif instance.status in [1, 2, 11]:
+            # 还未接单  可以取消
+            instance.status = -12
+            instance.save()
+            order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
+            return Response({'msg': '订单已被成功取消'})
