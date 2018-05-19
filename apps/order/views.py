@@ -140,7 +140,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         except Exception as e:
             return Response({'msg': '订单不存在'}, status=status.HTTP_400_BAD_REQUEST)
         # 判断接单者是否是订单创建者
-        if request.user is instance.employer_user:
+        if request.user.id == instance.employer_user.id:
             return Response({'msg': '不能接自己的订单'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 订单状态判断
@@ -177,7 +177,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
 
         # 判断接单者是否是订单创建者
         # todo 佣兵取消订单
-        if request.user is not instance.employer_user:
+        if request.user.id != instance.employer_user.id:
             return Response({'msg': '只有佣兵才能取消订单'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 订单状态判断
@@ -202,12 +202,12 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             return Response({'msg': '订单不存在'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 雇主确认完成
-        if request.user is instance.employer_user:
+        if request.user.id == instance.employer_user.id:
             # 本来应该是改为22 雇主确认  现在直接更改为 订单已完成 50
             instance.status = 50
             instance.save()
         # 佣兵确认完成
-        elif request.user is instance.receiver_user:
+        elif request.user.id == instance.receiver_user.id:
             instance.status = 21
             instance.save()
             order_complete_monitor.apply_async(args=(instance.id,), eta=datetime.utcnow() +
