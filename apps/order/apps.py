@@ -6,5 +6,5 @@ class OrderConfig(AppConfig):
     verbose_name = '订单管理'
 
     def ready(self):
-        import order.signals.order_complete
+        import order.signals
 
