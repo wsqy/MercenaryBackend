@@ -20,9 +20,9 @@ djangorestframework-jwt = "*"
 pillow = "*"
 crcmod = "*"
 xlsxwriter = "*"
-django-celery-results = "*"
 redis = "*"
 pycryptodome = "*"
+django-celery-results = "*"
 
 [dev-packages]
 "fabric3" = "*"

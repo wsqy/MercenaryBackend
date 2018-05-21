@@ -8,3 +8,8 @@
 1. 进入   extra_apps/dysms/ 目录
 2. 激活虚拟环境- pipenv shell
 3. 安装 python setup.py install
+
+# celery 部分bug
+1. 进入   extra_apps/celery-master/ 目录
+2. 激活虚拟环境- pipenv shell
+3. 安装 python setup.py install
