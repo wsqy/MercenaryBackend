@@ -108,9 +108,9 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
 
     def get_queryset(self):
         if self.action == 'release':
-            queryset = OrderInfo.objects.filter(employer_user=self.request.user.id)
+            queryset = OrderInfo.objects.filter(employer_user=self.request.user)
         elif self.action == 'service':
-            queryset = OrderInfo.objects.filter(receiver_user=self.request.user.id)
+            queryset = OrderInfo.objects.filter(receiver_user=self.request.user)
         elif self.action == 'find':
             queryset = OrderInfo.objects.filter(status=11, to_time__gt=timezone.now())
         else:
@@ -177,7 +177,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
 
         # 判断接单者是否是订单创建者
         # todo 佣兵取消订单
-        if request.user.id != instance.employer_user.id:
+        if request.user != instance.employer_user:
             return Response({'msg': '只有佣兵才能取消订单'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 订单状态判断
@@ -188,6 +188,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
                             status=status.HTTP_400_BAD_REQUEST)
         elif instance.status in [1, 2, 11]:
             # 还未接单  可以取消
+            instance.status = -12
+            instance.save()
             order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
             return Response({'msg': '订单已被成功取消'})
 
@@ -200,12 +202,12 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             return Response({'msg': '订单不存在'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 雇主确认完成
-        if request.user.id == instance.employer_user.id:
+        if request.user == instance.employer_user:
             # 本来应该是改为22 雇主确认  现在直接更改为 订单已完成 50
             instance.status = 50
             instance.save()
         # 佣兵确认完成
-        elif request.user.id == instance.receiver_user.id:
+        elif request.user == instance.receiver_user:
             instance.status = 21
             instance.save()
             order_complete_monitor.apply_async(args=(instance.id,), eta=datetime.utcnow() +

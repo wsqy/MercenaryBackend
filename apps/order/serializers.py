@@ -58,6 +58,13 @@ class OrderInfoListSerializer(serializers.ModelSerializer):
     employer_user = UserOrderListSerializer()
     category = SubCategorySerializer()
     status_name = serializers.CharField(source='get_status_display')
+    reward = serializers.SerializerMethodField()
+
+    def get_reward(self, obj):
+        if self.context.get('request').user == obj.employer_user:
+            return obj.pay_cost
+        else:
+            return obj.reward
 
     class Meta:
         model = OrderInfo
@@ -65,6 +72,14 @@ class OrderInfoListSerializer(serializers.ModelSerializer):
 
 
 class OrderInfoReceiptSerializer(serializers.ModelSerializer):
+    reward = serializers.SerializerMethodField()
+
+    def get_reward(self, obj):
+        if self.context.get('request').user == obj.employer_user:
+            return obj.pay_cost
+        else:
+            return obj.reward
+        
     class Meta:
         model = OrderInfo
         fields = ('id', 'status', 'deposit', 'reward', 'pay_cost')
