@@ -32,28 +32,30 @@ def order_deposit_pay_timeout_monitor(self, order_id):
 @task(bind=True)
 def order_reward_pay_refund_monitor(self, order_id, status=-23):
     # 佣金/赏金退款接口
-
     try:
         order = OrderInfo.objects.get(id=order_id)
     except Exception as e:
         return
-    order.status = status
-    order.save()
+
     reward_pay_order_list = PayOrder.objects.filter(order=order, status=3)
     reward_pay_order_list = reward_pay_order_list.filter(Q(order_type=3) | Q(order_type=2))
+    # print("支付订单总数:{}".format(reward_pay_order_list.count()))
     for reward_pay_order in reward_pay_order_list:
-        if reward_pay_order.PAY_METHOD == 1:
+        # print('待退款{}--支付方式{}'.format(reward_pay_order.id, reward_pay_order.pay_method))
+        if reward_pay_order.pay_method == 1:
             r_dict = alipay.refund_request(
                 out_trade_no=reward_pay_order.id,
                 refund_amount=reward_pay_order.pay_cost / 100,
-                refund_reason='订单未被接单, 全额退款'
+                refund_reason='订单超时未接, 全额退款'
             )
-
             try:
-                if r_dict.get('code') != '10000':
+                if r_dict.get('alipay_trade_refund_response', {}).get('code') != '10000':
                     raise Exception('alipay order: {} reward refound error'.format(order_id))
             except Exception as e:
+                print("退款异常")
                 raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
+    order.status = status
+    order.save()
 
 
 @task(bind=True)
@@ -69,7 +71,7 @@ def order_deposit_pay_refund_monitor(self, order_id):
 
     reward_pay_order_list = PayOrder.objects.filter(order=order, order_type=1, status=3)
     for reward_pay_order in reward_pay_order_list:
-        if reward_pay_order.PAY_METHOD == 1:
+        if reward_pay_order.pay_method == 1:
             r_dict = alipay.refund_request(
                 out_trade_no=reward_pay_order.id,
                 refund_amount=reward_pay_order.pay_cost / 100,

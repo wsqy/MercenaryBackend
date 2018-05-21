@@ -19,9 +19,10 @@ django-filter = "*"
 djangorestframework-jwt = "*"
 pillow = "*"
 crcmod = "*"
-celery = "==4.1.0"
 xlsxwriter = "*"
-pycrypto = "*"
+django-celery-results = "*"
+redis = "*"
+pycryptodome = "*"
 
 [dev-packages]
 "fabric3" = "*"
