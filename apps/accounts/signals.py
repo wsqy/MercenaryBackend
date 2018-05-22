@@ -8,5 +8,5 @@ from users.models import ProfileExtendInfo
 def balance_detail_insert(sender, instance=None, created=False, **kwargs):
     if created:
         profile_extend_instance = ProfileExtendInfo.objects.get(user=instance.user)
-        profile_extend_instance.balance += profile_extend_instance.balance
+        profile_extend_instance.balance += instance.balance
         profile_extend_instance.save()
