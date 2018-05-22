@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'area.apps.AreaConfig',
     'order.apps.OrderConfig',
     'paycenter.apps.PaycenterConfig',
+    'accounts.apps.AccountsConfig'
 ]
 
 MIDDLEWARE = [
@@ -301,7 +302,13 @@ LOGGING = {
             'handlers': ['default', 'error'],
             'level': 'DEBUG',
             'propagate': True,
-        }
+        },
+        'accounts.views': {
+            'handlers': ['default', 'error'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+
     }
 }
 
