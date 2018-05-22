@@ -71,7 +71,7 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
             if rec_dict['order'].employer_user != rec_dict['user']:
                 return Response({'user': '当前支付用户不是订单创建者'}, status=status.HTTP_400_BAD_REQUEST)
             # 填充支付订单金额为佣金
-            rec_dict['pay_cost'] = int(rec_dict.pay_cost) * 100
+            rec_dict['pay_cost'] = rec_dict.get('pay_cost', 0) * 100
 
         # 填充 id
         rec_dict['id'] = generate_pay_order_id(order_type='10')
@@ -144,9 +144,11 @@ class AlipayView(APIView):
                 if existed_pay_order.order.status == 11:
                     existed_pay_order.order.pay_cost += pay_total_amount
                     existed_pay_order.order.reward += (pay_total_amount - service_cost_calc.calc(pay_total_amount))
+                    existed_pay_order.order.save()
                 # 接单后加赏 等同于打赏 不需要抽成
                 else:
                     existed_pay_order.order.pay_cost += pay_total_amount
                     existed_pay_order.order.reward += pay_total_amount
+                    existed_pay_order.order.save()
 
         return Response("success")
