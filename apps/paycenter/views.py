@@ -1,3 +1,4 @@
+import logging
 from django.conf import settings
 from django.utils import timezone
 
@@ -13,6 +14,8 @@ from utils.common import generate_pay_order_id
 from utils.authentication import CommonAuthentication
 from utils.pay import alipay
 from utils.cost import service_cost_calc
+
+logger = logging.getLogger('paycenter.views')
 
 
 class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
@@ -103,11 +106,12 @@ class AlipayView(APIView):
         :param request:
         :return:
         """
+        logger.debug('支付宝回调参数{}'.format(request.POST))
         processed_dict = {}
         for key, value in request.POST.items():
             processed_dict[key] = value
 
-        sign = processed_dict.pop("sign", None)
+        sign = processed_dict.pop('sign', None)
 
         verify_re = alipay.verify(processed_dict, sign)
 
@@ -139,11 +143,11 @@ class AlipayView(APIView):
             elif existed_pay_order.order_type == 2:
                 # 加赏
                 # 接单前 有抽成
-                # print('原先支付金额-{};原先商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
+                logger.debug('原先支付金额-{};原先商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
                 if existed_pay_order.order.status == 11:
                     existed_pay_order.order.pay_cost += pay_total_amount
                     existed_pay_order.order.reward += (pay_total_amount - service_cost_calc.calc(pay_total_amount))
-                    # print('最新支付金额-{};最新商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
+                    logger.debug('最新支付金额-{};最新商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
                     existed_pay_order.order.save()
                 # 接单后加赏 等同于打赏 不需要抽成
                 else:

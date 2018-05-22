@@ -291,6 +291,16 @@ LOGGING = {
             'handlers': ['default', 'error'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'order.views': {
+            'handlers': ['default', 'error'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'paycenter.views': {
+            'handlers': ['default', 'error'],
+            'level': 'DEBUG',
+            'propagate': True,
         }
     }
 }
