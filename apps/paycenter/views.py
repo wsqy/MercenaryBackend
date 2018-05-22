@@ -122,14 +122,12 @@ class AlipayView(APIView):
         if trade_status != 'TRADE_SUCCESS':
             return Response({'msg': 'status unsuccess'}, status.HTTP_100_CONTINUE)
 
-        existed_pay_orders = PayOrder.objects.filter(id=pay_order_id)
+        existed_pay_orders = PayOrder.objects.filter(id=pay_order_id, status=2)
         for existed_pay_order in existed_pay_orders:
             # 金额不符合 跳过
             if existed_pay_order.pay_cost != pay_total_amount:
                 continue
-            existed_pay_order.status = 3
-            existed_pay_order.pay_time = timezone.now()
-            existed_pay_order.save()
+
             if existed_pay_order.order_type == 3:
                 # 如果是佣金支付成功则设置订单状态为 待接单
                 existed_pay_order.order.status = 11
@@ -141,9 +139,11 @@ class AlipayView(APIView):
             elif existed_pay_order.order_type == 2:
                 # 加赏
                 # 接单前 有抽成
+                # print('原先支付金额-{};原先商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
                 if existed_pay_order.order.status == 11:
                     existed_pay_order.order.pay_cost += pay_total_amount
                     existed_pay_order.order.reward += (pay_total_amount - service_cost_calc.calc(pay_total_amount))
+                    # print('最新支付金额-{};最新商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
                     existed_pay_order.order.save()
                 # 接单后加赏 等同于打赏 不需要抽成
                 else:
@@ -151,4 +151,8 @@ class AlipayView(APIView):
                     existed_pay_order.order.reward += pay_total_amount
                     existed_pay_order.order.save()
 
-        return Response("success")
+            existed_pay_order.status = 3
+            existed_pay_order.pay_time = timezone.now()
+            existed_pay_order.save()
+
+        return Response('success', status.HTTP_200_OK)
