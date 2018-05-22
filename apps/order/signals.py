@@ -13,6 +13,7 @@ def order_complete(sender, instance=None, created=False, **kwargs):
         BalanceDetail.objects.create(
             user=instance.receiver_user,
             origin_type='10',
+            order=instance.id,
             balance=instance.reward
         )
         #  2.押金退回

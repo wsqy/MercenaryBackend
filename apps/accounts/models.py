@@ -19,6 +19,9 @@ class BalanceDetail(models.Model):
     origin_type = models.CharField(verbose_name='变动类型', help_text='变动类型',
                                    max_length=5, choices=ORIGIN_TYPE_CHOICE)
 
+    order = models.CharField(verbose_name='来源订单', help_text='来源订单',
+                             max_length=30, blank=True, null=True)
+
     balance = models.IntegerField(default=0, verbose_name='金额', help_text='变动金额(分)')
 
     remark = models.CharField(verbose_name='备注信息', blank=True, null=True,

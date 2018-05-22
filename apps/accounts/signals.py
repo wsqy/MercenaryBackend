@@ -5,7 +5,7 @@ from users.models import ProfileExtendInfo
 
 
 @receiver(post_save, sender=BalanceDetail)
-def order_complete(sender, instance=None, created=False, **kwargs):
+def balance_detail_insert(sender, instance=None, created=False, **kwargs):
     if created:
         profile_extend_instance = ProfileExtendInfo.objects.get(user=instance.user)
         profile_extend_instance.balance += profile_extend_instance.balance
