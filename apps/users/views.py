@@ -22,7 +22,7 @@ from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handl
 from .serializers import DeviceRegisterSerializer, SmsSerializer
 from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer, UserPortraitSerializer
 from .serializers import PasswordResetSerializer, PasswordModifySerializer
-from .models import VerifyCode, DeviceInfo
+from .models import VerifyCode, DeviceInfo, ProfileExtendInfo
 from utils.dayu import DaYuSMS
 from .tasks import oss_upload_portrait
 from utils.authentication import CommonAuthentication
@@ -181,6 +181,7 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewse
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = self.perform_create(serializer)
+        ProfileExtendInfo.objects.create(user=user)
 
         payload = jwt_payload_handler(user)
         re_dict = self.get_user_info(user)
