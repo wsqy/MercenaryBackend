@@ -62,12 +62,21 @@ class ProfileExtendInfo(models.Model):
     user = models.ForeignKey(ProfileInfo, blank=True, null=True)
     device_join = models.ForeignKey(DeviceInfo, blank=True, null=True,
                                     verbose_name='用户注册时的设备')
-    origin_mobile = models.CharField(blank=True, max_length=15,
+    origin_mobile = models.CharField(blank=True, null=True, max_length=15,
                                      verbose_name='推荐人手机号')
-    rongcloud_token = models.CharField(blank=True, max_length=100,
+    rongcloud_token = models.CharField(blank=True, null=True, max_length=100,
                                        verbose_name='融云IM Token')
-    jpush_token = models.CharField(blank=True, max_length=100,
+    jpush_token = models.CharField(blank=True, null=True, max_length=100,
                                    verbose_name='极光推送Token')
+
+    balance = models.IntegerField(default=0, verbose_name='余额', help_text='可用余额(分)')
+
+    deposit_freeze = models.IntegerField(default=0, verbose_name='冻结金额', help_text='冻结金额(分)')
+
+    password = models.CharField(verbose_name='支付密码', help_text='支付密码(暂时不用)',
+                                max_length=128, blank=True, null=True, )
+
+    remark = models.TextField(verbose_name='备注信息', blank=True, null=True, help_text='备注信息')
 
     class Meta:
         verbose_name = '用户扩展信息'
