@@ -19,6 +19,7 @@ from utils.authentication import CommonAuthentication
 from utils.cost import service_cost_calc
 from .tasks import order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor, order_reward_pay_refund_monitor, order_complete_monitor
 from .filters import OrderFilter
+from utils.time import local2utc
 
 
 class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
@@ -103,7 +104,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
                                                      eta=datetime.utcnow() +
                                                      timedelta(seconds=settings.PAY_DEFAULT_EXPIRE_TIME))
         # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
-        order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23), eta=rec_dict['to_time'])
+        order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23), eta=local2utc(rec_dict['to_time']))
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_queryset(self):
