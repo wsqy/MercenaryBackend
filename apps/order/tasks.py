@@ -54,6 +54,10 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
             except Exception as e:
                 print("退款异常")
                 raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
+
+        reward_pay_order.status = 4
+        reward_pay_order.save()
+
     order.status = status
     order.save()
 
@@ -83,6 +87,9 @@ def order_deposit_pay_refund_monitor(self, order_id):
                     raise Exception('alipay order: {} deposit refound error'.format(order_id))
             except Exception as e:
                 raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
+
+        reward_pay_order.status = 4
+        reward_pay_order.save()
 
 
 @task(bind=True)
