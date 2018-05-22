@@ -32,5 +32,5 @@ class BalanceDetail(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return '{}-{}'.format(self.origin_type, self.balance)
+        return '{}-{}'.format(self.get_origin_type_display(), self.balance)
 
