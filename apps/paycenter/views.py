@@ -1,6 +1,7 @@
 import logging
 from django.conf import settings
 from django.utils import timezone
+from django.http import HttpResponse
 
 from rest_framework import status
 from rest_framework import viewsets
@@ -159,4 +160,5 @@ class AlipayView(APIView):
             existed_pay_order.pay_time = timezone.now()
             existed_pay_order.save()
 
-        return Response('success', status.HTTP_200_OK)
+        return HttpResponse('success')
+
