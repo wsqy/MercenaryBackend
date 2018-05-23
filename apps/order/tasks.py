@@ -33,7 +33,7 @@ def order_deposit_pay_timeout_monitor(self, order_id):
 def order_reward_pay_refund_monitor(self, order_id, status=-23):
     # 佣金/赏金退款接口
     try:
-        order = OrderInfo.objects.get(id=order_id)
+        order = OrderInfo.objects.get(id=order_id, status=11)
     except Exception as e:
         return
 
