@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -22,10 +23,13 @@ class BalanceDetail(models.Model):
     order = models.CharField(verbose_name='来源订单', help_text='来源订单',
                              max_length=30, blank=True, null=True)
 
-    balance = models.IntegerField(default=0, verbose_name='金额', help_text='变动金额(分)')
+    balance = models.IntegerField(default=0, verbose_name='金额',
+                                  help_text='变动金额(分)')
 
     remark = models.CharField(verbose_name='备注信息', blank=True, null=True,
                               help_text='备注信息', max_length=128)
+    add_time = models.DateTimeField(default=timezone.now, verbose_name='时间',
+                                    help_text='时间')
 
     class Meta:
         verbose_name = '账户余额变动表'
