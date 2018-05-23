@@ -206,10 +206,13 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         if request.user == instance.employer_user:
             # 本来应该是改为22 雇主确认  现在直接更改为 订单已完成 50
             instance.status = 50
+            instance.complete_time = timezone.now()
+            instance.employer_complete_time = timezone.now()
             instance.save()
         # 佣兵确认完成
         elif request.user == instance.receiver_user:
             instance.status = 21
+            instance.receiver_complete_time = timezone.now()
             instance.save()
             order_complete_monitor.apply_async(args=(instance.id,), eta=datetime.utcnow() +
                                                      timedelta(seconds=settings.PAY_COMPLETE_EXPIRE_TIME))
