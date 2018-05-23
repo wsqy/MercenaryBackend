@@ -34,6 +34,7 @@ class BalanceDetail(models.Model):
     class Meta:
         verbose_name = '账户余额变动表'
         verbose_name_plural = verbose_name
+        ordering = ('-add_time',)
 
     def __str__(self):
         return '{}-{}'.format(self.get_origin_type_display(), self.balance)
