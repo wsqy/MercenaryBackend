@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.utils import timezone
 from datetime import datetime, timedelta
 from celery import task
 
@@ -98,4 +99,5 @@ def order_complete_monitor(self, order_id):
     order_list = OrderInfo.objects.filter(id=order_id, status=21)
     for order in order_list:
         order.status = 50
+        order.complete_time = timezone.now()
         order.save()
