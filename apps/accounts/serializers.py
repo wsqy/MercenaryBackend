@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import BalanceDetail
+from .models import BalanceDetail, BankCard
 from users.models import ProfileExtendInfo
 
 
@@ -19,3 +19,8 @@ class BalanceListSerializer(serializers.ModelSerializer):
         model = BalanceDetail
         fields = ('origin_type', 'order', 'balance', 'remark', 'add_time')
 
+
+class BankCardListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankCard
+        fields = ('card_no', 'card_type', 'is_credit', 'bank', 'add_time')

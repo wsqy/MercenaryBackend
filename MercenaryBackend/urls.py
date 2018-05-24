@@ -26,7 +26,7 @@ from utils.views import get_celery_task_status
 from area.views import DistrictViewset
 from order.views import SubCategoryViewset, OrderViewSet
 from paycenter.views import PayOrderViewSet, AlipayView
-from accounts.views import BalanceViewset
+from accounts.views import BalanceViewset, BankCardViewset
 router = DefaultRouter()
 
 router.register(r'users', UserViewset, base_name='users')
@@ -37,6 +37,7 @@ router.register(r'category', SubCategoryViewset, base_name='category')
 router.register(r'order', OrderViewSet, base_name='order')
 router.register(r'paycenter', PayOrderViewSet, base_name='paycenter')
 router.register(r'balance', BalanceViewset, base_name='balance')
+router.register(r'bank_card', BankCardViewset, base_name='bank_card')
 
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),
