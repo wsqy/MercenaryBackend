@@ -9,7 +9,6 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
-from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import SubCategory, OrderInfo
@@ -20,6 +19,7 @@ from utils.cost import service_cost_calc
 from .tasks import order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor, order_reward_pay_refund_monitor, order_complete_monitor
 from .filters import OrderFilter
 from utils.time import local2utc
+from utils.pagination import CommonPagination
 
 
 class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
@@ -27,13 +27,6 @@ class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SubCategorySerializer
     filter_backends = (DjangoFilterBackend, )
     filter_fields = ('classification', )
-
-
-class GoodsPagination(PageNumberPagination):
-    page_size = 5
-    page_size_query_param = 'page_size'
-    page_query_param = 'page'
-    max_page_size = 10
 
 
 class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
@@ -58,7 +51,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
         订单确认完成
     """
     authentication_classes = CommonAuthentication()
-    pagination_class = GoodsPagination
+    pagination_class = CommonPagination
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_class = OrderFilter
     # filter_fields = ('status', 'deposit')

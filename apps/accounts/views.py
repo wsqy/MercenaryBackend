@@ -1,26 +1,19 @@
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 
 from .models import BalanceDetail
 from users.models import ProfileExtendInfo
 from .serializers import BalanceSerializer, BalanceListSerializer
 
+from utils.pagination import CommonPagination
 from utils.authentication import CommonAuthentication
-
-
-class BalancesPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    page_query_param = 'page'
-    max_page_size = 100
 
 
 class BalanceViewset(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = BalanceDetail.objects.all()
     authentication_classes = CommonAuthentication()
-    pagination_class = BalancesPagination
+    pagination_class = CommonPagination
 
     def get_permissions(self):
         return [permissions.IsAuthenticated()]
