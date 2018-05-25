@@ -33,6 +33,9 @@ class BankCardListSerializer(serializers.ModelSerializer):
 class BankCardCreateSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
+    def validate_phone(self, phone):
+        return self.context.get('request').user.mobile
+
     def validate(self, attrs):
         if attrs.get('card_type', 'DC') == 'DC':
             attrs['is_credit'] = True
@@ -42,4 +45,5 @@ class BankCardCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BankCard
-        fields = ('user', 'card_no', 'id_card', 'name', 'card_type', 'bank', 'is_credit')
+        fields = ('user', 'card_no', 'id_card', 'name', 'card_type', 'bank',
+                  'is_credit', 'phone')
