@@ -1,10 +1,17 @@
+from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin
+from rest_framework.response import Response
+from rest_framework.mixins import (
+    ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin
+)
 
 from .models import BalanceDetail, BankCard
 from users.models import ProfileExtendInfo
-from .serializers import BalanceSerializer, BalanceListSerializer, BankCardListSerializer
+from .serializers import (
+    BalanceSerializer, BalanceListSerializer,
+    BankCardListSerializer, BankCardCreateSerializer
+)
 
 from utils.pagination import CommonPagination
 from utils.authentication import CommonAuthentication
@@ -34,7 +41,7 @@ class BalanceViewset(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
         return queryset
 
 
-class BankCardViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
+class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
                       viewsets.GenericViewSet):
     """银行卡相关接口
     list:
@@ -52,13 +59,24 @@ class BankCardViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
 
     def get_serializer_class(self):
         if self.action == 'create':
-            return BalanceSerializer
+            return BankCardCreateSerializer
         elif self.action == 'list':
             return BankCardListSerializer
-        elif self.action == 'retrieve':
-            return BalanceListSerializer
 
     def get_queryset(self):
+        queryset = self.queryset
         if self.action == 'list':
-            queryset = self.queryset.filter(user=self.request.user, is_activate=True)
+            queryset = queryset.filter(user=self.request.user, is_activate=True)
         return queryset
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.user == self.request.user:
+            instance.is_activate = False
+            instance.save()
+            return Response({'msg': '删除成功'},
+                            status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({'msg': '只能删除本人账号下的银行卡'},
+                            status=status.HTTP_403_FORBIDDEN)
+
