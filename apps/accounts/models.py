@@ -48,7 +48,7 @@ class BankCard(models.Model):
 
     user = models.ForeignKey(User, verbose_name='用户', help_text='用户')
     card_no = models.CharField(verbose_name='银行卡号', help_text='银行卡号',
-                               max_length=64, unique=True)
+                               max_length=64)
     phone = models.CharField(max_length=11, blank=True, null=True,
                              verbose_name='手机号', help_text='手机号')
     name = models.CharField(max_length=10, blank=True, null=True,

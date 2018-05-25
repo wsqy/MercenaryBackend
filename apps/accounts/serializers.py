@@ -33,19 +33,13 @@ class BankCardListSerializer(serializers.ModelSerializer):
 class BankCardCreateSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
-    def validate_card_type(self, card_type):
-        if card_type not in settings.BANK_CARD_TYPE:
-            return 'unknown'
-        return card_type
-
-    def validate_bank(self, bank):
-        if bank not in settings.BANK_CARD:
-            return 'unknown'
-        return bank
-
     def validate(self, attrs):
-        return attrs
+        if attrs.get('card_type', 'DC') == 'DC':
+            attrs['is_credit'] = True
+            return attrs
+        else:
+            raise serializers.ValidationError('只能绑定储蓄卡,不能绑定信用卡')
 
     class Meta:
         model = BankCard
-        fields = ('user', 'card_no', 'id_card', 'name', 'card_type', 'bank')
+        fields = ('user', 'card_no', 'id_card', 'name', 'card_type', 'bank', 'is_credit')

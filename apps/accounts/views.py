@@ -15,6 +15,7 @@ from .serializers import (
 
 from utils.pagination import CommonPagination
 from utils.authentication import CommonAuthentication
+from utils.bank_card import realname_authentication
 
 
 class BalanceViewset(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
@@ -79,10 +80,28 @@ class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
             return Response({'msg': '只能删除本人账号下的银行卡'},
                             status=status.HTTP_403_FORBIDDEN)
 
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=False)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        serializer.is_valid(raise_exception=True)
+        rec_dict = serializer.validated_data
+        filter_res = BankCard.objects.filter(card_no=rec_dict.get('card_no', ''))
+        if filter_res.count() != 0:
+            for filter_one in filter_res:
+                filter_one.is_activate = True
+                filter_one.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        auth_res = realname_authentication(
+            acct_pan=rec_dict.get('card_no', ''),
+            acct_name=rec_dict.get('name', ''),
+            cert_id=rec_dict.get('id_card', ''),
+            phone_num=self.request.user.mobile,
+        )
+
+        if auth_res.get('resp', {}).get('code') == 0:
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return Response({'msg': '验证失败,请检查填写是否正确'},
+                            status=status.HTTP_403_FORBIDDEN)

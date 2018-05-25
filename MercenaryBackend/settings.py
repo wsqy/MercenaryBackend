@@ -511,6 +511,9 @@ BANK_CARD_TYPE = {
     'NSTFA': '非标准对公账户',
 }
 
+# 支付宝
+ALIPAY_MARKET_AUTH_APPCODE = '37364b8dd8634447ba623db5a4782ea5'
+
 try:
     from .local_settings import *
 except:
