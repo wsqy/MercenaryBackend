@@ -46,7 +46,7 @@ class BankCard(models.Model):
     银行卡信息表
     """
     CARD_TYPE = (
-        ('DC', '借记卡'),
+        ('DC', '储蓄卡'),
         ('CC', '信用卡'),
         ('SCC', '贷记卡'),
         ('DCC', '存贷合一卡'),

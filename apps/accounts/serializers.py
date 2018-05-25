@@ -21,6 +21,9 @@ class BalanceListSerializer(serializers.ModelSerializer):
 
 
 class BankCardListSerializer(serializers.ModelSerializer):
+    card_type = serializers.CharField(source='get_card_type_display')
+    bank = serializers.CharField(source='get_bank_display')
+    
     class Meta:
         model = BankCard
         fields = ('card_no', 'card_type', 'is_credit', 'bank', 'add_time')
