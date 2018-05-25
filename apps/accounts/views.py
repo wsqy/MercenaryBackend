@@ -74,8 +74,7 @@ class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
         if instance.user == self.request.user:
             instance.is_activate = False
             instance.save()
-            return Response({'msg': '删除成功'},
-                            status=status.HTTP_204_NO_CONTENT)
+            return Response({'msg': '删除成功'}, status=status.HTTP_201_CREATED)
         else:
             return Response({'msg': '只能删除本人账号下的银行卡'},
                             status=status.HTTP_403_FORBIDDEN)

@@ -26,4 +26,6 @@ class BankCardListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = BankCard
-        fields = ('card_no', 'card_type', 'is_credit', 'bank', 'add_time')
+        fields = ('id', 'card_no', 'card_type', 'is_credit', 'bank', 'add_time')
+
+
