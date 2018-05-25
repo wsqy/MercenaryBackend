@@ -45,16 +45,7 @@ class BankCard(models.Model):
     """
     银行卡信息表
     """
-    CARD_TYPE = (
-        ('DC', '储蓄卡'),
-        ('CC', '信用卡'),
-        ('SCC', '贷记卡'),
-        ('DCC', '存贷合一卡'),
-        ('PC', '预付卡'),
-        ('STPB', '标准存折'),
-        ('STFA', '标准对公账户'),
-        ('NSTFA', '非标准对公账户'),
-    )
+
     user = models.ForeignKey(User, verbose_name='用户', help_text='用户')
     card_no = models.CharField(verbose_name='银行卡号', help_text='银行卡号',
                                max_length=64, unique=True)
@@ -66,7 +57,7 @@ class BankCard(models.Model):
                                max_length=64, blank=True, null=True)
     card_type = models.CharField(verbose_name='银行卡类型', help_text='银行卡类型',
                                  max_length=8, blank=True, null=True,
-                                 choices=CARD_TYPE)
+                                 choices=tuple(settings.BANK_CARD_TYPE.items()))
     is_credit = models.BooleanField(verbose_name='是否是借记卡', default=True,
                                     help_text='是否是借记卡')
     bank = models.CharField(verbose_name='银行', help_text='银行',

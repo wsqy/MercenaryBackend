@@ -499,6 +499,17 @@ BANK_CARD = {
   'CBBQS': '城市商业银行资金清算中心',
   'HBRCU': '河北省农村信用社'
 }
+# 银行卡类型对照
+BANK_CARD_TYPE = {
+    'DC': '储蓄卡',
+    'CC': '信用卡',
+    'SCC': '贷记卡',
+    'DCC': '存贷合一卡',
+    'PC': '预付卡',
+    'STPB': '标准存折',
+    'STFA': '标准对公账户',
+    'NSTFA': '非标准对公账户',
+}
 
 try:
     from .local_settings import *

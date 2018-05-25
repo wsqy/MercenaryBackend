@@ -79,3 +79,10 @@ class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
             return Response({'msg': '只能删除本人账号下的银行卡'},
                             status=status.HTTP_403_FORBIDDEN)
 
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=False)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
