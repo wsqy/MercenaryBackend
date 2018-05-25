@@ -29,8 +29,8 @@ class BalanceDetail(models.Model):
 
     remark = models.CharField(verbose_name='备注信息', blank=True, null=True,
                               help_text='备注信息', max_length=128)
-    add_time = models.DateTimeField(default=timezone.now, verbose_name='时间',
-                                    help_text='时间')
+    add_time = models.DateTimeField(default=timezone.now, verbose_name='添加时间',
+                                    help_text='添加时间')
 
     class Meta:
         verbose_name = '账户余额变动表'
@@ -70,8 +70,8 @@ class BankCard(models.Model):
     is_credit = models.BooleanField(verbose_name='是否是借记卡', default=True,
                                     help_text='是否是借记卡')
     bank = models.CharField(verbose_name='银行', help_text='银行',
-                            max_length=2, blank=True, null=True,
-                            choices=tuple(settings.CODE_TYPE.items()))
+                            max_length=20, blank=True, null=True,
+                            choices=tuple(settings.BANK_CARD.items()))
     add_time = models.DateTimeField(default=timezone.now, verbose_name='添加时间',
                                     help_text='添加时间')
     is_activate = models.BooleanField(verbose_name='是否激活', default=True,
