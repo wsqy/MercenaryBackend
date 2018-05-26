@@ -48,12 +48,6 @@ class WithDrawCreateSerializer(serializers.ModelSerializer):
         else:
             if balance > user.balance:
                 raise serializers.ValidationError('提现金额超过本人余额')
-        if _type == '1':
-            try:
-                bank_card = BankCard.objects.get(id=_account_id)
-                attrs['account'] = bank_card.card_no
-            except Exception as e:
-                raise serializers.ValidationError('提现目标银行卡不存在, 请先绑定')
         return attrs
 
     class Meta:
