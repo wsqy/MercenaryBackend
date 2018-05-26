@@ -109,4 +109,4 @@ class WithDraw(models.Model):
         ordering = ('-add_time',)
 
     def __str__(self):
-        return self.user
+        return '{}申请提现{}分到{}'.format(self.user.nickname, self.balance, self.account)
