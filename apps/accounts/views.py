@@ -1,15 +1,16 @@
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.response import Response
 from rest_framework.mixins import (
     ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin
 )
+from rest_framework.response import Response
+from rest_framework.decorators import action
 
-from .models import BalanceDetail, BankCard
+from .models import BalanceDetail, BankCard, WithDraw
 from users.models import ProfileExtendInfo
 from .serializers import (
-    BalanceSerializer, BalanceListSerializer,
+    BalanceSerializer, BalanceListSerializer, WithDrawCreateSerializer,
     BankCardListSerializer, BankCardCreateSerializer
 )
 
@@ -18,7 +19,16 @@ from utils.authentication import CommonAuthentication
 from utils.bank_card import realname_authentication
 
 
-class BalanceViewset(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+class BalanceViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
+                     viewsets.GenericViewSet):
+    """余额相关相关接口
+    list:
+        余额变动接口
+    withDraw:
+        提现申请
+    retrieve:
+        余额查询
+    """
     queryset = BalanceDetail.objects.all()
     authentication_classes = CommonAuthentication()
     pagination_class = CommonPagination
@@ -31,6 +41,8 @@ class BalanceViewset(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
             return BalanceSerializer
         elif self.action == 'list':
             return BalanceListSerializer
+        elif self.action == 'withDraw':
+            return WithDrawCreateSerializer
 
     def get_object(self):
         return ProfileExtendInfo.objects.get(user=self.request.user)
@@ -41,15 +53,20 @@ class BalanceViewset(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet
 
         return queryset
 
+    @action(methods=['post'], detail=False)
+    def withDraw(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
 
 class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
                       viewsets.GenericViewSet):
     """银行卡相关接口
     list:
-        订单发现页列表
+        银行卡列表
     create:
-        下单
-    retrieve:
+        绑定银行卡
+    destroy:
+        解除银行卡的绑定
     """
     queryset = BankCard.objects.all()
     authentication_classes = CommonAuthentication()

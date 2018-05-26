@@ -75,3 +75,38 @@ class BankCard(models.Model):
 
     def __str__(self):
         return self.card_no
+
+
+class WithDraw(models.Model):
+    """
+    提现信息表
+    """
+    ORIGIN_TYPE = (
+        ('1', '银行卡'),
+    )
+    STATUS = (
+        ('1', '待处理'),
+        ('2', '提现完成'),
+        ('3', '提现异常'),
+    )
+
+    user = models.ForeignKey(User, verbose_name='用户', help_text='用户')
+    type = models.CharField(verbose_name='提现去向', help_text='提现去向',
+                            max_length=2, choices=ORIGIN_TYPE, default='1')
+    account = models.CharField(verbose_name='提现账号', help_text='提现账号',
+                               max_length=64, blank=True, null=True)
+    balance = models.IntegerField(default=0, verbose_name='金额', help_text='提现金额(分)')
+    status = models.CharField(verbose_name='状态', help_text='提现状态',
+                              max_length=1, choices=ORIGIN_TYPE, default='1')
+    remark = models.CharField(verbose_name='备注信息', blank=True, null=True,
+                              help_text='备注信息', max_length=128)
+    add_time = models.DateTimeField(default=timezone.now, verbose_name='申请时间',
+                                    help_text='申请时间')
+
+    class Meta:
+        verbose_name = '提现信息表'
+        verbose_name_plural = verbose_name
+        ordering = ('-add_time',)
+
+    def __str__(self):
+        return self.user

@@ -1,7 +1,6 @@
-from django.conf import settings
 from rest_framework import serializers
 
-from .models import BalanceDetail, BankCard
+from .models import BalanceDetail, BankCard, WithDraw
 from users.models import ProfileExtendInfo
 
 
@@ -19,6 +18,47 @@ class BalanceListSerializer(serializers.ModelSerializer):
     class Meta:
         model = BalanceDetail
         fields = ('origin_type', 'order', 'balance', 'remark', 'add_time')
+
+
+class BankCardSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BankCard
+        fields = ('id', 'user', 'card_no', 'card_type', 'is_credit', 'bank')
+
+
+class WithDrawCreateSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    balance = serializers.IntegerField(required=True, label='提现金额',
+                                       min_value=1, help_text='提现金额',
+                                       error_messages={
+                                           'min_value': '提现金额不能小于0',
+                                           'blank': '请输入提现金额',
+                                           'required': '请输入提现金额',
+                                       })
+
+    def validate(self, attrs):
+        _type = attrs.get('type', '1')
+        _account_id = attrs.get('account', '1')
+        balance = attrs.get('balance')
+        try:
+            user = ProfileExtendInfo.objects.get(user_id=attrs.get('user').id)
+        except Exception as e:
+            raise serializers.ValidationError('请求身份异常,请稍后重试')
+        else:
+            if balance > user.balance:
+                raise serializers.ValidationError('提现金额超过本人余额')
+        if _type == '1':
+            try:
+                bank_card = BankCard.objects.get(id=_account_id)
+                attrs['account'] = bank_card.card_no
+            except Exception as e:
+                raise serializers.ValidationError('提现目标银行卡不存在, 请先绑定')
+        return attrs
+
+    class Meta:
+        model = WithDraw
+        exclude = ('id', 'status', 'add_time')
 
 
 class BankCardListSerializer(serializers.ModelSerializer):
