@@ -58,7 +58,8 @@ class WithDrawCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WithDraw
-        exclude = ('id', 'status', 'add_time')
+        fields = '__all__'
+        read_only_fields = ('id', 'status', 'add_time')
 
 
 class BankCardListSerializer(serializers.ModelSerializer):
