@@ -97,7 +97,7 @@ class WithDraw(models.Model):
                                max_length=64, blank=True, null=True)
     balance = models.IntegerField(default=0, verbose_name='金额', help_text='提现金额(分)')
     status = models.CharField(verbose_name='状态', help_text='提现状态',
-                              max_length=1, choices=ORIGIN_TYPE, default='1')
+                              max_length=1, choices=STATUS, default='1')
     remark = models.CharField(verbose_name='备注信息', blank=True, null=True,
                               help_text='备注信息', max_length=128)
     add_time = models.DateTimeField(default=timezone.now, verbose_name='申请时间',
