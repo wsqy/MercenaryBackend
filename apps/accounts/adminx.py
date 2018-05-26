@@ -1,5 +1,5 @@
 import xadmin
-from .models import BalanceDetail, BankCard
+from .models import BalanceDetail, BankCard, WithDraw
 
 
 class BalanceDetailAdmin:
@@ -12,7 +12,15 @@ class BankCardAdmin:
     list_filter = ['card_no', 'user', 'name']
 
 
+class WithDrawAdmin:
+    list_display = ['user', 'type', 'account', 'balance', 'status', 'add_time']
+    list_filter = ['user', 'account']
+    list_editable = ['status']
+    ordering = ['add_time']
+
+
 xadmin.site.register(BalanceDetail, BalanceDetailAdmin)
 xadmin.site.register(BankCard, BankCardAdmin)
+xadmin.site.register(WithDraw, WithDrawAdmin)
 
 
