@@ -325,8 +325,8 @@ PAY_COMPLETE_EXPIRE_TIME = 2 * 60 * 60
 #####  支付相关  #####
 ALIPAY_APPID = '2017080508049336'
 ALIPAY_NOTIFY_URL = 'http://118.24.157.119:8000/alipay/return/'
-ALIPAY_PRIVATE_KEY_PATH = '/www/MercenaryBackend/apps/utils/keys/private_2048.txt'
-ALIPAY_ALI_PUBLIC_KEY_PATH = '/www/MercenaryBackend/apps/utils/keys/alipay_public_2048.txt'
+ALIPAY_PRIVATE_KEY_PATH = os.path.join(BASE_DIR, 'apps/utils/keys/private_2048.txt')
+ALIPAY_ALI_PUBLIC_KEY_PATH = os.path.join(BASE_DIR, 'apps/utils/keys/alipay_public_2048.txt')
 ALIPAY_RETURN_URL = 'http://118.24.157.119:8000/alipay/return/'
 ALIPAT_EXPIRE_TIME = 30 * 60
 #####  支付相关  #####
