@@ -12,19 +12,25 @@ from django.contrib.auth.backends import ModelBackend
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework_jwt.settings import api_settings
-from rest_framework_jwt.serializers import JSONWebTokenSerializer
-from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
+from rest_framework_jwt.serializers import (
+    JSONWebTokenSerializer, jwt_encode_handler, jwt_payload_handler
+)
 
-from .serializers import DeviceRegisterSerializer, SmsSerializer
-from .serializers import UserRegSerializer, UserDetailSerializer, UserUpdateSerializer, UserPortraitSerializer
-from .serializers import PasswordResetSerializer, PasswordModifySerializer
+
+from .serializers import (
+    DeviceRegisterSerializer, SmsSerializer, UserRegSerializer,
+    UserDetailSerializer, UserUpdateSerializer, UserPortraitSerializer,
+    PasswordResetSerializer, PasswordModifySerializer
+)
+
 from .models import VerifyCode, DeviceInfo, ProfileExtendInfo
-from utils.dayu import DaYuSMS
+
 from .tasks import oss_upload_portrait
+from utils.dayu import DaYuSMS
 from utils.authentication import CommonAuthentication
 
 
@@ -121,7 +127,8 @@ class SmsCodeViewset(CreateModelMixin, viewsets.GenericViewSet):
             return Response({'msg': '短信服务异常, 请稍后重试'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin,
+                  viewsets.GenericViewSet):
     """用户相关接口
     create:
         用户注册

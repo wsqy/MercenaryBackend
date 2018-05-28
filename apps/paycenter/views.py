@@ -8,7 +8,8 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
+
 from .models import PayOrder
 from .serializers import PayOrderCreateSerializer
 from utils.common import generate_pay_order_id
@@ -19,7 +20,8 @@ from utils.cost import service_cost_calc
 logger = logging.getLogger('paycenter.views')
 
 
-class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
+                      viewsets.GenericViewSet):
     queryset = PayOrder.objects.all()
     authentication_classes = CommonAuthentication()
 
@@ -48,7 +50,8 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
             pay_info = '押金支付'
             # 判断当前用户是否为接单者
             if rec_dict['order'].receiver_user != rec_dict['user']:
-                return Response({'user': '当前支付用户不是接单者'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'user': '当前支付用户不是接单者'},
+                                status=status.HTTP_400_BAD_REQUEST)
             # 填充支付订单金额为押金
             rec_dict['pay_cost'] = rec_dict['order'].deposit
             # 订单状态改变
@@ -60,7 +63,8 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
             pay_info = '佣金支付'
             # 判断当前用户是否为下单者
             if rec_dict['order'].employer_user != rec_dict['user']:
-                return Response({'user': '当前支付用户不是订单创建者'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'user': '当前支付用户不是订单创建者'},
+                                status=status.HTTP_400_BAD_REQUEST)
             # 填充支付订单金额为佣金
             rec_dict['pay_cost'] = rec_dict['order'].pay_cost
             # 订单状态改变
@@ -73,14 +77,16 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
 
             # 判断当前用户是否为下单者
             if rec_dict['order'].employer_user != rec_dict['user']:
-                return Response({'user': '当前支付用户不是订单创建者'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'user': '当前支付用户不是订单创建者'},
+                                status=status.HTTP_400_BAD_REQUEST)
             # 填充支付订单金额为佣金
             rec_dict['pay_cost'] = rec_dict.get('pay_cost', 0) * 100
 
         # 填充 id
         rec_dict['id'] = generate_pay_order_id(order_type='10')
         # 填充 expire_time
-        rec_dict['expire_time'] = timezone.now() + timezone.timedelta(seconds=settings.ALIPAT_EXPIRE_TIME)
+        rec_dict['expire_time'] = timezone.now() + timezone.timedelta(
+                                  seconds=settings.ALIPAT_EXPIRE_TIME)
 
         rec_dict['status'] = 2
 
@@ -94,7 +100,9 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, view
 
         headers = self.get_success_headers({'pay_info': pay_info})
         # rec_dict['pay_info'] = pay_info
-        return Response({'pay_info': pay_info}, status=status.HTTP_201_CREATED, headers=headers)
+        return Response({'pay_info': pay_info},
+                        status=status.HTTP_201_CREATED,
+                        headers=headers)
 
 
 class AlipayView(APIView):
@@ -161,4 +169,3 @@ class AlipayView(APIView):
             existed_pay_order.save()
 
         return HttpResponse('success')
-

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import SubCategory, OrderInfo
-from users.serializers import UserDetailSerializer, UserOrderListSerializer, UserOrderDetailSerializer
+from users.serializers import UserOrderListSerializer, UserOrderDetailSerializer
 from area.serializers import DistrictInfoSerializer
 
 

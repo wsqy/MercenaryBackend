@@ -7,7 +7,7 @@ from rest_framework.mixins import (
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from .models import BalanceDetail, BankCard, WithDraw
+from .models import BalanceDetail, BankCard
 from users.models import ProfileExtendInfo
 from .serializers import (
     BalanceSerializer, BalanceListSerializer, WithDrawCreateSerializer,
@@ -118,7 +118,8 @@ class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
         if auth_res.get('resp', {}).get('code') == 0:
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED,
+                            headers=headers)
         else:
-            return Response({'msg': '验证失败,请检查填写是否正确'},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response({'msg': '验证失败,请检查填写是否正确'}, status=status.HTTP_403_FORBIDDEN)

@@ -39,10 +39,13 @@ class DaYuSMS:
         self.REGION = 'cn-hangzhou'
         self.PRODUCT_NAME = 'Dysmsapi'
         self.DOMAIN = 'dysmsapi.aliyuncs.com'
-        self.acs_client = AcsClient(self.__ACCESS_KEY_ID, self.__ACCESS_KEY_SECRET, self.REGION)
+        self.acs_client = AcsClient(self.__ACCESS_KEY_ID,
+                                    self.__ACCESS_KEY_SECRET,
+                                    self.REGION)
         region_provider.add_endpoint(self.PRODUCT_NAME, self.REGION, self.DOMAIN)
 
-    def send_sms(self, business_id=None, phone_numbers=None, sign_name="雇佣兵", template_code=None, template_param=None):
+    def send_sms(self, business_id=None, phone_numbers=None,
+                 sign_name="雇佣兵", template_code=None, template_param=None):
         smsRequest = SendSmsRequest.SendSmsRequest()
         # 申请的短信模板编码,必填
         smsRequest.set_TemplateCode(template_code)

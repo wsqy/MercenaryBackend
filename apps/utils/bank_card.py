@@ -31,6 +31,8 @@ def realname_authentication(acct_pan='', acct_name='', cert_id='', phone_num='',
 
 
 def test():
-    res = realname_authentication(acct_name='祁缘', acct_pan='622908117844294518', phone_num='18450098280',
+    res = realname_authentication(acct_name='祁缘',
+                                  acct_pan='622908117844294518',
+                                  phone_num='18450098280',
                                   cert_id='321023199408186437')
     print(res)

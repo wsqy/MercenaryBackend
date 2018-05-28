@@ -49,12 +49,16 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
                 refund_amount=reward_pay_order.pay_cost / 100,
                 refund_reason='订单超时未接, 全额退款'
             )
+            alipay_response = r_dict.get('alipay_trade_refund_response', {})
             try:
-                if r_dict.get('alipay_trade_refund_response', {}).get('code') != '10000':
-                    raise Exception('alipay order: {} reward refound error---{}'.format(order_id, r_dict))
+                if alipay_response.get('code') != '10000':
+                    raise Exception(
+                        'alipay order: {} reward refound error---{}'.format(
+                         order_id, r_dict))
             except Exception as e:
                 print("退款异常")
-                raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
+                raise self.retry(exc=e, eta=datetime.utcnow()
+                                 + timedelta(seconds=60), max_retries=5)
 
         reward_pay_order.status = 4
         reward_pay_order.save()
@@ -82,12 +86,15 @@ def order_deposit_pay_refund_monitor(self, order_id):
                 refund_amount=reward_pay_order.pay_cost / 100,
                 refund_reason='订单已完成, 退还押金'
             )
-
+            alipay_response = r_dict.get('alipay_trade_refund_response', {})
             try:
-                if r_dict.get('alipay_trade_refund_response', {}).get('code') != '10000':
-                    raise Exception('alipay order: {} deposit refound error---{}'.format(order_id, r_dict))
+                if alipay_response.get('code') != '10000':
+                    raise Exception(
+                        'alipay order: {} deposit refound error---{}'.format(
+                         order_id, r_dict))
             except Exception as e:
-                raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
+                raise self.retry(exc=e, eta=datetime.utcnow()
+                                 + timedelta(seconds=60), max_retries=5)
 
         reward_pay_order.status = 4
         reward_pay_order.save()

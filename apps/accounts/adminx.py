@@ -22,5 +22,3 @@ class WithDrawAdmin:
 xadmin.site.register(BalanceDetail, BalanceDetailAdmin)
 xadmin.site.register(BankCard, BankCardAdmin)
 xadmin.site.register(WithDraw, WithDrawAdmin)
-
-

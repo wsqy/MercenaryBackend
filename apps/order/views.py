@@ -12,11 +12,17 @@ from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveMode
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import SubCategory, OrderInfo
-from .serializers import SubCategorySerializer, OrderInfoSerializer, OrderInfoCreateSerializer, OrderInfoListSerializer, OrderInfoReceiptSerializer
+from .serializers import (
+    SubCategorySerializer, OrderInfoSerializer, OrderInfoCreateSerializer,
+    OrderInfoListSerializer, OrderInfoReceiptSerializer
+)
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
 from utils.cost import service_cost_calc
-from .tasks import order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor, order_reward_pay_refund_monitor, order_complete_monitor
+from .tasks import (
+    order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor,
+    order_reward_pay_refund_monitor, order_complete_monitor
+)
 from .filters import OrderFilter
 from utils.time import local2utc
 from utils.pagination import CommonPagination
@@ -29,7 +35,8 @@ class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
     filter_fields = ('classification', )
 
 
-class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
+                   viewsets.GenericViewSet):
     """订单相关接口
     list:
         订单发现页列表
@@ -88,17 +95,21 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             rec_dict['employer_receive_name'] = rec_dict['employer_user'].nickname
         if not rec_dict.get('employer_receive_mobile'):
             rec_dict['employer_receive_mobile'] = rec_dict['employer_user'].mobile
-        rec_dict['reward'] = rec_dict['pay_cost'] - service_cost_calc.calc(rec_dict['pay_cost'])
+        rec_dict['reward'] = (rec_dict['pay_cost'] -
+                              service_cost_calc.calc(rec_dict['pay_cost']))
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         # 下单30分钟后查看订单佣金支付状态
         order_reward_pay_timeout_monitor.apply_async(args=(rec_dict['id'],),
-                                                     eta=datetime.utcnow() +
-                                                     timedelta(seconds=settings.PAY_DEFAULT_EXPIRE_TIME))
+                                                     eta=datetime.utcnow() + timedelta(
+                                                     seconds=settings.PAY_DEFAULT_EXPIRE_TIME))
         # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
-        order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23), eta=local2utc(rec_dict['to_time']))
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23),
+                                                    eta=local2utc(rec_dict['to_time']))
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED,
+                        headers=headers)
 
     def get_queryset(self):
         if self.action == 'release':
@@ -139,9 +150,11 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
 
         # 订单状态判断
         if instance.status < 0:
-            return Response({'msg': '订单已被取消,换个订单看下吧'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'msg': '订单已被取消,换个订单看下吧'},
+                            status=status.HTTP_400_BAD_REQUEST)
         elif instance.status != 11:
-            return Response({'msg': '订单已被接走,换个订单看下吧'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'msg': '订单已被接走,换个订单看下吧'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         # 设置接单者
         instance.receiver_user = request.user
@@ -154,7 +167,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             # 增加押金支付监控
             order_deposit_pay_timeout_monitor.apply_async(args=(instance.id,),
                                                           eta=datetime.utcnow() + timedelta(
-                                                             seconds=settings.PAY_DEPOSIT_EXPIRE_TIME))
+                                                          seconds=settings.PAY_DEPOSIT_EXPIRE_TIME))
         else:
             # 不需要押金
             instance.status = 20
@@ -207,7 +220,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewset
             instance.status = 21
             instance.receiver_complete_time = timezone.now()
             instance.save()
-            order_complete_monitor.apply_async(args=(instance.id,), eta=datetime.utcnow() +
-                                                     timedelta(seconds=settings.PAY_COMPLETE_EXPIRE_TIME))
+            order_complete_monitor.apply_async(args=(instance.id,),
+                                               eta=datetime.utcnow() + timedelta(
+                                               seconds=settings.PAY_COMPLETE_EXPIRE_TIME))
 
         return Response({'msg': '确认成功'})

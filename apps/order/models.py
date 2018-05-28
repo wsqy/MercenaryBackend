@@ -124,7 +124,8 @@ class OrderInfo(models.Model):
 
     # 订单 从哪
     from_addr_district = models.ForeignKey(District, verbose_name='订单开始的城市', null=True,
-                                           help_text='订单开始的城市', related_name='from_district')
+                                           help_text='订单开始的城市',
+                                           related_name='from_district')
     from_addr_name = models.CharField(max_length=32, null=True, help_text='订单开始的点信息',
                                       verbose_name='订单开始的点信息')
     from_addr_detail = models.CharField(max_length=64, null=True, help_text='订单开始的具体地址',
@@ -132,14 +133,16 @@ class OrderInfo(models.Model):
 
     # 订单去哪
     to_addr_district = models.ForeignKey(District, verbose_name='订单结束的城市', null=True,
-                                         help_text='订单结束的城市', related_name='to_district')
+                                         help_text='订单结束的城市',
+                                         related_name='to_district')
     to_addr_name = models.CharField(max_length=128, null=True, help_text='订单结束的点信息',
                                     verbose_name='订单结束的点信息')
     to_addr_detail = models.CharField(max_length=128, null=True, help_text='订单结束的具体地址',
                                       verbose_name='订单结束的具体地址')
     # 订单的所在地信息
     create_district = models.ForeignKey(District, verbose_name='订单创建的城市', null=True,
-                                        help_text='订单创建的城市',  related_name='create_district')
+                                        help_text='订单创建的城市',
+                                        related_name='create_district')
 
     # 订单开始时间
     from_time = models.DateTimeField(null=True, verbose_name='订单开始时间',
