@@ -16,4 +16,3 @@ def test_upload(filename):
 
 
 res = test_upload('test01.png')
-

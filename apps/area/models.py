@@ -79,4 +79,3 @@ class District(models.Model):
         for suffix in suffix_list:
             name = name.rstrip(suffix)
         return name
-

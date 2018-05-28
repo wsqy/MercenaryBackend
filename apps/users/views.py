@@ -261,10 +261,7 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin,
         response = Response(response_data)
 
         if api_settings.JWT_AUTH_COOKIE:
-            expiration = (datetime.utcnow() +
-                          api_settings.JWT_EXPIRATION_DELTA)
-            response.set_cookie(api_settings.JWT_AUTH_COOKIE,
-                                token,
-                                expires=expiration,
-                                httponly=True)
+            expiration = (timezone.now() + api_settings.JWT_EXPIRATION_DELTA)
+            response.set_cookie(api_settings.JWT_AUTH_COOKIE, token,
+                                expires=expiration, httponly=True)
         return response

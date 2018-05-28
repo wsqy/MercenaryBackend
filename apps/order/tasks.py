@@ -52,13 +52,10 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
             alipay_response = r_dict.get('alipay_trade_refund_response', {})
             try:
                 if alipay_response.get('code') != '10000':
-                    raise Exception(
-                        'alipay order: {} reward refound error---{}'.format(
-                         order_id, r_dict))
+                    raise Exception('alipay order: {} reward refound error---{}'.format(order_id, r_dict))
             except Exception as e:
                 print("退款异常")
-                raise self.retry(exc=e, eta=datetime.utcnow()
-                                 + timedelta(seconds=60), max_retries=5)
+                raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
 
         reward_pay_order.status = 4
         reward_pay_order.save()
@@ -90,11 +87,9 @@ def order_deposit_pay_refund_monitor(self, order_id):
             try:
                 if alipay_response.get('code') != '10000':
                     raise Exception(
-                        'alipay order: {} deposit refound error---{}'.format(
-                         order_id, r_dict))
+                        'alipay order: {} deposit refound error---{}'.format(order_id, r_dict))
             except Exception as e:
-                raise self.retry(exc=e, eta=datetime.utcnow()
-                                 + timedelta(seconds=60), max_retries=5)
+                raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
 
         reward_pay_order.status = 4
         reward_pay_order.save()

@@ -1,2 +1,11 @@
 [flake8]
+# 最大长度(不强求)
 max-line-length = 89
+# 复杂度
+max-complexity = 10
+# 解除长度限制
+ignore = E501
+exclude =
+    .git,
+    __pycache__,
+    migrations,

@@ -7,4 +7,3 @@ class OrderConfig(AppConfig):
 
     def ready(self):
         import order.signals
-

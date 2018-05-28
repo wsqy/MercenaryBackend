@@ -10,4 +10,3 @@ alipay = AliPay(
     alipay_public_key_path=settings.ALIPAY_ALI_PUBLIC_KEY_PATH,
     return_url=settings.ALIPAY_RETURN_URL,
 )
-

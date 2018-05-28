@@ -29,7 +29,7 @@ class DaYuSMS:
         'isv.PARAM_LENGTH_LIMIT': '参数超出长度限制',
         'isv.PARAM_NOT_SUPPORT_URL': '不支持URL',
         'isv.AMOUNT_NOT_ENOUGH': '黑名单管控',
-        'isv.BLACK_KEY_CONTROL_LIMIT': '账户余额不足',
+        'isv.isv.AMOUNT_NOT_ENOUGH': '账户余额不足',
         'UNKNOWN_ERROR': '未知错误',
     }
 
@@ -70,12 +70,3 @@ class DaYuSMS:
         smsResponse = self.acs_client.do_action_with_exception(smsRequest)
 
         return smsResponse
-
-
-if __name__ == '__main__':
-    params = {
-        'code': '2245',
-        'time': '3分钟'
-    }
-    phone = "184500982806"
-    print(send_sms((time.time() * 10000000), phone, "雇佣兵", "SMS_76310006", json.dumps(params)))

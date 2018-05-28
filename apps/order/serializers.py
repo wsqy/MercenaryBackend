@@ -79,7 +79,7 @@ class OrderInfoReceiptSerializer(serializers.ModelSerializer):
             return obj.pay_cost
         else:
             return obj.reward
-        
+
     class Meta:
         model = OrderInfo
         fields = ('id', 'status', 'deposit', 'reward', 'pay_cost')

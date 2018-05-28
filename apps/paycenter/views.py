@@ -85,8 +85,7 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         # 填充 id
         rec_dict['id'] = generate_pay_order_id(order_type='10')
         # 填充 expire_time
-        rec_dict['expire_time'] = timezone.now() + timezone.timedelta(
-                                  seconds=settings.ALIPAT_EXPIRE_TIME)
+        rec_dict['expire_time'] = timezone.now() + timezone.timedelta(seconds=settings.ALIPAT_EXPIRE_TIME)
 
         rec_dict['status'] = 2
 

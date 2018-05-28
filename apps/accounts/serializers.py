@@ -38,8 +38,6 @@ class WithDrawCreateSerializer(serializers.ModelSerializer):
                                        })
 
     def validate(self, attrs):
-        _type = attrs.get('type', '1')
-        _account_id = attrs.get('account', '1')
         balance = attrs.get('balance')
         try:
             user = ProfileExtendInfo.objects.get(user_id=attrs.get('user').id)
@@ -59,7 +57,7 @@ class WithDrawCreateSerializer(serializers.ModelSerializer):
 class BankCardListSerializer(serializers.ModelSerializer):
     card_type = serializers.CharField(source='get_card_type_display')
     bank = serializers.CharField(source='get_bank_display')
-    
+
     class Meta:
         model = BankCard
         fields = ('id', 'card_no', 'card_type', 'is_credit', 'bank', 'add_time')
