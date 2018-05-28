@@ -514,6 +514,18 @@ BANK_CARD_TYPE = {
 # 支付宝
 ALIPAY_MARKET_AUTH_APPCODE = '37364b8dd8634447ba623db5a4782ea5'
 
+
+# 发送邮件配置(腾讯企业邮)
+EMAIL_HOST = 'smtp.exmail.qq.com'
+EMAIL_HOST_USER = 'open@mercenary.com.cn'
+EMAIL_HOST_PASSWORD = '90Hju88y'
+# 腾讯云 465 端口发送邮件没有测试成功  如果在新得服务器上测试成功 可以使用465 端口
+EMAIL_PORT = 465
+EMAIL_USE_TLS = True
+# EMAIL_PORT = 25
+# EMAIL_USE_TLS = False
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 try:
     from .local_settings import *
 except:
