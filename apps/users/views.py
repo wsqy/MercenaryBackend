@@ -20,16 +20,14 @@ from rest_framework_jwt.serializers import (
     JSONWebTokenSerializer, jwt_encode_handler, jwt_payload_handler
 )
 
-
 from .serializers import (
-    DeviceRegisterSerializer, SmsSerializer, UserRegSerializer,
-    UserDetailSerializer, UserUpdateSerializer, UserPortraitSerializer,
+    DeviceRegisterSerializer, SmsSerializer,
+    UserRegSerializer, UserDetailSerializer, UserUpdateSerializer,
     PasswordResetSerializer, PasswordModifySerializer
 )
 
 from .models import VerifyCode, DeviceInfo, ProfileExtendInfo
 
-from .tasks import oss_upload_portrait
 from utils.dayu import DaYuSMS
 from utils.authentication import CommonAuthentication
 
@@ -144,8 +142,6 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin,
         重置密码
     modify_password:
         修改密码
-    portrait_upload:
-        头像上传
     """
     serializer_class = UserRegSerializer
     authentication_classes = CommonAuthentication()
@@ -234,27 +230,6 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin,
             instance.set_password(_password_new)
             instance.save()
         return Response(self.get_user_info(instance))
-
-    @action(methods=['patch'], detail=True)
-    def portrait_upload(self, request, *args, **kwargs):
-        """
-        头像上传---已不用  现在使用aliyun-oss-storge
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-
-        portrait = serializer.validated_data.get('portrait')
-        oss_filename = '{}/{}/{}{}.png'.format(timezone.now().strftime('%Y%m%d'),
-                                               instance.id,
-                                               int(time.time() * 100000000),
-                                               random.randrange(1000, 9999))
-        celery_res = oss_upload_portrait.delay(portrait.file, oss_filename)
-        return Response({'celery_task_id': celery_res.id}, status.HTTP_202_ACCEPTED)
 
     @action(methods=['post'], detail=False)
     def login(self, request, *args, **kwargs):
