@@ -237,6 +237,13 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin,
 
     @action(methods=['patch'], detail=True)
     def portrait_upload(self, request, *args, **kwargs):
+        """
+        头像上传---已不用  现在使用aliyun-oss-storge
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)

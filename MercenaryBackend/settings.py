@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     'django_celery_results',
+    'aliyun_oss2_storage',
     'users.apps.UsersConfig',
     'area.apps.AreaConfig',
     'order.apps.OrderConfig',
@@ -138,12 +139,6 @@ USE_L10N = True
 # 默认是Ture，时间是utc时间，由于我们要用本地时间，所用手动修改为false！！！！
 USE_TZ = False
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
 # 验证码过期时间
 VERIFY_CODE_EXPIRE_TIME = 5 * 60
 VERIFY_CODE_EXPIRE_TIME_DEFAULT = 5 * 60
@@ -183,11 +178,24 @@ CODE_TYPE = {
 }
 
 # 阿里云oss相关配置
-OSS_ACCESS_KEY_ID = 'LTAIgl1IpdAdgnJX'
-OSS_ACCESS_KEY_SECRET = 'm5ohdxa6L04acDrYmauLRKbs69CTOC'
+ACCESS_KEY_ID = 'LTAIgl1IpdAdgnJX'
+ACCESS_KEY_SECRET = 'm5ohdxa6L04acDrYmauLRKbs69CTOC'
 END_POINT = 'oss-cn-shenzhen.aliyuncs.com'
+ALIYUN_OSS_CNAME = ''
 BUCKET_NAME = 'mercenary-user-up'
 BUCKET_ACL_TYPE = 'public-read'
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.11/howto/static-files/
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# mediafile将自动上传
+DEFAULT_FILE_STORAGE = 'aliyun_oss2_storage.backends.AliyunMediaStorage'
 
 REDIS_HOST = '127.0.0.1'
 REDIS_PORT = '6379'
