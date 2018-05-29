@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     'area.apps.AreaConfig',
     'order.apps.OrderConfig',
     'paycenter.apps.PaycenterConfig',
-    'accounts.apps.AccountsConfig'
+    'accounts.apps.AccountsConfig',
+    'resources.apps.ResourcesConfig'
 ]
 
 MIDDLEWARE = [
