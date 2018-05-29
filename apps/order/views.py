@@ -95,8 +95,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             rec_dict['employer_receive_name'] = rec_dict['employer_user'].nickname
         if not rec_dict.get('employer_receive_mobile'):
             rec_dict['employer_receive_mobile'] = rec_dict['employer_user'].mobile
-        rec_dict['reward'] = (rec_dict['pay_cost'] -
-                              service_cost_calc.calc(rec_dict['pay_cost']))
+        rec_dict['reward'] = (rec_dict['pay_cost'] - service_cost_calc.calc(rec_dict['pay_cost']))
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -107,9 +106,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
         order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23),
                                                     eta=local2utc(rec_dict['to_time']))
-        return Response(serializer.data,
-                        status=status.HTTP_201_CREATED,
-                        headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_queryset(self):
         if self.action == 'release':

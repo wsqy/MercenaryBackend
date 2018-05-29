@@ -2,6 +2,8 @@ from django.db.models import Q
 from django.utils import timezone
 from datetime import datetime, timedelta
 from celery import task
+from django.core.mail import send_mail
+from django.conf import settings
 
 from .models import OrderInfo
 from paycenter.models import PayOrder
@@ -103,3 +105,11 @@ def order_complete_monitor(self, order_id):
         order.status = 50
         order.complete_time = timezone.now()
         order.save()
+
+
+@task(bind=True)
+def order_create_send_email_notice(self, message):
+    subject = '新订单提醒'
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to_email = ['qiyuan@mercenary.com.cn']
+    send_mail(subject, message, from_email, to_email, fail_silently=False)
