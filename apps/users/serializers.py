@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework.validators import UniqueValidator
 
 from .models import DeviceInfo, VerifyCode
-from utils.aliyun_oss import Oss
 
 User = get_user_model()
 
