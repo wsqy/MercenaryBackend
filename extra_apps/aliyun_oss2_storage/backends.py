@@ -1,9 +1,9 @@
 # coding=utf-8
 
 import os
-
-import datetime
+import time
 import six
+import datetime
 import posixpath
 
 try:
@@ -94,10 +94,24 @@ class AliyunBaseStorage(BucketOperationMixin, Storage):
                 "Can't find config for '%s' either in environment"
                 "variable or in setting.py" % name)
 
+    def _rename_name(self, name):
+        """
+        重命名文件 增加时间戳
+        :param name:
+        :return:
+        """
+        file_dir = os.path.dirname(name)
+        file_name = os.path.basename(name)
+        f_name, f_extension = os.path.splitext(file_name)
+        new_file_name = "{}_{}{}".format(f_name, int(time.time()), f_extension)
+        return os.path.join(file_dir, new_file_name)
+
     def _clean_name(self, name):
         """
         Cleans the name so that Windows style paths work
         """
+        name = self._rename_name(name)
+
         # Normalize Windows style paths
         clean_name = posixpath.normpath(name).replace('\\', '/')
 
