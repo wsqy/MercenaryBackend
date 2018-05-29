@@ -94,6 +94,18 @@ class AliyunBaseStorage(BucketOperationMixin, Storage):
                 "Can't find config for '%s' either in environment"
                 "variable or in setting.py" % name)
 
+    def _rename_name(self, name):
+        """
+        重命名文件 增加时间戳
+        :param name:
+        :return:
+        """
+        file_dir = os.path.dirname(name)
+        file_name = os.path.basename(name)
+        f_name, f_extension = os.path.splitext(file_name)
+        new_file_name = "{}_{}{}".format(f_name, int(time.time()), f_extension)
+        return os.path.join(file_dir, new_file_name)
+
     def _clean_name(self, name):
         """
         Cleans the name so that Windows style paths work
@@ -139,6 +151,7 @@ class AliyunBaseStorage(BucketOperationMixin, Storage):
 
     def _save(self, name, content):
         # 为保证django行为的一致性，保存文件时，应该返回相对于`media path`的相对路径。
+        name = self._rename_name(name)
         target_name = self._get_target_name(name)
 
         content.open()
