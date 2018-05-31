@@ -22,7 +22,3 @@ class ResourceMaterialViewset(ListModelMixin, RetrieveModelMixin, viewsets.Gener
     filter_backends = (DjangoFilterBackend, )
     filter_fields = ('category', )
     authentication_classes = CommonAuthentication()
-
-    def get_permissions(self):
-        return [permissions.IsAuthenticated()]
-
