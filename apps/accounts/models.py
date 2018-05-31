@@ -110,3 +110,10 @@ class WithDraw(models.Model):
 
     def __str__(self):
         return '{}申请提现{}分到{}'.format(self.user.nickname, self.balance, self.account)
+
+
+class WithDrawDeal(WithDraw):
+    class Meta:
+        verbose_name = '待处理提现'
+        verbose_name_plural = verbose_name
+        proxy = True
