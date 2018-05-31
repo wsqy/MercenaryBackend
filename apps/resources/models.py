@@ -53,7 +53,7 @@ class ResourceMaterial(models.Model):
     class Meta:
         verbose_name = '资源文件'
         verbose_name_plural = verbose_name
-        ordering = ('-modify_time',)
+        ordering = ('-weight', '-modify_time',)
 
     def __str__(self):
         return self.title
