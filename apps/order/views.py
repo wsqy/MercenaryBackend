@@ -57,7 +57,6 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
     complete:
         订单确认完成
     """
-    queryset = OrderInfo.objects.all()
     authentication_classes = CommonAuthentication()
     pagination_class = CommonPagination
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
@@ -110,13 +109,14 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_queryset(self):
-        queryset = self.queryset
         if self.action == 'release':
-            queryset = queryset.filter(employer_user=self.request.user)
+            queryset = OrderInfo.objects.filter(employer_user=self.request.user)
         elif self.action == 'service':
-            queryset = queryset.filter(receiver_user=self.request.user)
+            queryset = OrderInfo.objects.filter(receiver_user=self.request.user)
         elif self.action == 'find':
-            queryset = queryset.filter(status=11, to_time__gt=timezone.now())
+            queryset = OrderInfo.objects.filter(status=11, to_time__gt=timezone.now())
+        else:
+            queryset = OrderInfo.objects.all()
         return queryset
 
     @action(methods=['get'], detail=False)
