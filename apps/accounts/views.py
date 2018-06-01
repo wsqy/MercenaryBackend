@@ -43,13 +43,15 @@ class BalanceViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
             return BalanceListSerializer
         elif self.action == 'withDraw':
             return WithDrawCreateSerializer
+        return BalanceSerializer
 
     def get_object(self):
         return ProfileExtendInfo.objects.get(user=self.request.user)
 
     def get_queryset(self):
+        queryset = self.queryset
         if self.action == 'list':
-            queryset = self.queryset.filter(user=self.request.user)
+            queryset = queryset.filter(user=self.request.user)
 
         return queryset
 
