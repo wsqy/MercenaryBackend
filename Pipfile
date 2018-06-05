@@ -23,6 +23,7 @@ xlsxwriter = "*"
 redis = "*"
 pycryptodome = "*"
 django-celery-results = "*"
+raven = "*"
 
 [dev-packages]
 "fabric3" = "*"
