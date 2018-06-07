@@ -331,12 +331,19 @@ PAY_DEPOSIT_EXPIRE_TIME = 5 * 60
 # 佣兵点击完成到订单完成的时间间隔
 PAY_COMPLETE_EXPIRE_TIME = 2 * 60 * 60
 #####  支付相关  #####
+PAY_KEY_BASE_URL = os.path.join(BASE_DIR, 'apps/utils/keys')
 ALIPAY_APPID = '2017080508049336'
 ALIPAY_NOTIFY_URL = 'http://118.24.157.119:8000/alipay/return/'
-ALIPAY_PRIVATE_KEY_PATH = os.path.join(BASE_DIR, 'apps/utils/keys/private_2048.txt')
-ALIPAY_ALI_PUBLIC_KEY_PATH = os.path.join(BASE_DIR, 'apps/utils/keys/alipay_public_2048.txt')
+ALIPAY_PRIVATE_KEY_PATH = os.path.join(PAY_KEY_BASE_URL, 'private_2048.txt')
+ALIPAY_ALI_PUBLIC_KEY_PATH = os.path.join(PAY_KEY_BASE_URL, 'alipay_public_2048.txt')
 ALIPAY_RETURN_URL = 'http://118.24.157.119:8000/alipay/return/'
 ALIPAT_EXPIRE_TIME = 30 * 60
+
+WXPAY_APPID = 'wx11246b0732973381'
+WXPAY_MCH_ID = '1486240842'
+WXPAY_KEY = 'c00d3d0c01b5c2535aee7ecf0614c712'
+WXPAY_CERT_PEM_PATH = os.path.join(PAY_KEY_BASE_URL, 'apiclient_cert.pem')
+WXPAY_KEY_PEM_PATH = os.path.join(PAY_KEY_BASE_URL, 'apiclient_key.pem')
 #####  支付相关  #####
 
 # 银行英文简称全称对照
