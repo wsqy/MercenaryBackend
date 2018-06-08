@@ -2,15 +2,17 @@
 # wxpay sdk https://github.com/wxpay/WXPay-SDK-Python
 
 import sys
+import time
 import copy
 import hmac
 import string
 import random
 import pprint
 import hashlib
+import xml.etree.ElementTree as ElementTree
 from urllib.parse import quote_plus
 
-import xml.etree.ElementTree as ElementTree
+import requests
 
 text_type = str
 string_types = (str,)
@@ -92,6 +94,21 @@ class WXPayUtil(object):
         return result
 
     @staticmethod
+    def generate_signature(unsigned_string, key, sign_type=WXPayConstants.SIGN_TYPE_MD5):
+        """生成签名
+        :param data: dict
+        :param key: string. API key
+        :param sign_type: string
+        :return string
+        """
+        if sign_type == WXPayConstants.SIGN_TYPE_MD5:
+            return WXPayUtil.md5(unsigned_string)
+        elif sign_type == WXPayConstants.SIGN_TYPE_HMACSHA256:
+            return WXPayUtil.hmacsha256(unsigned_string, key)
+        else:
+            raise Exception('Invalid sign_type: {}'.format(sign_type))
+
+    @staticmethod
     def is_signature_valid(data, key, sign_type=WXPayConstants.SIGN_TYPE_MD5):
         """ 验证xml中的签名
         :param data: dict
@@ -134,7 +151,7 @@ class WXPayUtil(object):
         @:return: string
         """
         hash_md5 = hashlib.md5()
-        hash_md5.update(source)
+        hash_md5.update(source.encode('utf-8'))
         return hash_md5.hexdigest()
 
     @staticmethod
@@ -144,8 +161,7 @@ class WXPayUtil(object):
         @:param key: string
         @:return: string
         """
-        return hmac.new(key.encode('utf-8'), source.encode('utf-8'),
-                        hashlib.sha256).hexdigest().upper()
+        return hmac.new(key.encode('utf-8'), source.encode('utf-8'), hashlib.sha256).hexdigest().upper()
 
 
 class SignInvalidException(Exception):
@@ -180,31 +196,18 @@ class WXPay(object):
 
         return sorted([(k, v) for k, v in data.items()])
 
-    def sign(self, unsigned_string, key, sign_type):
-        """生成签名
-        :param data: dict
-        :param key: string. API key
-        :param sign_type: string
-        :return string
-        """
-        if sign_type == WXPayConstants.SIGN_TYPE_MD5:
-            return WXPayUtil.md5(unsigned_string)
-        elif sign_type == WXPayConstants.SIGN_TYPE_HMACSHA256:
-            return WXPayUtil.hmacsha256(unsigned_string, key)
-        else:
-            raise Exception('Invalid sign_type: {}'.format(sign_type))
-
     def sign_data(self, data):
         new_data = copy.deepcopy(data)
         new_data.pop('sign', None)
         # 排序后的字符串
         unsigned_items = self.ordered_data(new_data)
-        unsigned_string = '&'.join('{0}={1}'.format(k, v) for k, v in unsigned_items)
+        unsigned_string = '&'.join('{0}={1}'.format(k, v) for k, v in unsigned_items if k and v)
         string_sign_temp = unsigned_string + '&key=' + self.key
         pprint.pprint("string_sign_temp")
         pprint.pprint(string_sign_temp)
         pprint.pprint("string_sign_temp")
-        return self.sign(string_sign_temp.encode('utf-8'), self.key, self.sign_type)
+
+        return WXPayUtil.generate_signature(string_sign_temp, self.key, self.sign_type)
 
     def is_response_signature_valid(self, data):
         """检查微信响应的xml数据中签名是否合法，先转换成dict
@@ -225,12 +228,30 @@ class WXPay(object):
             raise Exception('invalid sign_type: {} in pay result notify'.format(sign_type))
         return WXPayUtil.is_signature_valid(data, self.key, sign_type)
 
+    def request_without_cert(self, url, data, timeout=None):
+        """ 不带证书的请求
+        :param url: string
+        :param data: dict
+        :param timeout: int. ms
+        :return:
+        """
+        req_body = WXPayUtil.dict2xml(data).encode('utf-8')
+        req_headers = {'Content-Type': 'application/xml'}
+        _timeout = self.timeout if timeout is None else timeout
+        resp = requests.post(url,
+                             data=req_body,
+                             headers=req_headers,
+                             timeout=_timeout / 1000.0)
+        resp.encoding = 'utf-8'
+        return as_text(resp.text)
+
     def process_response_xml(self, resp_xml):
         """ 处理微信支付返回的 xml 格式数据
         :param resp_xml:
         :return:
         """
         resp_dict = WXPayUtil.xml2dict(resp_xml)
+
         if 'return_code' in resp_dict:
             return_code = resp_dict.get('return_code')
         else:
@@ -239,29 +260,9 @@ class WXPay(object):
         if return_code == WXPayConstants.FAIL:
             return resp_dict
         elif return_code == WXPayConstants.SUCCESS:
-            if self.is_response_signature_valid(resp_dict):
-                return resp_dict
-            else:
-                raise SignInvalidException('invalid sign in response data: {}'.format(resp_xml))
+            return resp_dict
         else:
             raise Exception('return_code value {} is invalid in response data: {}'.format(return_code, resp_xml))
-
-    def wxpay_common(self, url, **kwargs):
-        biz_content = {
-            'appid': self.app_id,
-            'mch_id': self.mch_id,
-            'nonce_str': WXPayUtil.generate_nonce_str(),
-            'sign_type': self.sign_type
-        }
-        biz_content.update(kwargs)
-
-        sign = self.sign_data(biz_content)
-        biz_content['sign'] = sign.upper()
-        req_body = WXPayUtil.dict2xml(dict(biz_content))
-        pprint.pprint("req_body")
-        pprint.pprint(req_body)
-        pprint.pprint("req_body")
-        return req_body
 
     def unifiedorder(self, **kwargs):
         """ 统一下单
@@ -269,8 +270,45 @@ class WXPay(object):
         :param timeout: int
         :return: dict
         """
+        biz_content = {
+            'appid': self.app_id,
+            'mch_id': self.mch_id,
+            'nonce_str': WXPayUtil.generate_nonce_str(),
+            'notify_url': 'http://www.mercenary.com.cn',
+            'device_info': 'WEB'
+        }
+        biz_content.update(kwargs)
+
+        sign = self.sign_data(biz_content)
+        biz_content['sign'] = sign.upper()
+        pprint.pprint("biz_content")
+        pprint.pprint(biz_content)
+        pprint.pprint("biz_content")
+        return biz_content
+
+    def app_pay(self, **kwargs):
         url = WXPayConstants.UNIFIEDORDER_URL
-        return self.wxpay_common(url, **kwargs)
+        get_order_id_red = self.unifiedorder(**kwargs)
+        resp_xml = self.request_without_cert(url, get_order_id_red)
+        pprint.pprint("resp_xml")
+        pprint.pprint(resp_xml)
+        pprint.pprint("resp_xml")
+        get_order_id_res = self.process_response_xml(resp_xml)
+        biz_content = {
+            'appid': self.app_id,
+            'partnerid': self.mch_id,
+            'prepayid': get_order_id_res.get('prepay_id'),
+            'package': 'Sign=WXPay',
+            'noncestr': WXPayUtil.generate_nonce_str(),
+            'timestamp': int(time.time()),
+        }
+        sign = self.sign_data(biz_content)
+        biz_content['sign'] = sign.upper()
+        xml_data = WXPayUtil.dict2xml(biz_content)
+        pprint.pprint("xml_data")
+        pprint.pprint(xml_data)
+        pprint.pprint("xml_data")
+        return biz_content
 
     def refund(self, data):
         """ 申请退款
@@ -285,18 +323,14 @@ def test():
     wxpay = WXPay(
         app_id='wx11246b0732973381',
         mch_id='1486240842',
-        key='c00d3d0c01b5c2535aee7ecf0614c712',
+        key='m12MGa0wQvD8XdArznO9hecRxWiPpobK',
     )
 
-    wxpay_resp_dict = wxpay.unifiedorder(device_info='WEB',
-                                         body='测试商家-商品类目',
-                                         detail='11111',
-                                         out_trade_no='2016090910595900000012',
-                                         total_fee=1,
-                                         fee_type='CNY',
-                                         notify_url='http://www.example.com/wxpay/notify',
-                                         spbill_create_ip='123.12.12.123',
-                                         trade_type='APP')
+    wxpay_resp_dict = wxpay.app_pay(body='测试商家-商品类目',
+                                    out_trade_no=str(int(time.time())),
+                                    total_fee=1,
+                                    spbill_create_ip='123.12.12.123',
+                                    trade_type='APP')
     return wxpay_resp_dict
 
 

@@ -14,7 +14,7 @@ from .models import PayOrder
 from .serializers import PayOrderCreateSerializer
 from utils.common import generate_pay_order_id
 from utils.authentication import CommonAuthentication
-from utils.pay import alipay
+from utils.pay import alipay, wxpay
 from utils.cost import service_cost_calc
 
 logger = logging.getLogger('paycenter.views')
@@ -49,7 +49,7 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             # 这里是支付押金
             pay_info = '押金支付'
             # 判断当前用户是否为接单者
-            if rec_dict['order'].receiver_user != rec_dict['user']:
+            if rec_dict['order'].receiver_user.id != rec_dict['user'].id:
                 return Response({'user': '当前支付用户不是接单者'},
                                 status=status.HTTP_400_BAD_REQUEST)
             # 填充支付订单金额为押金
@@ -62,7 +62,7 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             # 这里是支付佣金
             pay_info = '佣金支付'
             # 判断当前用户是否为下单者
-            if rec_dict['order'].employer_user != rec_dict['user']:
+            if rec_dict['order'].employer_user.id != rec_dict['user'].id:
                 return Response({'user': '当前支付用户不是订单创建者'},
                                 status=status.HTTP_400_BAD_REQUEST)
             # 填充支付订单金额为佣金
@@ -76,7 +76,7 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             pay_info = '加赏支付'
 
             # 判断当前用户是否为下单者
-            if rec_dict['order'].employer_user != rec_dict['user']:
+            if rec_dict['order'].employer_user.id != rec_dict['user'].id:
                 return Response({'user': '当前支付用户不是订单创建者'},
                                 status=status.HTTP_400_BAD_REQUEST)
             # 填充支付订单金额为佣金
@@ -90,13 +90,27 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         rec_dict['status'] = 2
 
         self.perform_create(serializer)
-        # 生成支付信息
-        pay_info = alipay.app_pay(
-            subject='雇佣兵-{}-{}'.format(pay_info, rec_dict['order'].description),
-            out_trade_no=rec_dict['id'],
-            total_amount=rec_dict['pay_cost'] / 100,
-        )
 
+        if 'HTTP_X_FORWARDED_FOR' in request.META:
+            client_ip = request.META.get('HTTP_X_FORWARDED_FOR')
+        else:
+            client_ip = request.META.get('REMOTE_ADDR')
+
+            # 生成支付信息
+        if rec_dict['pay_method'] == 1:
+            pay_info = alipay.app_pay(
+                subject='雇佣兵-{}-{}'.format(pay_info, rec_dict['order'].description),
+                out_trade_no=rec_dict['id'],
+                total_amount=rec_dict['pay_cost'] / 100,
+            )
+        elif rec_dict['pay_method'] == 2:
+            pay_info = wxpay.app_pay(
+                body='雇佣兵-{}-{}'.format(pay_info, rec_dict['order'].description),
+                out_trade_no=rec_dict['id'],
+                total_fee=rec_dict['pay_cost'],
+                spbill_create_ip=client_ip,
+                trade_type='APP'
+            )
         headers = self.get_success_headers({'pay_info': pay_info})
         # rec_dict['pay_info'] = pay_info
         return Response({'pay_info': pay_info},

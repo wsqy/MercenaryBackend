@@ -341,7 +341,7 @@ ALIPAT_EXPIRE_TIME = 30 * 60
 
 WXPAY_APPID = 'wx11246b0732973381'
 WXPAY_MCH_ID = '1486240842'
-WXPAY_KEY = 'c00d3d0c01b5c2535aee7ecf0614c712'
+WXPAY_KEY = 'm12MGa0wQvD8XdArznO9hecRxWiPpobK'
 WXPAY_CERT_PEM_PATH = os.path.join(PAY_KEY_BASE_URL, 'apiclient_cert.pem')
 WXPAY_KEY_PEM_PATH = os.path.join(PAY_KEY_BASE_URL, 'apiclient_key.pem')
 #####  支付相关  #####
