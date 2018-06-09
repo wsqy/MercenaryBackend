@@ -1,16 +1,13 @@
 # coding: utf-8
 # wxpay sdk https://github.com/wxpay/WXPay-SDK-Python
 
-import sys
 import time
 import copy
 import hmac
 import string
 import random
-import pprint
 import hashlib
 import xml.etree.ElementTree as ElementTree
-from urllib.parse import quote_plus
 
 import requests
 
@@ -203,9 +200,6 @@ class WXPay(object):
         unsigned_items = self.ordered_data(new_data)
         unsigned_string = '&'.join('{0}={1}'.format(k, v) for k, v in unsigned_items if k and v)
         string_sign_temp = unsigned_string + '&key=' + self.key
-        pprint.pprint("string_sign_temp")
-        pprint.pprint(string_sign_temp)
-        pprint.pprint("string_sign_temp")
 
         return WXPayUtil.generate_signature(string_sign_temp, self.key, self.sign_type)
 
@@ -281,19 +275,14 @@ class WXPay(object):
 
         sign = self.sign_data(biz_content)
         biz_content['sign'] = sign.upper()
-        pprint.pprint("biz_content")
-        pprint.pprint(biz_content)
-        pprint.pprint("biz_content")
-        return biz_content
+        url = WXPayConstants.UNIFIEDORDER_URL
+        resp_xml = self.request_without_cert(url, biz_content)
+        get_order_id_res = self.process_response_xml(resp_xml)
+        return get_order_id_res
 
     def app_pay(self, **kwargs):
-        url = WXPayConstants.UNIFIEDORDER_URL
-        get_order_id_red = self.unifiedorder(**kwargs)
-        resp_xml = self.request_without_cert(url, get_order_id_red)
-        pprint.pprint("resp_xml")
-        pprint.pprint(resp_xml)
-        pprint.pprint("resp_xml")
-        get_order_id_res = self.process_response_xml(resp_xml)
+        get_order_id_res = self.unifiedorder(**kwargs)
+
         biz_content = {
             'appid': self.app_id,
             'partnerid': self.mch_id,
@@ -304,10 +293,6 @@ class WXPay(object):
         }
         sign = self.sign_data(biz_content)
         biz_content['sign'] = sign.upper()
-        xml_data = WXPayUtil.dict2xml(biz_content)
-        pprint.pprint("xml_data")
-        pprint.pprint(xml_data)
-        pprint.pprint("xml_data")
         return biz_content
 
     def refund(self, data):
