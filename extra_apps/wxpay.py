@@ -11,12 +11,8 @@ import xml.etree.ElementTree as ElementTree
 
 import requests
 
-text_type = str
-string_types = (str,)
-xrange = range
 
-
-def as_text(v):  ## 生成unicode字符串
+def as_text(v):
     if v is None:
         return None
     elif isinstance(v, bytes):
@@ -27,11 +23,7 @@ def as_text(v):  ## 生成unicode字符串
         raise ValueError('Unknown type %r' % type(v))
 
 
-def is_text(v):
-    return isinstance(v, text_type)
-
-
-class WXPayConstants(object):
+class WXPayConstants:
     # SUCCESS, FAIL
     SUCCESS = 'SUCCESS'
     FAIL = 'FAIL'
@@ -58,7 +50,7 @@ class WXPayConstants(object):
     AUTHCODETOOPENID_URL = 'https://api.mch.weixin.qq.com/tools/authcodetoopenid'
 
 
-class WXPayUtil(object):
+class WXPayUtil:
 
     @staticmethod
     def dict2xml(data):
@@ -121,20 +113,6 @@ class WXPayUtil(object):
         return False
 
     @staticmethod
-    def generate_signed_xml(data, key, sign_type=WXPayConstants.SIGN_TYPE_MD5):
-        """ 生成带有签名的xml
-        :param data: dict
-        :param key: string. API key
-        :param sign_type: string
-        :return: xml
-        """
-        key = as_text(key)
-        new_data_dict = copy.deepcopy(data)
-        sign = WXPayUtil.generate_signature(data, key, sign_type)
-        new_data_dict[WXPayConstants.FIELD_SIGN] = sign
-        return WXPayUtil.dict2xml(new_data_dict)
-
-    @staticmethod
     def generate_nonce_str(len=32):
         """ 生成随机字符串
         :return string
@@ -169,7 +147,7 @@ class SignInvalidException(Exception):
         return repr(self.value)
 
 
-class WXPay(object):
+class WXPay:
 
     def __init__(self, app_id, mch_id, key):
         """ 初始化
