@@ -339,11 +339,12 @@ ALIPAY_ALI_PUBLIC_KEY_PATH = os.path.join(PAY_KEY_BASE_URL, 'alipay_public_2048.
 ALIPAY_RETURN_URL = 'http://118.24.157.119:8000/alipay/return/'
 ALIPAT_EXPIRE_TIME = 30 * 60
 
-WXPAY_APPID = 'wx11246b0732973381'
-WXPAY_MCH_ID = '1486240842'
-WXPAY_KEY = 'm12MGa0wQvD8XdArznO9hecRxWiPpobK'
-WXPAY_CERT_PEM_PATH = os.path.join(PAY_KEY_BASE_URL, 'apiclient_cert.pem')
-WXPAY_KEY_PEM_PATH = os.path.join(PAY_KEY_BASE_URL, 'apiclient_key.pem')
+WXPAY_APP_APPID = 'wx11246b0732973381'
+WXPAY_APP_MCH_ID = '1486240842'
+WXPAY_APP_KEY = 'm12MGa0wQvD8XdArznO9hecRxWiPpobK'
+WXPAY_APP_CERT_PEM_PATH = os.path.join(PAY_KEY_BASE_URL, 'apiclient_cert.pem')
+WXPAY_APP_KEY_PEM_PATH = os.path.join(PAY_KEY_BASE_URL, 'apiclient_key.pem')
+WXPAY_APP_NOTIFY_URL = 'http://118.24.157.119:8000/pay/return/wxpay/'
 #####  支付相关  #####
 
 # 银行英文简称全称对照

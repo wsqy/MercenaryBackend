@@ -16,3 +16,7 @@ class PayOrderCreateSerializer(serializers.ModelSerializer):
         model = PayOrder
         read_only_fields = ('id', 'status', 'create_time', 'expire_time',)
         exclude = ('pay_time',)
+
+
+class PayReturnSerializer(serializers.Serializer):
+    pass

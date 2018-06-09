@@ -98,21 +98,6 @@ class WXPayUtil:
             raise Exception('Invalid sign_type: {}'.format(sign_type))
 
     @staticmethod
-    def is_signature_valid(data, key, sign_type=WXPayConstants.SIGN_TYPE_MD5):
-        """ 验证xml中的签名
-        :param data: dict
-        :param key: string. API key
-        :param sign_type: string
-        :return: bool
-        """
-        if WXPayConstants.FIELD_SIGN not in data:
-            return False
-        sign = WXPayUtil.generate_signature(data, key, sign_type)
-        if sign == data[WXPayConstants.FIELD_SIGN]:
-            return True
-        return False
-
-    @staticmethod
     def generate_nonce_str(len=32):
         """ 生成随机字符串
         :return string
@@ -148,7 +133,6 @@ class SignInvalidException(Exception):
 
 
 class WXPay:
-
     def __init__(self, app_id, mch_id, key):
         """ 初始化
         :param timeout: 网络请求超时时间，单位毫秒
@@ -158,6 +142,11 @@ class WXPay:
         self.key = key
         self.timeout = 8000
         self.sign_type = WXPayConstants.SIGN_TYPE_MD5
+
+    def is_pay_success(self, notify_dict):
+        if notify_dict.get('return_code') == WXPayConstants.SUCCESS and notify_dict.get('result_code') == 'SUCCESS':
+            return True
+        return False
 
     def ordered_data(self, data):
         complex_keys = []
@@ -173,32 +162,25 @@ class WXPay:
 
     def sign_data(self, data):
         new_data = copy.deepcopy(data)
-        new_data.pop('sign', None)
+        new_data.pop(WXPayConstants.FIELD_SIGN, None)
         # 排序后的字符串
         unsigned_items = self.ordered_data(new_data)
         unsigned_string = '&'.join('{0}={1}'.format(k, v) for k, v in unsigned_items if k and v)
         string_sign_temp = unsigned_string + '&key=' + self.key
 
-        return WXPayUtil.generate_signature(string_sign_temp, self.key, self.sign_type)
+        return WXPayUtil.generate_signature(string_sign_temp, self.key, self.sign_type).upper()
 
-    def is_response_signature_valid(self, data):
-        """检查微信响应的xml数据中签名是否合法，先转换成dict
-        :param data: dict类型
-        :return: bool
-        """
-        return WXPayUtil.is_signature_valid(data, self.key, self.sign_type)
-
-    def is_pay_result_notify_signature_valid(self, data):
+    def is_signature_valid(self, data):
         """支付结果通知中的签名是否合法
         :param data: dict
         :return: bool
         """
-        sign_type = data.get(WXPayConstants.FIELD_SIGN, WXPayConstants.SIGN_TYPE_MD5)
-        if len(sign_type.trim()) == 0:
-            sign_type = WXPayConstants.SIGN_TYPE_MD5
-        if sign_type not in [WXPayConstants.SIGN_TYPE_MD5, WXPayConstants.SIGN_TYPE_HMACSHA256]:
-            raise Exception('invalid sign_type: {} in pay result notify'.format(sign_type))
-        return WXPayUtil.is_signature_valid(data, self.key, sign_type)
+        if WXPayConstants.FIELD_SIGN not in data:
+            return False
+        sign = self.sign_data(data)
+        if sign == data.get(WXPayConstants.FIELD_SIGN):
+            return True
+        return False
 
     def request_without_cert(self, url, data, timeout=None):
         """ 不带证书的请求
@@ -222,16 +204,14 @@ class WXPay:
         :param resp_xml:
         :return:
         """
-        resp_dict = WXPayUtil.xml2dict(resp_xml)
+        resp_dict = WXPayUtil.xml2dict(as_text(resp_xml))
 
         if 'return_code' in resp_dict:
             return_code = resp_dict.get('return_code')
         else:
             raise Exception('no return_code in response data: {}'.format(resp_xml))
 
-        if return_code == WXPayConstants.FAIL:
-            return resp_dict
-        elif return_code == WXPayConstants.SUCCESS:
+        if return_code in [WXPayConstants.FAIL, WXPayConstants.SUCCESS]:
             return resp_dict
         else:
             raise Exception('return_code value {} is invalid in response data: {}'.format(return_code, resp_xml))
@@ -246,13 +226,12 @@ class WXPay:
             'appid': self.app_id,
             'mch_id': self.mch_id,
             'nonce_str': WXPayUtil.generate_nonce_str(),
-            'notify_url': 'http://www.mercenary.com.cn',
             'device_info': 'WEB'
         }
         biz_content.update(kwargs)
 
-        sign = self.sign_data(biz_content)
-        biz_content['sign'] = sign.upper()
+        sign = self.sign_data(biz_content).upper()
+        biz_content[WXPayConstants.FIELD_SIGN] = sign
         url = WXPayConstants.UNIFIEDORDER_URL
         resp_xml = self.request_without_cert(url, biz_content)
         get_order_id_res = self.process_response_xml(resp_xml)
@@ -270,7 +249,7 @@ class WXPay:
             'timestamp': int(time.time()),
         }
         sign = self.sign_data(biz_content)
-        biz_content['sign'] = sign.upper()
+        biz_content[WXPayConstants.FIELD_SIGN] = sign
         return biz_content
 
     def refund(self, data):

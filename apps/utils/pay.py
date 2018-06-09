@@ -13,7 +13,7 @@ alipay = AliPay(
 )
 
 wxpay = WXPay(
-    app_id=settings.WXPAY_APPID,
-    mch_id=settings.WXPAY_MCH_ID,
-    key=settings.WXPAY_KEY,
+    app_id=settings.WXPAY_APP_APPID,
+    mch_id=settings.WXPAY_APP_MCH_ID,
+    key=settings.WXPAY_APP_KEY,
 )

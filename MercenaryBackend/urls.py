@@ -25,7 +25,7 @@ from users.views import DeviceRegisterViewset, SmsCodeViewset, UserViewset
 from utils.views import get_celery_task_status
 from area.views import DistrictViewset
 from order.views import SubCategoryViewset, OrderViewSet
-from paycenter.views import PayOrderViewSet, AlipayView
+from paycenter.views import PayOrderViewSet, AlipayView, PayReturnViewSet
 from accounts.views import BalanceViewset, BankCardViewset
 from resources.views import ResourceMaterialViewset
 router = DefaultRouter()
@@ -37,6 +37,7 @@ router.register(r'district', DistrictViewset, base_name='district')
 router.register(r'category', SubCategoryViewset, base_name='category')
 router.register(r'order', OrderViewSet, base_name='order')
 router.register(r'paycenter', PayOrderViewSet, base_name='paycenter')
+router.register(r'pay/return', PayReturnViewSet, base_name='pay_return')
 router.register(r'balance', BalanceViewset, base_name='balance')
 router.register(r'bank_card', BankCardViewset, base_name='bank_card')
 router.register(r'resource', ResourceMaterialViewset, base_name='resource')

@@ -1,4 +1,5 @@
 import logging
+import pprint
 from django.conf import settings
 from django.utils import timezone
 from django.http import HttpResponse
@@ -9,9 +10,10 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
+from rest_framework.decorators import action
 
 from .models import PayOrder
-from .serializers import PayOrderCreateSerializer
+from .serializers import PayOrderCreateSerializer, PayReturnSerializer
 from utils.common import generate_pay_order_id, get_request_ip
 from utils.authentication import CommonAuthentication
 from utils.pay import alipay, wxpay
@@ -111,7 +113,8 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
                 out_trade_no=rec_dict['id'],
                 total_fee=rec_dict['pay_cost'],
                 spbill_create_ip=get_request_ip(request),
-                trade_type='APP'
+                trade_type='APP',
+                notify_url=settings.WXPAY_APP_NOTIFY_URL
             )
         response_dict = {
             'pay_info': pay_info
@@ -184,3 +187,65 @@ class AlipayView(APIView):
             existed_pay_order.save()
 
         return HttpResponse('success')
+
+
+class PayReturnViewSet(viewsets.GenericViewSet):
+    serializer_class = PayReturnSerializer
+
+    def set_pay_status(self, request, pay_total_amount, pay_order_id):
+        existed_pay_orders = PayOrder.objects.filter(id=pay_order_id, status=2)
+        for existed_pay_order in existed_pay_orders:
+            # 金额不符合 跳过
+            if existed_pay_order.pay_cost != pay_total_amount:
+                continue
+
+            if existed_pay_order.order_type == 3:
+                # 如果是佣金支付成功则设置订单状态为 待接单
+                existed_pay_order.order.status = 11
+                existed_pay_order.order.save()
+            elif existed_pay_order.order_type == 1:
+                # 如果是押金支付则设置订单状态为 进行中
+                existed_pay_order.order.status = 20
+                existed_pay_order.order.save()
+            elif existed_pay_order.order_type == 2:
+                # 加赏
+                # 接单前 有抽成
+                logger.debug('原先支付金额-{};原先商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
+                if existed_pay_order.order.status == 11:
+                    existed_pay_order.order.pay_cost += pay_total_amount
+                    existed_pay_order.order.reward += (pay_total_amount - service_cost_calc.calc(pay_total_amount))
+                    logger.debug('最新支付金额-{};最新商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
+                    existed_pay_order.order.save()
+                # 接单后加赏 等同于打赏 不需要抽成
+                else:
+                    existed_pay_order.order.pay_cost += pay_total_amount
+                    existed_pay_order.order.reward += pay_total_amount
+                    existed_pay_order.order.save()
+
+            existed_pay_order.status = 3
+            existed_pay_order.pay_time = timezone.now()
+            existed_pay_order.save()
+
+    @action(methods=['post'], detail=False)
+    def alipay(self, request, *args, **kwargs):
+        pass
+
+    @action(methods=['post'], detail=False)
+    def wxpay(self, request, *args, **kwargs):
+        try:
+            notify_dict = wxpay.process_response_xml(request._request._body)
+            is_valid = wxpay.is_signature_valid(notify_dict)
+            is_success = wxpay.is_pay_success(notify_dict)
+            if is_valid and is_success:
+                pay_total_amount = int(notify_dict.get('total_fee', 0))
+                pay_order_id = notify_dict.get('out_trade_no')
+                self.set_pay_status(request, pay_total_amount, pay_order_id)
+                return Response({
+                    'return_code': 'SUCCESS',
+                    'return_msg': 'OK'
+                })
+        except Exception as e:
+            return Response({
+                'return_code': 'FAIL',
+                'return_msg': '校验失败'
+            }, status.HTTP_401_UNAUTHORIZED)
