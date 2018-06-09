@@ -12,7 +12,7 @@ from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveMode
 
 from .models import PayOrder
 from .serializers import PayOrderCreateSerializer
-from utils.common import generate_pay_order_id
+from utils.common import generate_pay_order_id, get_request_ip
 from utils.authentication import CommonAuthentication
 from utils.pay import alipay, wxpay
 from utils.cost import service_cost_calc
@@ -90,32 +90,34 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         rec_dict['status'] = 2
 
         self.perform_create(serializer)
+        return self.generate_payorder(request, pay_info, rec_dict)
 
-        if 'HTTP_X_FORWARDED_FOR' in request.META:
-            client_ip = request.META.get('HTTP_X_FORWARDED_FOR')
-        else:
-            client_ip = request.META.get('REMOTE_ADDR')
-
-            # 生成支付信息
+    def generate_payorder(self, request, pay_desc, rec_dict):
+        """
+        生成支付订单信息
+        :param rec_dict:
+        :return:
+        """
+        # 生成支付信息
         if rec_dict['pay_method'] == 1:
             pay_info = alipay.app_pay(
-                subject='雇佣兵-{}-{}'.format(pay_info, rec_dict['order'].description),
+                subject='{}-{}'.format(pay_desc, rec_dict['order'].description),
                 out_trade_no=rec_dict['id'],
                 total_amount=rec_dict['pay_cost'] / 100,
             )
         elif rec_dict['pay_method'] == 2:
             pay_info = wxpay.app_pay(
-                body='雇佣兵-{}-{}'.format(pay_info, rec_dict['order'].description),
+                body='{}-{}'.format(pay_desc, rec_dict['order'].description),
                 out_trade_no=rec_dict['id'],
                 total_fee=rec_dict['pay_cost'],
-                spbill_create_ip=client_ip,
+                spbill_create_ip=get_request_ip(request),
                 trade_type='APP'
             )
-        headers = self.get_success_headers({'pay_info': pay_info})
-        # rec_dict['pay_info'] = pay_info
-        return Response({'pay_info': pay_info},
-                        status=status.HTTP_201_CREATED,
-                        headers=headers)
+        response_dict = {
+            'pay_info': pay_info
+        }
+
+        return Response(response_dict, status=status.HTTP_201_CREATED)
 
 
 class AlipayView(APIView):
