@@ -16,4 +16,6 @@ wxpay = WXPay(
     app_id=settings.WXPAY_APP_APPID,
     mch_id=settings.WXPAY_APP_MCH_ID,
     key=settings.WXPAY_APP_KEY,
+    cert_pem_path=settings.WXPAY_APP_CERT_PEM_PATH,
+    key_pem_path=settings.WXPAY_APP_KEY_PEM_PATH
 )

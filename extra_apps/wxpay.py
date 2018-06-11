@@ -133,7 +133,7 @@ class SignInvalidException(Exception):
 
 
 class WXPay:
-    def __init__(self, app_id, mch_id, key):
+    def __init__(self, app_id, mch_id, key, cert_pem_path=None, key_pem_path=None):
         """ 初始化
         :param timeout: 网络请求超时时间，单位毫秒
         """
@@ -182,6 +182,20 @@ class WXPay:
             return True
         return False
 
+    def request_with_cert(self, url, data, timeout=None):
+        """ """
+        req_body = WXPayUtil.dict2xml(data).encode('utf-8')
+        req_headers = {'Content-Type': 'application/xml'}
+        _timeout = self.timeout if timeout is None else timeout
+        resp = requests.post(url,
+                             data=req_body,
+                             headers=req_headers,
+                             timeout=_timeout / 1000.0,
+                             cert=(self.cert_pem_path, self.key_pem_path),
+                             verify=True)
+        resp.encoding = 'utf-8'
+        return resp.text
+
     def request_without_cert(self, url, data, timeout=None):
         """ 不带证书的请求
         :param url: string
@@ -218,15 +232,13 @@ class WXPay:
 
     def unifiedorder(self, **kwargs):
         """ 统一下单
-        :param data: dict
-        :param timeout: int
         :return: dict
         """
         biz_content = {
             'appid': self.app_id,
             'mch_id': self.mch_id,
             'nonce_str': WXPayUtil.generate_nonce_str(),
-            'device_info': 'WEB'
+            'device_info': 'WEB',
         }
         biz_content.update(kwargs)
 
@@ -238,6 +250,14 @@ class WXPay:
         return get_order_id_res
 
     def app_pay(self, **kwargs):
+        """ app支付
+        body: 付款标题信息
+        out_trade_no: 订单号
+        total_fee: 订单支付金额分
+        spbill_create_ip: 交易来源ip
+        notify_url: 通知地址
+        :return: dict
+        """
         get_order_id_res = self.unifiedorder(**kwargs)
 
         biz_content = {
@@ -252,13 +272,23 @@ class WXPay:
         biz_content[WXPayConstants.FIELD_SIGN] = sign
         return biz_content
 
-    def refund(self, data):
+    def refund(self, **kwargs):
         """ 申请退款
-        :param data: dict
-        :param timeout: int
+        out_trade_no: 订单号
+        out_refund_no: 退款订单号
+        total_fee: 订单支付金额(分)
+        refund_fee: 退款金额(分)
         :return: dict
         """
-        return self.wxpay_common(WXPayConstants.REFUND_URL, data)
+        biz_content = {
+            'appid': self.app_id,
+            'mch_id': self.mch_id,
+            'nonce_str': WXPayUtil.generate_nonce_str(),
+        }
+        biz_content.update(kwargs)
+        url = WXPayConstants.REFUND_URL
+        resp_xml = self.request_with_cert(url, biz_content)
+        return self.process_response_xml(resp_xml)
 
 
 def test():
