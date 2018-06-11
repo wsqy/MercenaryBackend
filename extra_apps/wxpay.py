@@ -275,12 +275,13 @@ class WXPay:
         biz_content[WXPayConstants.FIELD_SIGN] = sign
         return biz_content
 
-    def refund(self, **kwargs):
+    def refund_request(self, **kwargs):
         """ 申请退款
         out_trade_no: 订单号
         out_refund_no: 退款订单号
         total_fee: 订单支付金额(分)
         refund_fee: 退款金额(分)
+        refund_desc: 退款原因(非必选)
         :return: dict
         """
         biz_content = {
@@ -325,10 +326,10 @@ def test_refund():
         key_pem_path=settings.WXPAY_APP_KEY_PEM_PATH
     )
 
-    wxpay_resp_dict = wxpay.refund(out_trade_no='310201806091640459496',
-                                   out_refund_no='31020180609164045949604',
-                                   total_fee=100,
-                                   refund_fee=80)
+    wxpay_resp_dict = wxpay.refund_request(out_trade_no='310201806091640459496',
+                                           out_refund_no='31020180609164045949604',
+                                           total_fee=100,
+                                           refund_fee=80)
     return wxpay_resp_dict
 
 

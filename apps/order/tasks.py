@@ -7,7 +7,8 @@ from django.conf import settings
 
 from .models import OrderInfo
 from paycenter.models import PayOrder
-from utils.pay import alipay
+from utils.pay import alipay, wxpay
+from utils.common import generate_random_number
 
 
 @task(bind=True)
@@ -32,6 +33,38 @@ def order_deposit_pay_timeout_monitor(self, order_id):
             order.save()
 
 
+def paycenter_refund(reward_pay_order_list, refund_mes='订单退款'):
+    """
+    :param reward_pay_order_list: 待退款订单列表
+    :return: 退款是否成功
+    """
+    # print('支付订单总数:{}'.format(reward_pay_order_list.count()))
+    for reward_pay_order in reward_pay_order_list:
+        # print('待退款{}--支付方式{}'.format(reward_pay_order.id, reward_pay_order.pay_method))
+        if reward_pay_order.pay_method == 1:
+            r_dict = alipay.refund_request(
+                out_trade_no=reward_pay_order.id,
+                refund_amount=reward_pay_order.pay_cost / 100,
+                refund_reason=refund_mes
+            )
+            alipay_response = r_dict.get('alipay_trade_refund_response', {})
+            if alipay_response.get('code') != '10000':
+                 return False
+        elif reward_pay_order.pay_method == 2:
+            r_dict = wxpay.refund_request(
+                out_trade_no=reward_pay_order.id,
+                out_refund_no='{}{}'.format(reward_pay_order.id, generate_random_number(4)),
+                total_fee=reward_pay_order.pay_cost,
+                refund_fee=reward_pay_order.pay_cost,
+                refund_desc=refund_mes
+            )
+            if not wxpay.is_pay_success(r_dict):
+                return False
+        reward_pay_order.status = 4
+        reward_pay_order.save()
+    return True
+
+
 @task(bind=True)
 def order_reward_pay_refund_monitor(self, order_id, status=-23):
     # 佣金/赏金退款接口
@@ -42,25 +75,11 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
 
     reward_pay_order_list = PayOrder.objects.filter(order=order, status=3)
     reward_pay_order_list = reward_pay_order_list.filter(Q(order_type=3) | Q(order_type=2))
-    # print("支付订单总数:{}".format(reward_pay_order_list.count()))
-    for reward_pay_order in reward_pay_order_list:
-        # print('待退款{}--支付方式{}'.format(reward_pay_order.id, reward_pay_order.pay_method))
-        if reward_pay_order.pay_method == 1:
-            r_dict = alipay.refund_request(
-                out_trade_no=reward_pay_order.id,
-                refund_amount=reward_pay_order.pay_cost / 100,
-                refund_reason='订单超时未接, 全额退款'
-            )
-            alipay_response = r_dict.get('alipay_trade_refund_response', {})
-            try:
-                if alipay_response.get('code') != '10000':
-                    raise Exception('alipay order: {} reward refound error---{}'.format(order_id, r_dict))
-            except Exception as e:
-                print("退款异常")
-                raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
-
-        reward_pay_order.status = 4
-        reward_pay_order.save()
+    refund_status = paycenter_refund(reward_pay_order_list, refund_mes='订单超时未接, 全额退款')
+    try:
+        assert refund_status
+    except Exception as e:
+        raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
 
     order.status = status
     order.save()
@@ -78,23 +97,11 @@ def order_deposit_pay_refund_monitor(self, order_id):
         return
 
     reward_pay_order_list = PayOrder.objects.filter(order=order, order_type=1, status=3)
-    for reward_pay_order in reward_pay_order_list:
-        if reward_pay_order.pay_method == 1:
-            r_dict = alipay.refund_request(
-                out_trade_no=reward_pay_order.id,
-                refund_amount=reward_pay_order.pay_cost / 100,
-                refund_reason='订单已完成, 退还押金'
-            )
-            alipay_response = r_dict.get('alipay_trade_refund_response', {})
-            try:
-                if alipay_response.get('code') != '10000':
-                    raise Exception(
-                        'alipay order: {} deposit refound error---{}'.format(order_id, r_dict))
-            except Exception as e:
-                raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
-
-        reward_pay_order.status = 4
-        reward_pay_order.save()
+    refund_status = paycenter_refund(reward_pay_order_list, refund_mes='订单已完成, 退还押金')
+    try:
+        assert refund_status
+    except Exception as e:
+        raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
 
 
 @task(bind=True)

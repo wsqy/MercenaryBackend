@@ -1,5 +1,6 @@
 import time
 import random
+import string
 
 
 def generate_order_id(order_type='10'):
@@ -40,3 +41,21 @@ def get_request_ip(request, must=False):
     if client_ip == '' and must:
         client_ip = '1.1.1.1'
     return client_ip
+
+
+def generate_random_str(length=32):
+    """
+    生成指定长度的随机字符串
+    :param length:
+    :return:
+    """
+    return ''.join(random.sample(string.ascii_letters + string.digits, length))
+
+
+def generate_random_number(length=4):
+    """
+    生成指定长度的随机数字
+    :param length:
+    :return:
+    """
+    return ''.join(random.sample(string.digits, length))
