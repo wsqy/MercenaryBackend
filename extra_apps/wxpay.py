@@ -140,8 +140,11 @@ class WXPay:
         self.app_id = app_id
         self.mch_id = mch_id
         self.key = key
+        self.cert_pem_path = cert_pem_path
+        self.key_pem_path = key_pem_path
         self.timeout = 8000
         self.sign_type = WXPayConstants.SIGN_TYPE_MD5
+        self.requests = requests.Session()
 
     def is_pay_success(self, notify_dict):
         if notify_dict.get('return_code') == WXPayConstants.SUCCESS and notify_dict.get('result_code') == 'SUCCESS':
@@ -187,12 +190,12 @@ class WXPay:
         req_body = WXPayUtil.dict2xml(data).encode('utf-8')
         req_headers = {'Content-Type': 'application/xml'}
         _timeout = self.timeout if timeout is None else timeout
-        resp = requests.post(url,
-                             data=req_body,
-                             headers=req_headers,
-                             timeout=_timeout / 1000.0,
-                             cert=(self.cert_pem_path, self.key_pem_path),
-                             verify=True)
+        resp = self.requests.post(url,
+                                  data=req_body,
+                                  headers=req_headers,
+                                  timeout=_timeout / 1000.0,
+                                  cert=(self.cert_pem_path, self.key_pem_path),
+                                  verify=True)
         resp.encoding = 'utf-8'
         return resp.text
 
@@ -206,10 +209,10 @@ class WXPay:
         req_body = WXPayUtil.dict2xml(data).encode('utf-8')
         req_headers = {'Content-Type': 'application/xml'}
         _timeout = self.timeout if timeout is None else timeout
-        resp = requests.post(url,
-                             data=req_body,
-                             headers=req_headers,
-                             timeout=_timeout / 1000.0)
+        resp = self.requests.post(url,
+                                  data=req_body,
+                                  headers=req_headers,
+                                  timeout=_timeout / 1000.0)
         resp.encoding = 'utf-8'
         return as_text(resp.text)
 
@@ -284,18 +287,24 @@ class WXPay:
             'appid': self.app_id,
             'mch_id': self.mch_id,
             'nonce_str': WXPayUtil.generate_nonce_str(),
+            'sign_type': WXPayConstants.SIGN_TYPE_MD5
         }
         biz_content.update(kwargs)
+        sign = self.sign_data(biz_content).upper()
+        biz_content[WXPayConstants.FIELD_SIGN] = sign
         url = WXPayConstants.REFUND_URL
         resp_xml = self.request_with_cert(url, biz_content)
         return self.process_response_xml(resp_xml)
 
 
 def test():
+    from django.conf import settings
     wxpay = WXPay(
-        app_id='wx11246b0732973381',
-        mch_id='1486240842',
-        key='m12MGa0wQvD8XdArznO9hecRxWiPpobK',
+        app_id=settings.WXPAY_APP_APPID,
+        mch_id=settings.WXPAY_APP_MCH_ID,
+        key=settings.WXPAY_APP_KEY,
+        cert_pem_path=settings.WXPAY_APP_CERT_PEM_PATH,
+        key_pem_path=settings.WXPAY_APP_KEY_PEM_PATH
     )
 
     wxpay_resp_dict = wxpay.app_pay(body='测试商家-商品类目',
@@ -306,5 +315,22 @@ def test():
     return wxpay_resp_dict
 
 
-if __name__ == '__main__':
-    test()
+def test_refund():
+    from django.conf import settings
+    wxpay = WXPay(
+        app_id=settings.WXPAY_APP_APPID,
+        mch_id=settings.WXPAY_APP_MCH_ID,
+        key=settings.WXPAY_APP_KEY,
+        cert_pem_path=settings.WXPAY_APP_CERT_PEM_PATH,
+        key_pem_path=settings.WXPAY_APP_KEY_PEM_PATH
+    )
+
+    wxpay_resp_dict = wxpay.refund(out_trade_no='310201806091640459496',
+                                   out_refund_no='31020180609164045949604',
+                                   total_fee=100,
+                                   refund_fee=80)
+    return wxpay_resp_dict
+
+
+# if __name__ == '__main__':
+#     test()
