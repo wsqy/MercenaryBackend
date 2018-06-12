@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
@@ -26,6 +27,8 @@ from .tasks import (
 from .filters import OrderFilter
 from utils.time import local2utc
 from utils.pagination import CommonPagination
+
+logger = logging.getLogger('order')
 
 
 class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
@@ -174,25 +177,32 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
     @action(methods=['patch'], detail=True)
     def cancel(self, request, *args, **kwargs):
         # 取消订单
+
         try:
             instance = self.get_object()
+            logger.info('订单退款--{}'.format(instance.id))
         except Exception as e:
+            logger.error('订单不存在')
             return Response({'msg': '订单不存在'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 判断接单者是否是订单创建者
         # todo 佣兵取消订单
         if request.user != instance.employer_user:
+            logger.error('当前操作者不是佣兵')
             return Response({'msg': '只有佣兵才能取消订单'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 订单状态判断
         if instance.status < 0:
+            logger.error('订单已被取消')
             return Response({'msg': '订单已被取消'}, status=status.HTTP_400_BAD_REQUEST)
         elif instance.status > 11:
+            logger.error('订单正在进行中, 不能直接取消')
             return Response({'msg': '订单正在进行中, 不能直接取消, 请联系客服'},
                             status=status.HTTP_400_BAD_REQUEST)
         elif instance.status in [1, 2, 11]:
             # 还未接单  可以取消
-            instance.status = -12
+            # instance.status = -12
+            logger.info('准备进行退款操作')
             instance.save()
             order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
             return Response({'msg': '订单已被成功取消'})

@@ -296,22 +296,22 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
-        'users.views': {
+        'users': {
             'handlers': ['default', 'error'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'order.views': {
+        'order': {
             'handlers': ['default', 'error'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'paycenter.views': {
+        'paycenter': {
             'handlers': ['default', 'error'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'accounts.views': {
+        'accounts': {
             'handlers': ['default', 'error'],
             'level': 'DEBUG',
             'propagate': True,
@@ -333,7 +333,7 @@ PAY_COMPLETE_EXPIRE_TIME = 2 * 60 * 60
 #####  支付相关  #####
 PAY_KEY_BASE_URL = os.path.join(BASE_DIR, 'apps/utils/keys')
 ALIPAY_APPID = '2017080508049336'
-ALIPAY_NOTIFY_URL = 'http://118.24.157.119:8000/alipay/return/'
+ALIPAY_NOTIFY_URL = 'http://118.24.157.119:8000/pay/return/alipay/'
 ALIPAY_PRIVATE_KEY_PATH = os.path.join(PAY_KEY_BASE_URL, 'private_2048.txt')
 ALIPAY_ALI_PUBLIC_KEY_PATH = os.path.join(PAY_KEY_BASE_URL, 'alipay_public_2048.txt')
 ALIPAY_RETURN_URL = 'http://118.24.157.119:8000/pay/return/alipay/'

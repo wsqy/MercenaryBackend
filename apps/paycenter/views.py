@@ -19,7 +19,7 @@ from utils.authentication import CommonAuthentication
 from utils.pay import alipay, wxpay
 from utils.cost import service_cost_calc
 
-logger = logging.getLogger('paycenter.views')
+logger = logging.getLogger('paycenter')
 
 
 class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,

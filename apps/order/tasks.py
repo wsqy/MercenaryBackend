@@ -1,3 +1,4 @@
+import logging
 from django.db.models import Q
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -10,6 +11,7 @@ from paycenter.models import PayOrder
 from utils.pay import alipay, wxpay
 from utils.common import generate_random_number
 
+logger = logging.getLogger('order')
 
 @task(bind=True)
 def order_reward_pay_timeout_monitor(self, order_id):
@@ -38,19 +40,22 @@ def paycenter_refund(reward_pay_order_list, refund_mes='订单退款'):
     :param reward_pay_order_list: 待退款订单列表
     :return: 退款是否成功
     """
-    # print('支付订单总数:{}'.format(reward_pay_order_list.count()))
+    logger.info('支付订单总数:{}'.format(reward_pay_order_list.count()))
     for reward_pay_order in reward_pay_order_list:
-        # print('待退款{}--支付方式{}'.format(reward_pay_order.id, reward_pay_order.pay_method))
+        logger.info('待退款{}--支付方式{}'.format(reward_pay_order.id, reward_pay_order.pay_method))
         if reward_pay_order.pay_method == 1:
+            logger.info('alipay订单退款')
             r_dict = alipay.refund_request(
                 out_trade_no=reward_pay_order.id,
                 refund_amount=reward_pay_order.pay_cost / 100,
                 refund_reason=refund_mes
             )
             alipay_response = r_dict.get('alipay_trade_refund_response', {})
+            logger.info('alipay订单状态{}'.format(alipay_response))
             if alipay_response.get('code') != '10000':
                  return False
         elif reward_pay_order.pay_method == 2:
+            logger.info('wxpay订单退款')
             r_dict = wxpay.refund_request(
                 out_trade_no=reward_pay_order.id,
                 out_refund_no='{}{}'.format(reward_pay_order.id, generate_random_number(4)),
@@ -58,6 +63,7 @@ def paycenter_refund(reward_pay_order_list, refund_mes='订单退款'):
                 refund_fee=reward_pay_order.pay_cost,
                 refund_desc=refund_mes
             )
+            logger.info('wxpay订单状态{}'.format(alipay_response))
             if not wxpay.is_pay_success(r_dict):
                 return False
         reward_pay_order.status = 4
@@ -68,6 +74,7 @@ def paycenter_refund(reward_pay_order_list, refund_mes='订单退款'):
 @task(bind=True)
 def order_reward_pay_refund_monitor(self, order_id, status=-23):
     # 佣金/赏金退款接口
+    logger.info('佣金/赏金退款接口--{}, 待变更状态--{}'.format(order_id, status))
     try:
         order = OrderInfo.objects.get(id=order_id, status=11)
     except Exception as e:
@@ -75,10 +82,17 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
 
     reward_pay_order_list = PayOrder.objects.filter(order=order, status=3)
     reward_pay_order_list = reward_pay_order_list.filter(Q(order_type=3) | Q(order_type=2))
-    refund_status = paycenter_refund(reward_pay_order_list, refund_mes='订单超时未接, 全额退款')
+    logger.info('支付订单总数in line:{}'.format(reward_pay_order_list.count()))
+    refund_mes = '订单超时未接, 全额退款'
+    if status == -23:
+        refund_mes = '订单超时未接, 全额退款'
+    elif status == -12:
+        refund_mes = '雇主主动取消, 全额退款'
+    refund_status = paycenter_refund(reward_pay_order_list, refund_mes=refund_mes)
     try:
         assert refund_status
     except Exception as e:
+        logging.error('退款失败, 再次发起退款')
         raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
 
     order.status = status
@@ -88,6 +102,7 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
 @task(bind=True)
 def order_deposit_pay_refund_monitor(self, order_id):
     # 押金退款接口
+    logger.info('押金退款接口--{}, 待变更状态--{}'.format(order_id, status))
     try:
         order = OrderInfo.objects.get(id=order_id)
     except Exception as e:
@@ -97,10 +112,12 @@ def order_deposit_pay_refund_monitor(self, order_id):
         return
 
     reward_pay_order_list = PayOrder.objects.filter(order=order, order_type=1, status=3)
+    logger.info('支付订单总数in line:{}'.format(reward_pay_order_list.count()))
     refund_status = paycenter_refund(reward_pay_order_list, refund_mes='订单已完成, 退还押金')
     try:
         assert refund_status
     except Exception as e:
+        logging.error('退款失败, 再次发起退款')
         raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
 
 
