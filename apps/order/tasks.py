@@ -93,7 +93,7 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
         assert refund_status
     except Exception as e:
         logging.error('退款失败, 再次发起退款')
-        raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
+        raise self.retry(exc=e, countdown=seconds=60, max_retries=5)
 
     order.status = status
     order.save()
@@ -118,7 +118,7 @@ def order_deposit_pay_refund_monitor(self, order_id):
         assert refund_status
     except Exception as e:
         logging.error('退款失败, 再次发起退款')
-        raise self.retry(exc=e, eta=datetime.utcnow() + timedelta(seconds=60), max_retries=5)
+        raise self.retry(exc=e, countdown=60, max_retries=5)
 
 
 @task(bind=True)

@@ -24,6 +24,7 @@ redis = "*"
 pycryptodome = "*"
 django-celery-results = "*"
 raven = "*"
+celery = "==4.2"
 
 [dev-packages]
 "fabric3" = "*"

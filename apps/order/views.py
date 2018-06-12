@@ -104,11 +104,10 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         headers = self.get_success_headers(serializer.data)
         # 下单30分钟后查看订单佣金支付状态
         order_reward_pay_timeout_monitor.apply_async(args=(rec_dict['id'],),
-                                                     eta=datetime.utcnow() + timedelta(
-                                                     seconds=settings.PAY_DEFAULT_EXPIRE_TIME))
+                                                     countdown=settings.PAY_DEFAULT_EXPIRE_TIME)
         # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
         order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23),
-                                                    eta=local2utc(rec_dict['to_time']))
+                                                    countdown=rec_dict['to_time'])
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_queryset(self):
@@ -166,8 +165,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             instance.status = 12
             # 增加押金支付监控
             order_deposit_pay_timeout_monitor.apply_async(args=(instance.id,),
-                                                          eta=datetime.utcnow() + timedelta(
-                                                          seconds=settings.PAY_DEPOSIT_EXPIRE_TIME))
+                                                          countdown=settings.PAY_DEPOSIT_EXPIRE_TIME)
         else:
             # 不需要押金
             instance.status = 20
@@ -228,7 +226,6 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             instance.receiver_complete_time = timezone.now()
             instance.save()
             order_complete_monitor.apply_async(args=(instance.id,),
-                                               eta=datetime.utcnow() + timedelta(
-                                               seconds=settings.PAY_COMPLETE_EXPIRE_TIME))
+                                               countdown=settings.PAY_COMPLETE_EXPIRE_TIME)
 
         return Response({'msg': '确认成功'})
