@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
 
@@ -17,6 +16,7 @@ from .serializers import (
     SubCategorySerializer, OrderInfoSerializer, OrderInfoCreateSerializer,
     OrderInfoListSerializer, OrderInfoReceiptSerializer
 )
+from users.models import ProfileExtendInfo
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
 from utils.cost import service_cost_calc
@@ -25,7 +25,6 @@ from .tasks import (
     order_reward_pay_refund_monitor, order_complete_monitor
 )
 from .filters import OrderFilter
-from utils.time import local2utc
 from utils.pagination import CommonPagination
 
 logger = logging.getLogger('order')
@@ -59,6 +58,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         取消订单
     complete:
         订单确认完成
+    admin_list:
+        x学校管理员查看本校订单列表接口
     """
     authentication_classes = CommonAuthentication()
     pagination_class = CommonPagination
@@ -77,7 +78,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             return OrderInfoCreateSerializer
         elif self.action == 'receipt':
             return OrderInfoReceiptSerializer
-        elif self.action in ['find', 'release', 'service']:
+        elif self.action in ['find', 'release', 'service', 'admin_list']:
             return OrderInfoListSerializer
         elif self.action in ['retrieve']:
             return OrderInfoSerializer
@@ -117,6 +118,9 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             queryset = OrderInfo.objects.filter(receiver_user=self.request.user)
         elif self.action == 'find':
             queryset = OrderInfo.objects.filter(status=11, to_time__gt=timezone.now())
+        elif self.action == 'admin_list':
+            queryset = OrderInfo.objects.filter(
+                school=ProfileExtendInfo.objects.get(user=self.request.user).admin_school)
         else:
             queryset = OrderInfo.objects.all()
         return queryset
@@ -229,3 +233,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
                                                countdown=settings.PAY_COMPLETE_EXPIRE_TIME)
 
         return Response({'msg': '确认成功'})
+
+    @action(methods=['get'], detail=False)
+    def admin_list(self, request, *args, **kwargs):
+        # 我发布的订单
+        return self.list(request, *args, **kwargs)

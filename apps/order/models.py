@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from utils.validators import IntRangeValidator
-from area.models import District
+from area.models import District, School
 
 User = get_user_model()
 
@@ -93,6 +93,7 @@ class OrderInfo(models.Model):
     detail = models.TextField(verbose_name='订单详细信息', help_text='订单详细信息', null=True)
     description = models.CharField(verbose_name='订单简短描述', help_text='订单简短描述',
                                    null=True, max_length=255)
+    school = models.ForeignKey(School, verbose_name='学校', help_text='学院', blank=True, null=True)
 
     # 金额相关信息
     deposit = models.PositiveSmallIntegerField(default=0, verbose_name='押金',

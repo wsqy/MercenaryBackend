@@ -14,6 +14,7 @@ class OrderFilter(django_filters.rest_framework.FilterSet):
     status__in = NumberInFilter(name='status', lookup_expr='in', help_text='订单状态范围')
     classification = django_filters.NumberFilter(name='category__classification',
                                                  help_text='一级分类')
+    school = django_filters.NumberFilter(name='school', help_text='学校')
 
     class Meta:
         model = OrderInfo
