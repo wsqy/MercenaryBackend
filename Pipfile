@@ -25,6 +25,7 @@ pycryptodome = "*"
 django-celery-results = "*"
 raven = "*"
 celery = "==4.2"
+pygeohash = "*"
 
 [dev-packages]
 "fabric3" = "*"

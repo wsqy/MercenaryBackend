@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Province, City, District
+from .models import Province, City, District, School
 
 
 class ProvinceSerializer(serializers.ModelSerializer):
@@ -35,3 +35,20 @@ class DistrictInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = District
         fields = ('id', 'province', 'city', 'district')
+
+
+class SchoolSerializer(serializers.ModelSerializer):
+    city = serializers.CharField(source='city.name')
+    district = serializers.CharField(source='district.name')
+
+    class Meta:
+        model = School
+        fields = ('id', 'name', 'city', 'district', )
+
+
+class NearestSchoolSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = School
+        fields = ('id', 'name', 'latitude', 'longitude',)
+        read_only_fields = ('id', 'name',)

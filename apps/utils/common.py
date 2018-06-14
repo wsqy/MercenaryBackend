@@ -59,3 +59,10 @@ def generate_random_number(length=4):
     :return:
     """
     return ''.join(random.sample(string.digits, length))
+
+
+def to_number(num):
+    try:
+        return float(num)
+    except:
+        return 0
