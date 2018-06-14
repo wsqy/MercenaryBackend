@@ -1,5 +1,5 @@
 import xadmin
-from .models import DeviceInfo
+from .models import DeviceInfo, ProfileExtendInfo
 
 
 class BaseSetting:
@@ -16,6 +16,11 @@ class DeviceInfoAdmin:
     list_display = ['deviceid', 'model', 'device_ver', 'channel_code', 'date_joined']
 
 
+class ProfileExtendInfoAdmin:
+    list_display = ['user', 'balance', 'deposit_freeze', 'in_school', 'admin_school']
+
+
 # xadmin.site.register(xadmin.views.BaseAdminView, BaseSetting)
 xadmin.site.register(xadmin.views.CommAdminView, GlobalSettings)
 xadmin.site.register(DeviceInfo, DeviceInfoAdmin)
+xadmin.site.register(ProfileExtendInfo, ProfileExtendInfoAdmin)

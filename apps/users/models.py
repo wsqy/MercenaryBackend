@@ -3,6 +3,8 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
+from area.models import School
+
 
 class DeviceInfo(models.Model):
     """
@@ -77,13 +79,17 @@ class ProfileExtendInfo(models.Model):
                                 max_length=128, blank=True, null=True, )
 
     remark = models.TextField(verbose_name='备注信息', blank=True, null=True, help_text='备注信息')
+    in_school = models.ForeignKey(School, blank=True, null=True, related_name='in_school',
+                                  verbose_name='属于学校', help_text='属于学校')
+    admin_school = models.ForeignKey(School, verbose_name='管理的学校', related_name='admin_school',
+                                     help_text='管理的学校', blank=True, null=True)
 
     class Meta:
         verbose_name = '用户扩展信息'
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.user
+        return self.user.nickname
 
 
 class VerifyCode(models.Model):
