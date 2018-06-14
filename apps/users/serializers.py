@@ -4,9 +4,18 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.validators import UniqueValidator
 
-from .models import DeviceInfo, VerifyCode
+from .models import DeviceInfo, VerifyCode, ProfileExtendInfo
 
 User = get_user_model()
+
+
+class ProfileExtendInfoDetailSerializer(serializers.ModelSerializer):
+    """
+    用户扩展信息序列化类
+    """
+    class Meta:
+        model = ProfileExtendInfo
+        exclude = ('user', 'password',)
 
 
 class DeviceRegisterSerializer(serializers.ModelSerializer):
@@ -98,10 +107,15 @@ class UserDetailSerializer(serializers.ModelSerializer):
     """
     用户详情序列化类
     """
+    extend_info = serializers.SerializerMethodField()
+
+    def get_extend_info(self, obj):
+        return ProfileExtendInfoDetailSerializer(ProfileExtendInfo.objects.get(user=obj.id)).data
+
     class Meta:
         model = User
         fields = ('id', 'username', 'mobile', 'email', 'nickname', 'gender',
-                  'portrait', 'first_name', 'date_joined', 'last_login')
+                  'portrait', 'first_name', 'date_joined', 'last_login', 'extend_info',)
 
 
 class UserOrderListSerializer(serializers.ModelSerializer):
@@ -203,3 +217,4 @@ class PasswordModifySerializer(serializers.Serializer):
         if attrs.get('password_old') == attrs.get('password_new'):
             raise serializers.ValidationError('两次密码不能一致')
         return attrs
+
