@@ -542,11 +542,6 @@ EMAIL_PORT = 25
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-
-RAVEN_CONFIG = {
-    'dsn': 'https://149493d6ba7f466fa8dbb5359490d737:09e8d58195324c79903882741fb426f3@sentry.io/1219835',
-}
-
 try:
     from .local_settings import *
 except:
