@@ -45,12 +45,16 @@ router.register(r'school', SchoolViewSet, base_name='school')
 
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    # 文档
-    url(r'docs/', include_docs_urls(title='mercenary')),
     # 刷新token
     url(r'^refresh_token/', refresh_jwt_token),
     # celery 查询任务状态
     url(r'^get_celery_task_status/$', get_celery_task_status),
     url(r'^', include(router.urls)),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+        # 文档
+        url(r'docs/', include_docs_urls(title='mercenary')),
+    ]
