@@ -15,7 +15,7 @@ Including another URLconf
 """
 
 import xadmin
-
+from django.conf import settings
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.documentation import include_docs_urls
