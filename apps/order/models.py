@@ -159,3 +159,28 @@ class OrderInfo(models.Model):
 
     def __str__(self):
         return self.id
+
+
+class OrderOperateLog(models.Model):
+    """
+    订单操作日志
+    """
+    order = models.ForeignKey(OrderInfo, verbose_name='订单', help_text='所属订单', null=True, blank=True)
+    user = models.ForeignKey(User, verbose_name='操作用户', help_text='操作用户', null=True, blank=True)
+    create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
+    message = models.TextField(verbose_name='操作日志', help_text='操作日志', null=True, blank=True)
+
+    class Meta:
+        verbose_name = '订单日志'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return '{}-{}'.format(self.order, self.message)
+
+    @staticmethod
+    def logging(order=None, user=None, message=''):
+        try:
+            OrderOperateLog.objects.create(order=order, user=user, message=message)
+        except:
+            pass
+

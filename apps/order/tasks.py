@@ -6,7 +6,7 @@ from celery import task
 from django.core.mail import send_mail
 from django.conf import settings
 
-from .models import OrderInfo
+from .models import OrderInfo, OrderOperateLog
 from paycenter.models import PayOrder
 from utils.pay import alipay, wxpay
 from utils.common import generate_random_number
@@ -21,6 +21,7 @@ def order_reward_pay_timeout_monitor(self, order_id):
         if order.status in (1, 2):
             order.status = -21
             order.save()
+            OrderOperateLog.logging(order=order, message='佣金支付超时')
 
 
 @task(bind=True)
@@ -33,6 +34,7 @@ def order_deposit_pay_timeout_monitor(self, order_id):
             order.receiver_user = None
             order.receiver_confirm_time = None
             order.save()
+            OrderOperateLog.logging(order=order, message='押金支付超时')
 
 
 def paycenter_refund(reward_pay_order_list, refund_mes='订单退款'):
@@ -91,6 +93,7 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
     refund_status = paycenter_refund(reward_pay_order_list, refund_mes=refund_mes)
     try:
         assert refund_status
+        OrderOperateLog.logging(order=order, message=refund_mes)
     except Exception as e:
         logging.error('退款失败, 再次发起退款')
         raise self.retry(exc=e, countdown=60, max_retries=5)
@@ -114,6 +117,7 @@ def order_deposit_pay_refund_monitor(self, order_id):
     reward_pay_order_list = PayOrder.objects.filter(order=order, order_type=1, status=3)
     logger.info('支付订单总数in line:{}'.format(reward_pay_order_list.count()))
     refund_status = paycenter_refund(reward_pay_order_list, refund_mes='订单已完成, 退还押金')
+    OrderOperateLog.logging(order=order, message='订单已完成, 退还押金')
     try:
         assert refund_status
     except Exception as e:
@@ -129,6 +133,7 @@ def order_complete_monitor(self, order_id):
         order.status = 50
         order.complete_time = timezone.now()
         order.save()
+        OrderOperateLog.logging(order=order, message='雇主超时未点击确认, 订单自动完成')
 
 
 @task(bind=True)

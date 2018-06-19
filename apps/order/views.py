@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import SubCategory, OrderInfo
+from .models import SubCategory, OrderInfo, OrderOperateLog
 from .serializers import (
     SubCategorySerializer, OrderInfoSerializer, OrderInfoCreateSerializer,
     OrderInfoListSerializer, OrderInfoReceiptSerializer
@@ -101,15 +101,19 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             rec_dict['employer_receive_mobile'] = rec_dict['employer_user'].mobile
         rec_dict['reward'] = (rec_dict['pay_cost'] - service_cost_calc.calc(rec_dict['pay_cost']))
 
-        self.perform_create(serializer)
+        order_obj = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        OrderOperateLog.logging(order=order_obj, user=self.request.user, message='新增订单')
         # 下单30分钟后查看订单佣金支付状态
         order_reward_pay_timeout_monitor.apply_async(args=(rec_dict['id'],),
                                                      countdown=settings.PAY_DEFAULT_EXPIRE_TIME)
         # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
         order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23),
-                                                    countdown=rec_dict['to_time'])
+                                                    eta=rec_dict['to_time'])
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        return serializer.save()
 
     def get_queryset(self):
         if self.action == 'release':
@@ -162,6 +166,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         # 设置接单者
         instance.receiver_user = request.user
         instance.receiver_confirm_time = timezone.now()
+        OrderOperateLog.logging(order=instance, user=self.request.user, message='接单')
 
         # 根据是否要押金 设置订单状态
         if instance.deposit:
@@ -206,6 +211,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             # instance.status = -12
             logger.info('准备进行退款操作')
             instance.save()
+            OrderOperateLog.logging(order=instance, user=self.request.user, message='雇主主动取消订单')
             order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
             return Response({'msg': '订单已被成功取消'})
 
@@ -224,11 +230,13 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             instance.complete_time = timezone.now()
             instance.employer_complete_time = timezone.now()
             instance.save()
+            OrderOperateLog.logging(order=instance, user=self.request.user, message='雇主点击完成')
         # 佣兵确认完成
         elif request.user == instance.receiver_user:
             instance.status = 21
             instance.receiver_complete_time = timezone.now()
             instance.save()
+            OrderOperateLog.logging(order=instance, user=self.request.user, message='佣兵点击完成')
             order_complete_monitor.apply_async(args=(instance.id,),
                                                countdown=settings.PAY_COMPLETE_EXPIRE_TIME)
 

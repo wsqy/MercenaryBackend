@@ -18,6 +18,7 @@ from utils.common import generate_pay_order_id, get_request_ip
 from utils.authentication import CommonAuthentication
 from utils.pay import alipay, wxpay
 from utils.cost import service_cost_calc
+from order.models import OrderOperateLog
 
 logger = logging.getLogger('paycenter')
 
@@ -144,10 +145,12 @@ class PayReturnViewSet(viewsets.GenericViewSet):
                 # 如果是佣金支付成功则设置订单状态为 待接单
                 existed_pay_order.order.status = 11
                 existed_pay_order.order.save()
+                OrderOperateLog.logging(order=existed_pay_order.order, message='佣金支付成功')
             elif existed_pay_order.order_type == 1:
                 # 如果是押金支付则设置订单状态为 进行中
                 existed_pay_order.order.status = 20
                 existed_pay_order.order.save()
+                OrderOperateLog.logging(order=existed_pay_order.order, message='押金支付成功')
             elif existed_pay_order.order_type == 2:
                 # 加赏
                 # 接单前 有抽成
@@ -157,11 +160,13 @@ class PayReturnViewSet(viewsets.GenericViewSet):
                     existed_pay_order.order.reward += (pay_total_amount - service_cost_calc.calc(pay_total_amount))
                     logger.debug('最新支付金额-{};最新商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
                     existed_pay_order.order.save()
+                    OrderOperateLog.logging(order=existed_pay_order.order, message='加赏{}成功'.format(pay_total_amount))
                 # 接单后加赏 等同于打赏 不需要抽成
                 else:
                     existed_pay_order.order.pay_cost += pay_total_amount
                     existed_pay_order.order.reward += pay_total_amount
                     existed_pay_order.order.save()
+                    OrderOperateLog.logging(order=existed_pay_order.order, message='打赏{}成功'.format(pay_total_amount))
 
             existed_pay_order.status = 3
             existed_pay_order.pay_time = timezone.now()
