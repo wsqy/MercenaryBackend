@@ -17,11 +17,12 @@ class DistrictAdmin:
     list_display = ['id', 'name', 'city']
     search_fields = ['name', 'id']
     list_filter = ['city', ]
+    relfield_style = 'fk-ajax'
 
 
 class SchoolAdmin:
     list_display = ['name', 'city', 'district']
-    search_fields = ['name', 'city', 'district']
+    search_fields = ['name', 'city', 'district__name']
     list_filter = ['name', 'city', ]
     readonly_fields = ['geohash']
 
