@@ -1,5 +1,5 @@
 import xadmin
-from .models import Province, City, District, School
+from .models import Province, City, District, School, Address
 
 
 class ProvinceAdmin:
@@ -21,9 +21,16 @@ class DistrictAdmin:
 
 
 class SchoolAdmin:
-    list_display = ['name', 'city', 'district']
-    search_fields = ['name', 'city', 'district__name']
-    list_filter = ['name', 'city', ]
+    list_display = ['name', 'district']
+    search_fields = ['name', 'district__name']
+    list_filter = ['name', ]
+    readonly_fields = ['geohash']
+
+
+class AddressAdmin:
+    list_display = ['name', 'district']
+    search_fields = ['name', 'district__name']
+    list_filter = ['name', ]
     readonly_fields = ['geohash']
 
 
@@ -31,3 +38,4 @@ xadmin.site.register(Province, ProvinceAdmin)
 xadmin.site.register(City, CityAdmin)
 xadmin.site.register(District, DistrictAdmin)
 xadmin.site.register(School, SchoolAdmin)
+xadmin.site.register(Address, AddressAdmin)

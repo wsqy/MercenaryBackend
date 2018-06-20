@@ -91,7 +91,6 @@ class School(models.Model):
     经纬度请使用百度地图查询
     """
     name = models.CharField(blank=False, null=False, max_length=32, verbose_name='学校', help_text='学校')
-    city = models.ForeignKey(City, verbose_name='市', help_text='所属市')
     district = models.ForeignKey(District, verbose_name='区', help_text='所属区')
     latitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='纬度', help_text='纬度')
     longitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='经度', help_text='经度')
@@ -128,3 +127,48 @@ class School(models.Model):
         """
         self.geohash = self.get_geohash(self.latitude, self.longitude)
         super(School, self).save(*args, **kwargs)
+
+
+class Address(models.Model):
+    """
+    地址表
+    经纬度请使用百度地图查询
+    """
+    name = models.CharField(blank=False, null=False, max_length=32, verbose_name='地点', help_text='地点')
+    detail = models.CharField(blank=True, null=True, max_length=32, verbose_name='详细地点', help_text='详细地点')
+    district = models.ForeignKey(District, verbose_name='区', help_text='所属区')
+    latitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='纬度', help_text='纬度')
+    longitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='经度', help_text='经度')
+    geohash = models.CharField(blank=True, null=True, max_length=12, verbose_name='geohash', help_text='geohash')
+    is_active = models.BooleanField(default=True, verbose_name='是否激活', help_text='是否激活')
+    weight = models.IntegerField(default=1, verbose_name='权重')
+
+    class Meta:
+        verbose_name = '地址'
+        verbose_name_plural = verbose_name
+        ordering = ('-weight', )
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def get_geohash(lat, lon, deep=12, need='[null]'):
+        """
+        lat: 纬度
+        lon: 经度
+        deep: 深度 默认12
+        need: 是否需要在错误时也返回一个值, 注意改数值最好不与geohash出现的字符重复
+        """
+        lat = to_number(lat)
+        lon = to_number(lon)
+        if lat and lon:
+            return pygeohash.encode(lat, lon, deep)
+        if need:
+            return need
+
+    def save(self, *args, **kwargs):
+        """
+        保存时自动重算geohash
+        """
+        self.geohash = self.get_geohash(self.latitude, self.longitude)
+        super(Address, self).save(*args, **kwargs)
