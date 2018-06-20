@@ -38,12 +38,11 @@ class DistrictInfoSerializer(serializers.ModelSerializer):
 
 
 class SchoolSerializer(serializers.ModelSerializer):
-    city = serializers.CharField(source='city.name')
     district = serializers.CharField(source='district.name')
 
     class Meta:
         model = School
-        fields = ('id', 'name', 'city', 'district', )
+        fields = ('id', 'name', 'district', )
 
 
 class NearestSchoolSerializer(serializers.ModelSerializer):
