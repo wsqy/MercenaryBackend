@@ -26,6 +26,7 @@ class SchoolAdmin:
     search_fields = ['name', 'district__name']
     list_filter = ['name', ]
     readonly_fields = ['geohash']
+    open_bmap = True
 
 
 class AddressAdmin:
