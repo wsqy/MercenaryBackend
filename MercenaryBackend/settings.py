@@ -542,6 +542,9 @@ EMAIL_PORT = 25
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+# 百度地图web端key
+BMAP_KEY = 'WGHYeCpb0aNcXYZnnttlTpBCkpZcfWb0'
+
 try:
     from .local_settings import *
 except:

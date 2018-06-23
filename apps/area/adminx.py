@@ -1,4 +1,5 @@
 import xadmin
+
 from .models import Province, City, District, School, Address
 
 
@@ -32,6 +33,7 @@ class AddressAdmin:
     search_fields = ['name', 'district__name']
     list_filter = ['name', ]
     readonly_fields = ['geohash']
+    open_bmap = True
 
 
 xadmin.site.register(Province, ProvinceAdmin)
