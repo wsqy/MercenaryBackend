@@ -29,7 +29,8 @@ class SchoolAdmin:
 
 
 class AddressAdmin:
-    list_display = ['name', 'district']
+    list_display = ['name', 'detail', 'district', 'weight', 'is_active', 'user']
+    list_editable = ['weight', 'is_active', 'user']
     search_fields = ['name', 'district__name']
     list_filter = ['name', ]
     readonly_fields = ['geohash']
