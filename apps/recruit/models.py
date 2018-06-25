@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from area.models import Address
+from users.models import Address
 
 
 class Company(models.Model):

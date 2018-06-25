@@ -21,9 +21,9 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.documentation import include_docs_urls
 from rest_framework_jwt.views import refresh_jwt_token
 
-from users.views import DeviceRegisterViewset, SmsCodeViewset, UserViewset
+from users.views import DeviceRegisterViewset, SmsCodeViewset, UserViewset, SchoolViewSet
 from utils.views import get_celery_task_status
-from area.views import DistrictViewset, SchoolViewSet
+from area.views import DistrictViewset
 from order.views import SubCategoryViewset, OrderViewSet
 from paycenter.views import PayOrderViewSet, PayReturnViewSet
 from accounts.views import BalanceViewset, BankCardViewset

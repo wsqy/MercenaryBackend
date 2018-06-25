@@ -2,7 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from utils.validators import IntRangeValidator
-from area.models import District, School
+from area.models import District
+from users.models import School
 
 User = get_user_model()
 

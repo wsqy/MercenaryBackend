@@ -12,21 +12,23 @@ from django.contrib.auth.backends import ModelBackend
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ListModelMixin
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework_jwt.settings import api_settings
 from rest_framework_jwt.serializers import (
     JSONWebTokenSerializer, jwt_encode_handler, jwt_payload_handler
 )
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from .serializers import (
     DeviceRegisterSerializer, SmsSerializer,
     UserRegSerializer, UserDetailSerializer, UserUpdateSerializer,
-    PasswordResetSerializer, PasswordModifySerializer
+    PasswordResetSerializer, PasswordModifySerializer,
+    SchoolSerializer, NearestSchoolSerializer
 )
 
-from .models import VerifyCode, DeviceInfo, ProfileExtendInfo
+from .models import VerifyCode, DeviceInfo, ProfileExtendInfo, School
 
 from utils.dayu import DaYuSMS
 from utils.authentication import CommonAuthentication
@@ -247,3 +249,34 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin,
             response.set_cookie(api_settings.JWT_AUTH_COOKIE, token,
                                 expires=expiration, httponly=True)
         return response
+
+
+class SchoolViewSet(ListModelMixin, viewsets.GenericViewSet):
+    """学校相关接口
+    list:
+        所有学校列表
+    """
+    queryset = School.objects.filter(is_active=True)
+    authentication_classes = (JSONWebTokenAuthentication, )
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return SchoolSerializer
+        elif self.action == 'nearest':
+            return NearestSchoolSerializer
+        return SchoolSerializer
+
+    @action(methods=['post'], detail=False)
+    def nearest(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        rec_dict = serializer.data
+        now_geohash = School.get_geohash(lat=rec_dict.get('latitude'), lon=rec_dict.get('longitude'), deep=6)
+        for length in range(6, 3, -1):
+            geohash_str = now_geohash[0:length]
+            near_schools = School.objects.filter(geohash__startswith=geohash_str)
+            if near_schools.count() > 0:
+                near_school = near_schools.first()
+                serializer = SchoolSerializer(near_school)
+                return Response(serializer.data)
+        return Response({'msg': '未定位到最近的学校'}, status=status.HTTP_401_UNAUTHORIZED)

@@ -1,9 +1,11 @@
+import pygeohash
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
-from area.models import School
+from utils.common import to_number
+from area.models import District
 
 
 class DeviceInfo(models.Model):
@@ -35,6 +37,50 @@ class DeviceInfo(models.Model):
 
     def __str__(self):
         return self.deviceid
+
+
+class School(models.Model):
+    """
+    学校表
+    经纬度请使用百度地图查询
+    """
+    name = models.CharField(blank=False, null=False, max_length=32, verbose_name='学校', help_text='学校')
+    district = models.ForeignKey(District, verbose_name='区', help_text='所属区')
+    latitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='纬度', help_text='纬度')
+    longitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='经度', help_text='经度')
+    geohash = models.CharField(blank=True, null=True, max_length=12, verbose_name='geohash', help_text='geohash')
+    is_active = models.BooleanField(default=True, verbose_name='是否激活', help_text='是否激活')
+    weight = models.IntegerField(default=1, verbose_name='权重')
+
+    class Meta:
+        verbose_name = '学校'
+        verbose_name_plural = verbose_name
+        ordering = ('-weight', )
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def get_geohash(lat, lon, deep=12, need='[null]'):
+        """
+        lat: 纬度
+        lon: 经度
+        deep: 深度 默认12
+        need: 是否需要在错误时也返回一个值, 注意改数值最好不与geohash出现的字符重复
+        """
+        lat = to_number(lat)
+        lon = to_number(lon)
+        if lat and lon:
+            return pygeohash.encode(lat, lon, deep)
+        if need:
+            return need
+
+    def save(self, *args, **kwargs):
+        """
+        保存时自动重算geohash
+        """
+        self.geohash = self.get_geohash(self.latitude, self.longitude)
+        super(School, self).save(*args, **kwargs)
 
 
 class ProfileInfo(AbstractUser):
@@ -113,3 +159,50 @@ class VerifyCode(models.Model):
         verbose_name = '短信验证码'
         verbose_name_plural = verbose_name
         ordering = ['-expire_time']
+
+
+
+class Address(models.Model):
+    """
+    地址表
+    经纬度请使用百度地图查询
+    """
+    name = models.CharField(blank=False, null=False, max_length=32, verbose_name='地点', help_text='地点')
+    detail = models.CharField(blank=True, null=True, max_length=32, verbose_name='详细地点', help_text='详细地点')
+    district = models.ForeignKey(District, verbose_name='区', help_text='所属区')
+    latitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='纬度', help_text='纬度')
+    longitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='经度', help_text='经度')
+    geohash = models.CharField(blank=True, null=True, max_length=12, verbose_name='geohash', help_text='geohash')
+    is_active = models.BooleanField(default=True, verbose_name='是否激活', help_text='是否激活')
+    weight = models.IntegerField(default=1, verbose_name='权重', help_text='权重')
+    user = models.ForeignKey(ProfileInfo, null=True, verbose_name='增加者', help_text='增加者')
+
+    class Meta:
+        verbose_name = '地址'
+        verbose_name_plural = verbose_name
+        ordering = ('-weight', )
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def get_geohash(lat, lon, deep=12, need='[null]'):
+        """
+        lat: 纬度
+        lon: 经度
+        deep: 深度 默认12
+        need: 是否需要在错误时也返回一个值, 注意改数值最好不与geohash出现的字符重复
+        """
+        lat = to_number(lat)
+        lon = to_number(lon)
+        if lat and lon:
+            return pygeohash.encode(lat, lon, deep)
+        if need:
+            return need
+
+    def save(self, *args, **kwargs):
+        """
+        保存时自动重算geohash
+        """
+        self.geohash = self.get_geohash(self.latitude, self.longitude)
+        super(Address, self).save(*args, **kwargs)

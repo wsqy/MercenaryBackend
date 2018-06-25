@@ -4,7 +4,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.validators import UniqueValidator
 
-from .models import DeviceInfo, VerifyCode, ProfileExtendInfo
+from .models import DeviceInfo, VerifyCode, ProfileExtendInfo, School
 
 User = get_user_model()
 
@@ -218,3 +218,18 @@ class PasswordModifySerializer(serializers.Serializer):
             raise serializers.ValidationError('两次密码不能一致')
         return attrs
 
+
+class SchoolSerializer(serializers.ModelSerializer):
+    district = serializers.CharField(source='district.name')
+
+    class Meta:
+        model = School
+        fields = ('id', 'name', 'district', )
+
+
+class NearestSchoolSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = School
+        fields = ('id', 'name', 'latitude', 'longitude',)
+        read_only_fields = ('id', 'name',)
