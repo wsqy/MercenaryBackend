@@ -1,11 +1,7 @@
-import pygeohash
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
-
-from utils.common import to_number
-from area.models import District
 
 
 class DeviceInfo(models.Model):
@@ -39,50 +35,6 @@ class DeviceInfo(models.Model):
         return self.deviceid
 
 
-class School(models.Model):
-    """
-    学校表
-    经纬度请使用百度地图查询
-    """
-    name = models.CharField(blank=False, null=False, max_length=32, verbose_name='学校', help_text='学校')
-    district = models.ForeignKey(District, verbose_name='区', help_text='所属区')
-    latitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='纬度', help_text='纬度')
-    longitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='经度', help_text='经度')
-    geohash = models.CharField(blank=True, null=True, max_length=12, verbose_name='geohash', help_text='geohash')
-    is_active = models.BooleanField(default=True, verbose_name='是否激活', help_text='是否激活')
-    weight = models.IntegerField(default=1, verbose_name='权重')
-
-    class Meta:
-        verbose_name = '学校'
-        verbose_name_plural = verbose_name
-        ordering = ('-weight', )
-
-    def __str__(self):
-        return self.name
-
-    @staticmethod
-    def get_geohash(lat, lon, deep=12, need='[null]'):
-        """
-        lat: 纬度
-        lon: 经度
-        deep: 深度 默认12
-        need: 是否需要在错误时也返回一个值, 注意改数值最好不与geohash出现的字符重复
-        """
-        lat = to_number(lat)
-        lon = to_number(lon)
-        if lat and lon:
-            return pygeohash.encode(lat, lon, deep)
-        if need:
-            return need
-
-    def save(self, *args, **kwargs):
-        """
-        保存时自动重算geohash
-        """
-        self.geohash = self.get_geohash(self.latitude, self.longitude)
-        super(School, self).save(*args, **kwargs)
-
-
 class ProfileInfo(AbstractUser):
     """
     用户
@@ -108,27 +60,16 @@ class ProfileExtendInfo(models.Model):
     用户扩展信息
     """
     user = models.ForeignKey(ProfileInfo, blank=True, null=True)
-    device_join = models.ForeignKey(DeviceInfo, blank=True, null=True,
-                                    verbose_name='用户注册时的设备')
-    origin_mobile = models.CharField(blank=True, null=True, max_length=15,
-                                     verbose_name='推荐人手机号')
-    rongcloud_token = models.CharField(blank=True, null=True, max_length=100,
-                                       verbose_name='融云IM Token')
-    jpush_token = models.CharField(blank=True, null=True, max_length=100,
-                                   verbose_name='极光推送Token')
-
+    device_join = models.ForeignKey(DeviceInfo, blank=True, verbose_name='用户注册时的设备')
+    origin_mobile = models.CharField(blank=True, null=True, max_length=15, verbose_name='推荐人手机号')
+    rongcloud_token = models.CharField(blank=True, null=True, max_length=100, verbose_name='融云IM Token')
+    jpush_token = models.CharField(blank=True, null=True, max_length=100, verbose_name='极光推送Token')
     balance = models.IntegerField(default=0, verbose_name='余额', help_text='可用余额(分)')
-
     deposit_freeze = models.IntegerField(default=0, verbose_name='冻结金额', help_text='冻结金额(分)')
-
-    password = models.CharField(verbose_name='支付密码', help_text='支付密码(暂时不用)',
-                                max_length=128, blank=True, null=True, )
-
+    password = models.CharField(max_length=128, blank=True, null=True,
+                                verbose_name='支付密码', help_text='支付密码(暂时不用)')
     remark = models.TextField(verbose_name='备注信息', blank=True, null=True, help_text='备注信息')
-    in_school = models.ForeignKey(School, blank=True, null=True, related_name='in_school',
-                                  verbose_name='属于学校', help_text='属于学校')
-    admin_school = models.ForeignKey(School, verbose_name='管理的学校', related_name='admin_school',
-                                     help_text='管理的学校', blank=True, null=True)
+    in_school = models.PositiveIntegerField(blank=True, verbose_name='所在学校/区域', help_text='所在学校/区域(外键)')
 
     class Meta:
         verbose_name = '用户扩展信息'
@@ -159,53 +100,3 @@ class VerifyCode(models.Model):
         verbose_name = '短信验证码'
         verbose_name_plural = verbose_name
         ordering = ['-expire_time']
-
-
-
-class Address(models.Model):
-    """
-    地址表
-    经纬度请使用百度地图查询
-    """
-    name = models.CharField(blank=False, null=False, max_length=32, verbose_name='地点', help_text='地点')
-    detail = models.CharField(blank=True, null=True, max_length=32, verbose_name='详细地点', help_text='详细地点')
-    district = models.ForeignKey(District, verbose_name='区', help_text='所属区')
-    latitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='纬度', help_text='纬度')
-    longitude = models.CharField(blank=False, null=False, max_length=32, verbose_name='经度', help_text='经度')
-    geohash = models.CharField(blank=True, null=True, max_length=12, verbose_name='geohash', help_text='geohash')
-    is_active = models.BooleanField(default=True, verbose_name='是否激活', help_text='是否激活')
-    weight = models.IntegerField(default=1, verbose_name='权重', help_text='权重')
-    user = models.ForeignKey(ProfileInfo, null=True, verbose_name='增加者', help_text='增加者')
-
-    class Meta:
-        verbose_name = '地址'
-        verbose_name_plural = verbose_name
-        ordering = ('-weight', )
-
-    def __str__(self):
-        return_str = self.name
-        if self.detail:
-            return_str += '_{}'.format(self.detail)
-        return return_str
-
-    @staticmethod
-    def get_geohash(lat, lon, deep=12, need='[null]'):
-        """
-        lat: 纬度
-        lon: 经度
-        deep: 深度 默认12
-        need: 是否需要在错误时也返回一个值, 注意改数值最好不与geohash出现的字符重复
-        """
-        lat = to_number(lat)
-        lon = to_number(lon)
-        if lat and lon:
-            return pygeohash.encode(lat, lon, deep)
-        if need:
-            return need
-
-    def save(self, *args, **kwargs):
-        """
-        保存时自动重算geohash
-        """
-        self.geohash = self.get_geohash(self.latitude, self.longitude)
-        super(Address, self).save(*args, **kwargs)

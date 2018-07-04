@@ -12,14 +12,14 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('paycenter', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('area', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payorder',
+            model_name='address',
             name='user',
-            field=models.ForeignKey(help_text='支付用户', on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='支付用户'),
+            field=models.ForeignKey(help_text='增加者', null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='增加者'),
         ),
     ]

@@ -3,11 +3,12 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.response import Response
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.decorators import action
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from .models import Province, City, District
-from .serializers import DistrictSerializer
+from .models import Province, City, District, School
+from .serializers import DistrictSerializer, SchoolSerializer, NearestSchoolSerializer
 
 
 class DistrictViewset(CreateModelMixin, viewsets.GenericViewSet):
@@ -62,3 +63,34 @@ class DistrictViewset(CreateModelMixin, viewsets.GenericViewSet):
             rec_dict['district_id'] = district.id
 
             return Response(rec_dict, status.HTTP_201_CREATED)
+
+
+class SchoolViewSet(ListModelMixin, viewsets.GenericViewSet):
+    """学校相关接口
+    list:
+        所有学校列表
+    """
+    queryset = School.objects.filter(is_active=True)
+    authentication_classes = (JSONWebTokenAuthentication, )
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return SchoolSerializer
+        elif self.action == 'nearest':
+            return NearestSchoolSerializer
+        return SchoolSerializer
+
+    @action(methods=['post'], detail=False)
+    def nearest(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        rec_dict = serializer.data
+        now_geohash = School.get_geohash(lat=rec_dict.get('latitude'), lon=rec_dict.get('longitude'), deep=6)
+        for length in range(6, 3, -1):
+            geohash_str = now_geohash[0:length]
+            near_schools = School.objects.filter(geohash__startswith=geohash_str)
+            if near_schools.count() > 0:
+                near_school = near_schools.first()
+                serializer = SchoolSerializer(near_school)
+                return Response(serializer.data)
+        return Response({'msg': '未定位到最近的学校'}, status=status.HTTP_401_UNAUTHORIZED)

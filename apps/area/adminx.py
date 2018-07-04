@@ -1,6 +1,6 @@
 import xadmin
 
-from .models import Province, City, District
+from .models import Province, City, District, School, Address
 
 
 class ProvinceAdmin:
@@ -21,6 +21,25 @@ class DistrictAdmin:
     relfield_style = 'fk-ajax'
 
 
+class SchoolAdmin:
+    list_display = ['name', 'district']
+    search_fields = ['name', 'district__name']
+    list_filter = ['name', ]
+    readonly_fields = ['geohash']
+    open_bmap = True
+
+
+class AddressAdmin:
+    list_display = ['name', 'detail', 'district', 'weight', 'is_active', 'user']
+    list_editable = ['weight', 'is_active', 'user']
+    search_fields = ['name', 'district__name']
+    list_filter = ['name', ]
+    readonly_fields = ['geohash']
+    open_bmap = True
+
+
 xadmin.site.register(Province, ProvinceAdmin)
 xadmin.site.register(City, CityAdmin)
 xadmin.site.register(District, DistrictAdmin)
+xadmin.site.register(School, SchoolAdmin)
+xadmin.site.register(Address, AddressAdmin)

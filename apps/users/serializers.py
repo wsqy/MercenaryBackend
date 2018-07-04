@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.utils import timezone
 from rest_framework import serializers
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
 
-from .models import DeviceInfo, VerifyCode, ProfileExtendInfo, School
+from .models import DeviceInfo, VerifyCode, ProfileExtendInfo
 
 User = get_user_model()
 
@@ -217,19 +217,3 @@ class PasswordModifySerializer(serializers.Serializer):
         if attrs.get('password_old') == attrs.get('password_new'):
             raise serializers.ValidationError('两次密码不能一致')
         return attrs
-
-
-class SchoolSerializer(serializers.ModelSerializer):
-    district = serializers.CharField(source='district.name')
-
-    class Meta:
-        model = School
-        fields = ('id', 'name', 'district', )
-
-
-class NearestSchoolSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = School
-        fields = ('id', 'name', 'latitude', 'longitude',)
-        read_only_fields = ('id', 'name',)
