@@ -181,7 +181,7 @@ class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = self.perform_create(serializer)
-        ProfileExtendInfo.objects.create(user=user)
+        # ProfileExtendInfo.objects.create(user=user)
 
         payload = jwt_payload_handler(user)
         re_dict = self.get_user_info(user)
