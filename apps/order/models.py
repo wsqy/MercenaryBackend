@@ -178,10 +178,10 @@ class OrderOperateLog(models.Model):
     def __str__(self):
         return '{}-{}'.format(self.order, self.message)
 
-    @staticmethod
-    def logging(order=None, user=None, message=''):
+    @classmethod
+    def logging(cls_obj, order=None, user=None, message=''):
         try:
-            OrderOperateLog.objects.create(order=order, user=user, message=message)
+            cls_obj.objects.create(order=order, user=user, message=message)
         except:
             pass
 
