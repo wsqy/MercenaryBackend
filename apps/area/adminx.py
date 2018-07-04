@@ -17,7 +17,7 @@ class CityAdmin:
 class DistrictAdmin:
     list_display = ['id', 'name', 'city']
     search_fields = ['name', 'id']
-    list_filter = ['city', ]
+    list_filter = ['city__name', ]
     relfield_style = 'fk-ajax'
 
 

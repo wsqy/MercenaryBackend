@@ -40,7 +40,7 @@ class City(models.Model):
     市表
     """
     name = models.CharField(blank=False, max_length=32, verbose_name='市')
-    province = models.ForeignKey(Province, verbose_name="省")
+    province = models.ForeignKey(Province, verbose_name='省')
 
     class Meta:
         verbose_name = '市'
@@ -67,7 +67,7 @@ class District(models.Model):
     城市
     """
     name = models.CharField(blank=False, max_length=32, verbose_name='城市')
-    city = models.ForeignKey(City, verbose_name="市")
+    city = models.ForeignKey(City, verbose_name='市')
 
     class Meta:
         verbose_name = '城市'
