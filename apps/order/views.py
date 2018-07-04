@@ -99,7 +99,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             rec_dict['employer_receive_name'] = rec_dict['employer_user'].nickname
         if not rec_dict.get('employer_receive_mobile'):
             rec_dict['employer_receive_mobile'] = rec_dict['employer_user'].mobile
-        rec_dict['reward'] = (rec_dict['pay_cost'] - service_cost_calc.calc(rec_dict['pay_cost']))
+        rec_dict['reward'] = (rec_dict['pay_cost'] - service_cost_calc.service_calc(rec_dict['pay_cost']))
 
         order_obj = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
