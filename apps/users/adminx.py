@@ -1,6 +1,11 @@
 import xadmin
+from xadmin.plugins.auth import UserAdmin
+from django.contrib.auth import get_user_model
 
-from .models import DeviceInfo, ProfileExtendInfo
+from .models import DeviceInfo, ProfileExtendInfo, ProfileInfo
+
+
+User = get_user_model()
 
 
 class BaseSetting:
@@ -18,11 +23,18 @@ class DeviceInfoAdmin:
 
 
 class ProfileExtendInfoAdmin:
-    list_display = ['user', 'balance', 'deposit_freeze', 'in_school']
+    list_display = ['balance', 'deposit_freeze', 'in_school']
+    model = ProfileExtendInfo
+
+
+class ProfileInfoAdmin(UserAdmin):
+    inlines = [ProfileExtendInfoAdmin, ]
 
 
 # xadmin.site.register(xadmin.views.BaseAdminView, BaseSetting)
 xadmin.site.register(xadmin.views.CommAdminView, GlobalSettings)
+
+xadmin.site.unregister(User)
+xadmin.site.register(User, ProfileInfoAdmin)
 xadmin.site.register(DeviceInfo, DeviceInfoAdmin)
-xadmin.site.register(ProfileExtendInfo, ProfileExtendInfoAdmin)
 
