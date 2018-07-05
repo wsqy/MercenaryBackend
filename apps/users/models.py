@@ -69,7 +69,7 @@ class ProfileExtendInfo(models.Model):
     password = models.CharField(max_length=128, blank=True, null=True,
                                 verbose_name='支付密码', help_text='支付密码(暂时不用)')
     remark = models.TextField(verbose_name='备注信息', blank=True, null=True, help_text='备注信息')
-    in_school = models.IntegerField(default=-1, verbose_name='所在学校/区域', help_text='所在学校/区域(外键)')
+    in_school = models.ForeignKey('area.school', blank=True, null=True, verbose_name='所在学校/区域', help_text='所在学校/区域(外键)')
 
     class Meta:
         verbose_name = '用户扩展信息'

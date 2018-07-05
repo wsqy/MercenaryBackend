@@ -1,4 +1,5 @@
 import xadmin
+
 from .models import DeviceInfo, ProfileExtendInfo
 
 
@@ -17,7 +18,7 @@ class DeviceInfoAdmin:
 
 
 class ProfileExtendInfoAdmin:
-    list_display = ['user', 'balance', 'deposit_freeze', 'in_school', 'admin_school']
+    list_display = ['user', 'balance', 'deposit_freeze', 'in_school']
 
 
 # xadmin.site.register(xadmin.views.BaseAdminView, BaseSetting)
