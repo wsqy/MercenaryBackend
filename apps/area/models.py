@@ -146,7 +146,7 @@ class Address(models.Model):
     geohash = models.CharField(blank=True, null=True, max_length=12, verbose_name='geohash', help_text='geohash')
     is_active = models.BooleanField(default=True, verbose_name='是否激活', help_text='是否激活')
     weight = models.IntegerField(default=1, verbose_name='权重', help_text='权重')
-    user = models.ForeignKey(User, null=True, verbose_name='增加者', help_text='增加者')
+    user = models.ForeignKey(User, blank=True, null=True, verbose_name='增加者', help_text='增加者')
 
     class Meta:
         verbose_name = '地址'
