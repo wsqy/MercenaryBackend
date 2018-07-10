@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Province, City, District, School
+from .models import Province, City, District, School, Address
 
 
 class ProvinceSerializer(serializers.ModelSerializer):
@@ -51,3 +51,17 @@ class NearestSchoolSerializer(serializers.ModelSerializer):
         model = School
         fields = ('id', 'name', 'latitude', 'longitude',)
         read_only_fields = ('id', 'name',)
+
+
+class AddressInfoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = '__all__'
+
+
+class AddressShortSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = ('id', 'name', 'detail', 'user')
