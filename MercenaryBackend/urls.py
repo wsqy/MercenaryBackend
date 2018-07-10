@@ -28,6 +28,7 @@ from order.views import SubCategoryViewset, OrderViewSet
 from paycenter.views import PayOrderViewSet, PayReturnViewSet
 from accounts.views import BalanceViewset, BankCardViewset
 from resources.views import ResourceMaterialViewset
+from recruit.views import CompanyViewset
 router = DefaultRouter()
 
 router.register(r'users', UserViewset, base_name='users')
@@ -42,6 +43,7 @@ router.register(r'balance', BalanceViewset, base_name='balance')
 router.register(r'bank_card', BankCardViewset, base_name='bank_card')
 router.register(r'resource', ResourceMaterialViewset, base_name='resource')
 router.register(r'school', SchoolViewSet, base_name='school')
+router.register(r'company', CompanyViewset, base_name='company')
 
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),
