@@ -154,10 +154,7 @@ class Address(models.Model):
         ordering = ('-weight', )
 
     def __str__(self):
-        return_str = self.name
-        if self.detail:
-            return_str += '_{}'.format(self.detail)
-        return return_str
+        return self.full_name
 
     @staticmethod
     def get_geohash(lat, lon, deep=12, need='[null]'):
@@ -180,3 +177,10 @@ class Address(models.Model):
         """
         self.geohash = self.get_geohash(self.latitude, self.longitude)
         super(Address, self).save(*args, **kwargs)
+
+    @property
+    def full_name(self):
+        full_name = self.name
+        if self.detail:
+            full_name += '-{}'.format(self.detail)
+        return full_name
