@@ -1,7 +1,11 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
-from users.models import Address
+from area.models import Address
+
+
+User = get_user_model()
 
 
 class Company(models.Model):
@@ -16,16 +20,17 @@ class Company(models.Model):
     )
     name = models.CharField(blank=False, null=False, max_length=128,
                             verbose_name='公司名称', help_text='公司名称')
+    user = models.ForeignKey(User, null=True, verbose_name='增加者', help_text='增加者')
     telephone = models.CharField(blank=True, null=True, max_length=20,
                                  verbose_name='公司联系方式', help_text='公司联系方式')
-    address = models.ForeignKey(Address, blank=True, null=True,
+    address = models.ForeignKey(Address, null=True,
                                 verbose_name='公司地址', help_text='公司地址')
     introduce = models.TextField(blank=True, null=True, verbose_name='公司介绍',
                                  help_text='公司介绍')
     logo = models.ImageField(blank=True, null=True, verbose_name='企业logo',
                              upload_to='company/logo',
                              help_text='企业logo 现阶段是阿里云OSS地址')
-    weight = models.IntegerField(default=1, verbose_name='权重')
+    weight = models.IntegerField(default=1, verbose_name='权重',help_text='权重')
     add_time = models.DateTimeField(default=timezone.now, verbose_name='添加时间',
                                     help_text='添加时间')
     status = models.IntegerField(verbose_name='认证状态', help_text='认证状态',
