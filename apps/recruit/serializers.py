@@ -17,3 +17,11 @@ class CompanyInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = '__all__'
+
+
+class CompanyCreateSerializer(serializers.ModelSerializer):
+    remark = serializers.CharField(label='申请备注', help_text='申请备注',)
+    class Meta:
+        model = Company
+        exclude = ('weight', 'add_time',)
+        read_only_fields = ('status',)
