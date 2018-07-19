@@ -20,6 +20,7 @@ class Company(models.Model):
     )
     name = models.CharField(blank=False, null=False, max_length=128,
                             verbose_name='公司名称', help_text='公司名称')
+    user = models.ForeignKey(User, null=True, verbose_name='操作者', help_text='操作者')
     telephone = models.CharField(blank=True, null=True, max_length=20,
                                  verbose_name='公司联系方式', help_text='公司联系方式')
     address = models.ForeignKey(Address, null=True,
@@ -34,6 +35,8 @@ class Company(models.Model):
                                     help_text='添加时间')
     status = models.IntegerField(verbose_name='认证状态', help_text='认证状态',
                                  choices=COMPANY_STATUS, default=10)
+    remark = models.TextField(blank=True, null=True, verbose_name='申请备注',
+                              help_text='公司认证申请备注信息')
 
     class Meta:
         verbose_name = '公司表'
@@ -45,10 +48,15 @@ class Company(models.Model):
 
 
 class CompanyLog(models.Model):
+    """
+    企业认证申请日志(暂未使用)
+    """
     company = models.ForeignKey(Company, verbose_name='公司', help_text='公司')
     user = models.ForeignKey(User, null=True, verbose_name='操作者', help_text='操作者')
-    create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
-    message = models.TextField(verbose_name='操作日志', help_text='操作日志', null=True, blank=True)
+    create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间',
+                                       help_text='创建时间')
+    message = models.TextField(null=True, blank=True, verbose_name='操作日志',
+                               help_text='操作日志')
 
     @classmethod
     def logging(cls_obj, company, user=None, message=''):

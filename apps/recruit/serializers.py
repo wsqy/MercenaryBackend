@@ -20,7 +20,9 @@ class CompanyInfoSerializer(serializers.ModelSerializer):
 
 
 class CompanyCreateSerializer(serializers.ModelSerializer):
-    remark = serializers.CharField(label='申请备注', help_text='申请备注',)
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
     class Meta:
         model = Company
         exclude = ('weight', 'add_time',)

@@ -35,15 +35,3 @@ class CompanyViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, views
         if self.action == 'list':
             queryset = queryset.filter(status=30)
         return queryset
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        rec_dict = serializer.data
-        remark = rec_dict.pop('remark')
-        company = Company.objects.create(**rec_dict)
-        message = '企业认证申请'
-        if remark:
-            message += '-{}'.format(remark)
-        CompanyLog.logging(company=company, user=request.user, message=message)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
