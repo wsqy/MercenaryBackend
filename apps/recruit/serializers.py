@@ -23,6 +23,12 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
     )
+
+    def validate_user(self, user):
+        if user.profileextendinfo.admin_company:
+            raise serializers.ValidationError('当前用户已认证过企业-{}'.format(user.profileextendinfo.admin_company.name))
+        return user
+
     class Meta:
         model = Company
         exclude = ('weight', 'add_time',)
