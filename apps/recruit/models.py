@@ -72,3 +72,66 @@ class CompanyLog(models.Model):
 
     def __str__(self):
         return self.message
+
+
+class RecruitOrder(models.Model):
+    """
+    招募令
+    """
+    OrderStatus = ()
+    SignDeposit = (
+        (0, '0元'),
+        (500, '5元'),
+        (1000, '10元'),
+        (1500, '15元'),
+        (2000, '20元')
+    )
+    name = models.CharField(blank=False, null=False, max_length=128, verbose_name='招募令标题', help_text='招募令标题')
+    company = models.ForeignKey(Company, null=False, verbose_name='所属公司', help_text='所属公司')
+    description = models.TextField(blank=True, null=True, verbose_name='任务描述', help_text='任务描述')
+    requirement = models.TextField(blank=True, null=True, verbose_name='任务要求', help_text='任务要求')
+    enrolment_max_num = models.PositiveSmallIntegerField(default=1, verbose_name='最大报名人数', help_text='最大报名人数')
+    enrolment_min_num = models.PositiveSmallIntegerField(default=1, verbose_name='最少报名人数', help_text='最少报名人数')
+    sign_start_time = models.DateTimeField(default=timezone.now, verbose_name='报名开始时间', help_text='报名开始时间')
+    sign_end_time = models.DateTimeField(default=timezone.now, verbose_name='报名结束时间', help_text='报名结束时间')
+    task_start_time = models.DateTimeField(default=timezone.now, verbose_name='任务开始时间', help_text='任务开始时间')
+    task_end_time = models.DateTimeField(default=timezone.now, verbose_name='任务结束时间', help_text='任务结束时间')
+    create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
+    status = models.IntegerField(verbose_name='招募令状态', help_text='招募令状态', choices=OrderStatus, default=10)
+    recruit_deposit = models.PositiveIntegerField(default=0, verbose_name='招募令押金', help_text='招募令押金(单位:分)')
+    sign_deposit = models.PositiveIntegerField(default=0, choices=SignDeposit, verbose_name='报名所需押金', help_text='报名所需押金(单位:分)')
+    weight = models.PositiveIntegerField(default=1, verbose_name='权重', help_text='权重')
+    total_sign_num = models.PositiveSmallIntegerField(default=1, verbose_name='实际总报名人数', help_text='实际总报名人数')
+
+    class Meta:
+        verbose_name = '招募令表'
+        verbose_name_plural = verbose_name
+        ordering = ('-weight', '-create_time',)
+
+    def __str__(self):
+        return self.name
+
+
+class RecruitCard(models.Model):
+    """
+    招募令卡片
+    """
+    recruit = models.ForeignKey(RecruitOrder, null=False, verbose_name='所属招募令', help_text='所属招募令')
+    adress = models.ForeignKey(Address, null=False, verbose_name='任务地址', help_text='任务地址')
+    sign_start_time = models.DateTimeField(default=timezone.now, verbose_name='报名开始时间', help_text='报名开始时间')
+    sign_end_time = models.DateTimeField(default=timezone.now, verbose_name='报名结束时间', help_text='报名结束时间')
+    task_start_time = models.DateTimeField(default=timezone.now, verbose_name='任务开始时间', help_text='任务开始时间')
+    task_end_time = models.DateTimeField(default=timezone.now, verbose_name='任务结束时间', help_text='任务结束时间')
+    min_num = models.PositiveSmallIntegerField(default=1, verbose_name='最小报名人数', help_text='最小报名人数')
+    max_num = models.PositiveSmallIntegerField(default=1, verbose_name='最大报名人数', help_text='最大报名人数')
+    sign_num = models.PositiveSmallIntegerField(default=1, verbose_name='实际报名人数', help_text='实际报名人数')
+    status = models.IntegerField(verbose_name='状态', help_text='状态', default=0)
+    wages = models.PositiveIntegerField(default=0, verbose_name='工资', help_text='工资')
+
+    class Meta:
+        verbose_name = '招募令卡片'
+        verbose_name_plural = verbose_name
+        ordering = ('-task_start_time',)
+
+    def __str__(self):
+        return '{}-{}'.format(self.recruit.name, self.task_start_time)
