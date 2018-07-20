@@ -297,12 +297,12 @@ LOGGING = {
         },
         'users': {
             'handlers': ['default', 'error'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
         'order': {
             'handlers': ['default', 'error'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
         'paycenter': {
@@ -312,7 +312,12 @@ LOGGING = {
         },
         'accounts': {
             'handlers': ['default', 'error'],
-            'level': 'DEBUG',
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'recruit': {
+            'handlers': ['default', 'error'],
+            'level': 'INFO',
             'propagate': True,
         },
 
