@@ -188,3 +188,18 @@ class OrderOperateLog(models.Model):
         except:
             pass
 
+
+class OrdersImage(models.Model):
+    """
+    订单图片
+    """
+    order = models.ForeignKey(OrderInfo, verbose_name='所属订单', help_text='所属订单')
+    image = models.ImageField(upload_to='order/%Y/%m/%d', verbose_name='图片', help_text='图片', null=True, blank=True)
+    add_time = models.DateTimeField(default=timezone.now, verbose_name='添加时间', help_text='添加时间')
+
+    class Meta:
+        verbose_name = '订单图片'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.order.id

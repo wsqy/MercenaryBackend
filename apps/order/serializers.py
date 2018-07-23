@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import SubCategory, OrderInfo
+from .models import SubCategory, OrderInfo, OrdersImage
 from users.serializers import UserOrderListSerializer, UserOrderDetailSerializer
 from area.serializers import DistrictInfoSerializer
 
@@ -11,6 +11,12 @@ class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = SubCategory
         fields = ('id', 'name', 'template', 'classification')
+
+
+class OrdersImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrdersImage
+        fields = ('image', )
 
 
 class OrderInfoSerializer(serializers.ModelSerializer):
@@ -25,6 +31,7 @@ class OrderInfoSerializer(serializers.ModelSerializer):
     reward = serializers.SerializerMethodField()
     is_employer_user = serializers.SerializerMethodField()
     is_receiver_user = serializers.SerializerMethodField()
+    images = OrdersImageSerializer(many=True)
 
     def get_is_employer_user(self, obj):
         return self.context.get('request').user == obj.employer_user
@@ -47,6 +54,7 @@ class OrderInfoCreateSerializer(serializers.ModelSerializer):
     employer_user = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
     )
+    images = OrdersImageSerializer(many=True)
 
     class Meta:
         model = OrderInfo
