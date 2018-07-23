@@ -9,7 +9,7 @@ User = get_user_model()
 
 class SubCategory(models.Model):
     """
-    订单小分类
+    订单小分类 订单暂不使用小分类
     """
     CLASSIFICATION_CHOICE = (
         (1, '即时'),
@@ -49,6 +49,13 @@ class OrderInfo(models.Model):
     """
     订单
     """
+    CLASSIFICATION_CHOICE = (
+        (1, '即时'),
+        (2, '顺风'),
+        (3, '替身'),
+        (4, '技能'),
+        (5, '活动'),
+    )
     ORDER_STATUS = (
         # 任务发布前
         (1, '待付佣金'),
@@ -82,7 +89,9 @@ class OrderInfo(models.Model):
                           help_text='订单号', primary_key=True)
     status = models.SmallIntegerField(choices=ORDER_STATUS, default=1,
                                       verbose_name='订单状态', help_text='订单状态')
-    category = models.ForeignKey(SubCategory, verbose_name='分类', help_text='订单分类')
+    # category = models.ForeignKey(SubCategory, verbose_name='分类', help_text='订单分类')
+    category = models.PositiveSmallIntegerField(choices=CLASSIFICATION_CHOICE,
+        default=1, verbose_name='所属分类', help_text='所属分类')
     create_time = models.DateTimeField(default=timezone.now, verbose_name='订单创建时间',
                                        help_text='订单创建时间')
     complete_time = models.DateTimeField(null=True, help_text='订单完成时间',
@@ -111,8 +120,7 @@ class OrderInfo(models.Model):
     employer_receive_mobile = models.CharField(max_length=15, verbose_name='联系人手机号',
                                                help_text='联系人手机号', null=True)
     employer_complete_time = models.DateTimeField(null=True,
-                                                  verbose_name='雇主确认完成时间',
-                                                  help_text='雇主确认完成时间')
+        verbose_name='雇主确认完成时间', help_text='雇主确认完成时间')
 
     # 接单相关信息
     receiver_user = models.ForeignKey(User, null=True, verbose_name='佣兵',
@@ -120,30 +128,26 @@ class OrderInfo(models.Model):
     receiver_confirm_time = models.DateTimeField(null=True, verbose_name='佣兵接单时间',
                                                  help_text='佣兵接单时间')
     receiver_complete_time = models.DateTimeField(null=True,
-                                                  verbose_name='佣兵确认完成时间',
-                                                  help_text='佣兵确认完成时间')
+        verbose_name='佣兵确认完成时间', help_text='佣兵确认完成时间')
 
     # 订单 从哪
-    from_addr_district = models.ForeignKey(District, verbose_name='订单开始的城市', null=True,
-                                           help_text='订单开始的城市',
-                                           related_name='from_district')
+    # from_addr_district = models.ForeignKey(District, verbose_name='订单开始的城市', null=True,
+    #     help_text='订单开始的城市', related_name='from_district')
     from_addr_name = models.CharField(max_length=32, null=True, help_text='订单开始的点信息',
                                       verbose_name='订单开始的点信息')
     from_addr_detail = models.CharField(max_length=64, null=True, help_text='订单开始的具体地址',
                                         verbose_name='订单开始的具体地址')
 
     # 订单去哪
-    to_addr_district = models.ForeignKey(District, verbose_name='订单结束的城市', null=True,
-                                         help_text='订单结束的城市',
-                                         related_name='to_district')
+    # to_addr_district = models.ForeignKey(District, verbose_name='订单结束的城市', null=True,
+    #     help_text='订单结束的城市', related_name='to_district')
     to_addr_name = models.CharField(max_length=128, null=True, help_text='订单结束的点信息',
                                     verbose_name='订单结束的点信息')
     to_addr_detail = models.CharField(max_length=128, null=True, help_text='订单结束的具体地址',
                                       verbose_name='订单结束的具体地址')
     # 订单的所在地信息
     create_district = models.ForeignKey(District, verbose_name='订单创建的城市', null=True,
-                                        help_text='订单创建的城市',
-                                        related_name='create_district')
+        help_text='订单创建的城市', related_name='create_district')
 
     # 订单开始时间
     from_time = models.DateTimeField(null=True, verbose_name='订单开始时间',

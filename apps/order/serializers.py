@@ -14,7 +14,8 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
 
 class OrderInfoSerializer(serializers.ModelSerializer):
-    category = SubCategorySerializer()
+    # category = SubCategorySerializer()
+    category = serializers.CharField(source='get_category_display')
     status_name = serializers.CharField(source='get_status_display')
     employer_user = UserOrderDetailSerializer()
     receiver_user = UserOrderDetailSerializer()
@@ -56,7 +57,8 @@ class OrderInfoCreateSerializer(serializers.ModelSerializer):
 
 class OrderInfoListSerializer(serializers.ModelSerializer):
     employer_user = UserOrderListSerializer()
-    category = SubCategorySerializer()
+    # category = SubCategorySerializer()
+    category = serializers.CharField(source='get_category_display')
     status_name = serializers.CharField(source='get_status_display')
     reward = serializers.SerializerMethodField()
 
