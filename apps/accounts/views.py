@@ -5,13 +5,12 @@ from rest_framework.mixins import (
     ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin
 )
 from rest_framework.response import Response
-from rest_framework.decorators import action
 
-from .models import BalanceDetail, BankCard
+from .models import BalanceDetail, BankCard, WithDraw
 from users.models import ProfileExtendInfo
 from .serializers import (
     BalanceSerializer, BalanceListSerializer, WithDrawCreateSerializer,
-    BankCardListSerializer, BankCardCreateSerializer
+    BankCardListSerializer, BankCardCreateSerializer, WithDrawListSerializer
 )
 
 from utils.pagination import CommonPagination
@@ -19,13 +18,10 @@ from utils.authentication import CommonAuthentication
 from utils.bank_card import realname_authentication
 
 
-class BalanceViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
-                     viewsets.GenericViewSet):
+class BalanceViewset(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     """余额相关相关接口
     list:
         余额变动接口
-    withDraw:
-        提现申请
     retrieve:
         余额查询
     """
@@ -41,8 +37,6 @@ class BalanceViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
             return BalanceSerializer
         elif self.action == 'list':
             return BalanceListSerializer
-        elif self.action == 'withDraw':
-            return WithDrawCreateSerializer
         return BalanceSerializer
 
     def get_object(self):
@@ -54,10 +48,6 @@ class BalanceViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
             queryset = queryset.filter(user=self.request.user)
 
         return queryset
-
-    @action(methods=['post'], detail=False)
-    def withDraw(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
 
 
 class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
@@ -125,3 +115,31 @@ class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
                             headers=headers)
         else:
             return Response({'msg': '验证失败,请检查填写是否正确'}, status=status.HTTP_403_FORBIDDEN)
+
+
+class WithDrawViewset(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
+    """提现相关接口
+    list:
+        提现记录
+    create:
+        提现申请
+    """
+    queryset = WithDraw.objects.all()
+    authentication_classes = CommonAuthentication()
+    pagination_class = CommonPagination
+
+    def get_permissions(self):
+        return [permissions.IsAuthenticated()]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return WithDrawCreateSerializer
+        elif self.action == 'list':
+            return WithDrawListSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action == 'list':
+            queryset = queryset.filter(user=self.request.user)
+
+        return queryset

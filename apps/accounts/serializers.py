@@ -80,3 +80,12 @@ class BankCardCreateSerializer(serializers.ModelSerializer):
         model = BankCard
         fields = ('user', 'card_no', 'id_card', 'name', 'card_type', 'bank',
                   'is_credit', 'phone')
+
+
+class WithDrawListSerializer(serializers.ModelSerializer):
+    status = serializers.CharField(source='get_status_display')
+    type = serializers.CharField(source='get_type_display')
+    class Meta:
+        model = WithDraw
+        exclude = ('id', 'user')
+        read_only_fields = ('id', 'status', 'add_time')
