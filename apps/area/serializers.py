@@ -42,7 +42,7 @@ class SchoolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = School
-        fields = ('id', 'name', 'district', )
+        fields = ('id', 'name', 'district', 'first_pinyin')
 
 
 class NearestSchoolSerializer(serializers.ModelSerializer):

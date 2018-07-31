@@ -26,6 +26,7 @@ django-celery-results = "*"
 raven = "*"
 celery = "==4.2"
 pygeohash = "*"
+pypinyin = "*"
 
 [dev-packages]
 "fabric3" = "*"

@@ -1,3 +1,4 @@
+import pypinyin
 import pygeohash
 
 from django.db import models
@@ -101,11 +102,13 @@ class School(models.Model):
     geohash = models.CharField(blank=True, null=True, max_length=12, verbose_name='geohash', help_text='geohash')
     is_active = models.BooleanField(default=True, verbose_name='是否激活', help_text='是否激活')
     weight = models.IntegerField(default=1, verbose_name='权重')
+    pinyin = models.CharField(blank=True, null=True, max_length=32, verbose_name='名称首字母', help_text='名称首字母')
+    first_pinyin = models.CharField(blank=True, null=True, max_length=32, verbose_name='首个名称首字母', help_text='首个名称首字母')
 
     class Meta:
         verbose_name = '学校/区域'
         verbose_name_plural = verbose_name
-        ordering = ('-weight', )
+        ordering = ('pinyin', '-weight', )
 
     def __str__(self):
         return self.name
@@ -125,11 +128,24 @@ class School(models.Model):
         if need:
             return need
 
+    @staticmethod
+    def get_pinyin(name):
+        """
+        获取名称的首字母
+        :param name:
+        :return:
+        福建江夏学院 -->fjjxxy
+        """
+        return pypinyin.slug(name, style=pypinyin.Style.FIRST_LETTER).replace('-', '')
+
     def save(self, *args, **kwargs):
         """
         保存时自动重算geohash
         """
         self.geohash = self.get_geohash(self.latitude, self.longitude)
+        self.pinyin = self.get_pinyin(self.name)
+        if self.pinyin:
+            self.first_pinyin = self.pinyin[0]
         super(School, self).save(*args, **kwargs)
 
 

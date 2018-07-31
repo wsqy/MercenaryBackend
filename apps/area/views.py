@@ -1,5 +1,6 @@
 from django.db.models import Q
 from rest_framework import status
+from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.response import Response
@@ -73,12 +74,35 @@ class SchoolViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = School.objects.filter(is_active=True)
     authentication_classes = (JSONWebTokenAuthentication, )
 
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('name',)
+
     def get_serializer_class(self):
         if self.action == 'list':
             return SchoolSerializer
         elif self.action == 'nearest':
             return NearestSchoolSerializer
         return SchoolSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+        # 下面的是做了分组
+        # res_data = {}
+        # for data in serializer.data:
+        #     first_pinyin = data.get('first_pinyin')
+        #     if first_pinyin in res_data:
+        #         res_data[first_pinyin].append(data)
+        #     else:
+        #         res_data[first_pinyin] = [data]
+        # return Response(res_data)
 
     @action(methods=['post'], detail=False)
     def nearest(self, request, *args, **kwargs):
