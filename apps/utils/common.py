@@ -66,3 +66,24 @@ def to_number(num):
         return float(num)
     except:
         return 0
+
+
+def response_data_group(response_data, group_element):
+    """
+    将响应数据分组并包含每个分组的数量
+    :param data: 原始数据
+    :param group_element: 分组属性
+    :return:
+    """
+    res_data = {}
+    for data in response_data:
+        group = data.get(group_element)
+        if group in res_data:
+            res_data[group]['results'].append(data)
+            res_data[group]['count'] += 1
+        else:
+            res_data[group] = {
+                'results': [data,],
+                'count': 1
+            }
+    return res_data

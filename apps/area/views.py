@@ -10,6 +10,7 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from .models import Province, City, District, School
 from .serializers import DistrictSerializer, SchoolSerializer, NearestSchoolSerializer
+from utils.common import response_data_group
 
 
 class DistrictViewset(CreateModelMixin, viewsets.GenericViewSet):
@@ -85,24 +86,11 @@ class SchoolViewSet(ListModelMixin, viewsets.GenericViewSet):
         return SchoolSerializer
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        response = super(SchoolViewSet, self).list(request, *args, **kwargs)
+        # # 下面的是做了分组
+        # response.data = response_data_group(response.data, 'first_pinyin')
+        return response
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-        # 下面的是做了分组
-        # res_data = {}
-        # for data in serializer.data:
-        #     first_pinyin = data.get('first_pinyin')
-        #     if first_pinyin in res_data:
-        #         res_data[first_pinyin].append(data)
-        #     else:
-        #         res_data[first_pinyin] = [data]
-        # return Response(res_data)
 
     @action(methods=['post'], detail=False)
     def nearest(self, request, *args, **kwargs):
