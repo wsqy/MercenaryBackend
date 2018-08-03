@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from .models import SubCategory, OrderInfo, OrdersImage
 from users.serializers import UserOrderListSerializer, UserOrderDetailSerializer
-from area.serializers import DistrictInfoSerializer
+from area.serializers import SchoolSerializer
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -25,9 +25,7 @@ class OrderInfoSerializer(serializers.ModelSerializer):
     status_name = serializers.CharField(source='get_status_display')
     employer_user = UserOrderDetailSerializer()
     receiver_user = UserOrderDetailSerializer()
-    from_addr_district = DistrictInfoSerializer()
-    to_addr_district = DistrictInfoSerializer()
-    create_district = DistrictInfoSerializer()
+    school = SchoolSerializer()
     reward = serializers.SerializerMethodField()
     is_employer_user = serializers.SerializerMethodField()
     is_receiver_user = serializers.SerializerMethodField()

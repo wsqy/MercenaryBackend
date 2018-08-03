@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from utils.validators import IntRangeValidator
-from area.models import District, School
+from area.models import School
 
 User = get_user_model()
 
@@ -96,13 +96,9 @@ class OrderInfo(models.Model):
                                        help_text='订单创建时间')
     complete_time = models.DateTimeField(null=True, help_text='订单完成时间',
                                          verbose_name='订单完成时间')
-    detail = models.TextField(verbose_name='订单详细信息', help_text='订单详细信息', null=True)
+    description = models.TextField(verbose_name='订单详细信息', help_text='订单详细信息', null=True)
     privacy = models.TextField(verbose_name='订单隐私信息', help_text='订单隐私信息', null=True)
-    remark = models.TextField(verbose_name='订单备注信息', help_text='订单备注信息', null=True)
-    detail = models.TextField(verbose_name='订单详细信息', help_text='订单详细信息', null=True)
-    description = models.CharField(verbose_name='订单简短描述', help_text='订单简短描述',
-                                   null=True, max_length=255)
-    school = models.ForeignKey(School, verbose_name='学校', help_text='学院', blank=True, null=True)
+    school = models.ForeignKey(School, verbose_name='订单所在学校', help_text='订单所在学校')
 
     # 金额相关信息
     deposit = models.PositiveSmallIntegerField(default=0, verbose_name='押金',
@@ -130,31 +126,15 @@ class OrderInfo(models.Model):
     receiver_complete_time = models.DateTimeField(null=True,
         verbose_name='佣兵确认完成时间', help_text='佣兵确认完成时间')
 
-    # 订单 从哪
-    # from_addr_district = models.ForeignKey(District, verbose_name='订单开始的城市', null=True,
-    #     help_text='订单开始的城市', related_name='from_district')
-    from_addr_name = models.CharField(max_length=32, null=True, help_text='订单开始的点信息',
-                                      verbose_name='订单开始的点信息')
-    from_addr_detail = models.CharField(max_length=64, null=True, help_text='订单开始的具体地址',
-                                        verbose_name='订单开始的具体地址')
+    # 任务地点
+    from_addr = models.CharField(max_length=128, null=True, help_text='任务地点', verbose_name='任务地点')
+    # 交付地点
+    to_addr = models.CharField(max_length=128, null=True, help_text='交付地点', verbose_name='交付地点')
 
-    # 订单去哪
-    # to_addr_district = models.ForeignKey(District, verbose_name='订单结束的城市', null=True,
-    #     help_text='订单结束的城市', related_name='to_district')
-    to_addr_name = models.CharField(max_length=128, null=True, help_text='订单结束的点信息',
-                                    verbose_name='订单结束的点信息')
-    to_addr_detail = models.CharField(max_length=128, null=True, help_text='订单结束的具体地址',
-                                      verbose_name='订单结束的具体地址')
-    # 订单的所在地信息
-    create_district = models.ForeignKey(District, verbose_name='订单创建的城市', null=True,
-        help_text='订单创建的城市', related_name='create_district')
-
-    # 订单开始时间
-    from_time = models.DateTimeField(null=True, verbose_name='订单开始时间',
-                                     help_text='订单开始时间')
-    # 订单结束时间
-    to_time = models.DateTimeField(null=True, verbose_name='订单结束时间',
-                                   help_text='订单结束时间')
+    # 任务开始时间
+    from_time = models.DateTimeField(null=True, verbose_name='任务开始时间', help_text='任务开始时间')
+    # 任务结束时间
+    to_time = models.DateTimeField(null=True, verbose_name='任务结束时间', help_text='任务结束时间')
 
     class Meta:
         verbose_name = '订单'
