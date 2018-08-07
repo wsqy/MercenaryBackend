@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import SubCategory, OrderInfo, OrderOperateLog
+from .models import SubCategory, OrderInfo, OrderOperateLog, OrdersImage
 from .serializers import (
     SubCategorySerializer, OrderInfoSerializer, OrderInfoCreateSerializer,
     OrderInfoListSerializer, OrderInfoReceiptSerializer
@@ -59,14 +59,15 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
     complete:
         订单确认完成
     admin_list:
-        x学校管理员查看本校订单列表接口
+        学校管理员查看本校订单列表接口
     """
     authentication_classes = CommonAuthentication()
     pagination_class = CommonPagination
-    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend, )
+    # filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filter_class = OrderFilter
     # filter_fields = ('status', 'deposit')
-    ordering_fields = ('reward', )
+    # ordering_fields = ('reward', )
 
     def get_permissions(self):
         if self.action in ['find', ]:
@@ -90,6 +91,11 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         return serializer.data
 
     def create(self, request, *args, **kwargs):
+        images_list = []
+        for _im in request.data.getlist('images'):
+            images_list.append({
+                'image': _im
+            })
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         rec_dict = serializer.validated_data
@@ -101,8 +107,10 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             rec_dict['employer_receive_mobile'] = rec_dict['employer_user'].mobile
         rec_dict['reward'] = (rec_dict['pay_cost'] - service_cost_calc.service_calc(rec_dict['pay_cost']))
 
-        order_obj = self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
+        order_obj = OrderInfo.objects.create(**rec_dict)
+        for images in images_list:
+            OrdersImage.objects.create(order=order_obj, **images)
+
         OrderOperateLog.logging(order=order_obj, user=self.request.user, message='新增订单')
         # 下单30分钟后查看订单佣金支付状态
         order_reward_pay_timeout_monitor.apply_async(args=(rec_dict['id'],),
@@ -110,10 +118,9 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
         order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23),
                                                     eta=rec_dict['to_time'])
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def perform_create(self, serializer):
-        return serializer.save()
+
 
     def get_queryset(self):
         if self.action == 'release':

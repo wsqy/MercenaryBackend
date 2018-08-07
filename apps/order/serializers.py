@@ -52,7 +52,6 @@ class OrderInfoCreateSerializer(serializers.ModelSerializer):
     employer_user = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
     )
-    images = OrdersImageSerializer(many=True)
 
     class Meta:
         model = OrderInfo
