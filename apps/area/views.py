@@ -87,8 +87,8 @@ class SchoolViewSet(ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         response = super(SchoolViewSet, self).list(request, *args, **kwargs)
-        # # 下面的是做了分组
-        # response.data = response_data_group(response.data, 'first_pinyin')
+        # 下面的是做了分组
+        response.data = response_data_group(response.data, 'first_pinyin')
         return response
 
 
