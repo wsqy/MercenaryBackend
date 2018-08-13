@@ -211,9 +211,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
                             status=status.HTTP_400_BAD_REQUEST)
         elif instance.status in [1, 2, 11]:
             # 还未接单  可以取消
-            # instance.status = -12
             logger.info('准备进行退款操作')
-            instance.save()
             OrderOperateLog.logging(order=instance, user=self.request.user, message='雇主主动取消订单')
             order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
             return Response({'msg': '订单已被成功取消'})

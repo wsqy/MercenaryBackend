@@ -90,6 +90,8 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
         refund_mes = '订单超时未接, 全额退款'
     elif status == -12:
         refund_mes = '雇主主动取消, 全额退款'
+    elif status == -15:
+        refund_mes = '客服操作取消, 全额退款'
     refund_status = paycenter_refund(reward_pay_order_list, refund_mes=refund_mes)
     try:
         assert refund_status
