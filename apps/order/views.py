@@ -193,12 +193,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
     def cancel(self, request, *args, **kwargs):
         # 取消订单
 
-        try:
-            instance = self.get_object()
-            logger.info('订单退款--{}'.format(instance.id))
-        except Exception as e:
-            logger.error('订单不存在')
-            return Response({'msg': '订单不存在'}, status=status.HTTP_400_BAD_REQUEST)
+        instance = self.get_object()
 
         # 判断接单者是否是订单创建者
         # todo 佣兵取消订单
