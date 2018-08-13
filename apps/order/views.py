@@ -130,8 +130,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         elif self.action == 'find':
             queryset = OrderInfo.objects.filter(status=11, to_time__gt=timezone.now())
         elif self.action == 'admin_list':
-            queryset = OrderInfo.objects.filter(
-                school=ProfileExtendInfo.objects.get(user=self.request.user).admin_school)
+            queryset = OrderInfo.objects.filter(school=self.request.user.profileextendinfo.admin_school)
         else:
             queryset = OrderInfo.objects.all()
         return queryset
@@ -253,3 +252,4 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
     def admin_list(self, request, *args, **kwargs):
         # 我发布的订单
         return self.list(request, *args, **kwargs)
+
