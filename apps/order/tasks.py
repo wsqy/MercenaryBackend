@@ -78,8 +78,9 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
     # 佣金/赏金退款接口
     logger.info('佣金/赏金退款接口--{}, 待变更状态--{}'.format(order_id, status))
     try:
-        order = OrderInfo.objects.get(id=order_id, status=11)
+        order = OrderInfo.objects.get(id=order_id)
     except Exception as e:
+        logger.error('佣金/赏金退款接口, 获取订单异常--{}'.format(e))
         return
 
     reward_pay_order_list = PayOrder.objects.filter(order=order, status=3)
