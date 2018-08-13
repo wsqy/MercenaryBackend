@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import SubCategory, OrderInfo, OrdersImage
+from .models import SubCategory, OrderInfo, OrdersImage, OrderAdminCancel
 from users.serializers import UserOrderListSerializer, UserOrderDetailSerializer
 from area.serializers import SchoolSerializer
 
@@ -91,3 +91,19 @@ class OrderInfoReceiptSerializer(serializers.ModelSerializer):
         model = OrderInfo
         fields = ('id', 'status', 'deposit', 'reward', 'pay_cost')
         read_only_fields = ('status', 'deposit', 'reward', 'pay_cost')
+
+
+class OrderAdminCancelSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+    class Meta:
+        model = OrderAdminCancel
+        fields = '__all__'
+        read_only_fields = ('id', 'create_time',)
+
+    def validate(self, attrs):
+        if attrs.get('user').profileextendinfo.admin_school_id != attrs.get('order').school_id:
+            raise serializers.ValidationError('无权取消此订单')
+        return attrs
+

@@ -165,7 +165,7 @@ class OrderOperateLog(models.Model):
     def logging(cls_obj, order=None, user=None, message=''):
         try:
             cls_obj.objects.create(order=order, user=user, message=message)
-        except:
+        except Exception as e:
             pass
 
 
@@ -183,3 +183,27 @@ class OrdersImage(models.Model):
 
     def __str__(self):
         return self.order.id
+
+
+class OrderAdminCancel(models.Model):
+    """
+    订单管理取消表
+    """
+    TYPE = (
+        ('1', '涉及非法内容'),
+        ('2', '广告'),
+        ('3', '色情暴力'),
+        ('9', '其他'),
+    )
+    order = models.ForeignKey(OrderInfo, verbose_name='订单', help_text='所属订单', null=True, blank=True)
+    user = models.ForeignKey(User, verbose_name='操作用户', help_text='操作用户', null=True, blank=True)
+    category = models.CharField(choices=TYPE, max_length=2, null=True, blank=True, verbose_name='所属分类', help_text='所属分类')
+    create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
+    message = models.TextField(verbose_name='操作日志', help_text='操作日志', null=True, blank=True)
+
+    class Meta:
+        verbose_name = '订单管理取消表'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return '{}-{}'.format(self.order, self.message)

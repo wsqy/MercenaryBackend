@@ -3,7 +3,6 @@ from django.conf import settings
 from django.utils import timezone
 
 from rest_framework import status
-from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.response import Response
@@ -11,18 +10,17 @@ from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import SubCategory, OrderInfo, OrderOperateLog, OrdersImage
+from .models import SubCategory, OrderInfo, OrderOperateLog, OrdersImage, OrderAdminCancel
 from .serializers import (
     SubCategorySerializer, OrderInfoSerializer, OrderInfoCreateSerializer,
-    OrderInfoListSerializer, OrderInfoReceiptSerializer
+    OrderInfoListSerializer, OrderInfoReceiptSerializer, OrderAdminCancelSerializer
 )
-from users.models import ProfileExtendInfo
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
 from utils.cost import service_cost_calc
 from .tasks import (
     order_deposit_pay_timeout_monitor, order_reward_pay_timeout_monitor,
-    order_reward_pay_refund_monitor, order_complete_monitor
+    order_reward_pay_refund_monitor, order_complete_monitor, order_deposit_pay_refund_monitor
 )
 from .filters import OrderFilter
 from utils.pagination import CommonPagination
@@ -60,6 +58,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         订单确认完成
     admin_list:
         学校管理员查看本校订单列表接口
+    admin_cancel:
+        管理员取消订单
     """
     authentication_classes = CommonAuthentication()
     pagination_class = CommonPagination
@@ -83,6 +83,8 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             return OrderInfoListSerializer
         elif self.action in ['retrieve']:
             return OrderInfoSerializer
+        elif self.action == 'admin_cancel':
+            return OrderAdminCancelSerializer
         return OrderInfoSerializer
 
     @staticmethod
@@ -253,3 +255,20 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         # 我发布的订单
         return self.list(request, *args, **kwargs)
 
+
+    @action(methods=['get'], detail=False)
+    def admin_cancel_type(self, request, *args, **kwargs):
+        # 管理员取消订单分类列表
+        return Response(dict(OrderAdminCancel.TYPE), status=status.HTTP_200_OK)
+
+
+    @action(methods=['post'], detail=False)
+    def admin_cancel(self, request, *args, **kwargs):
+        # 管理员取消订单
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        order_reward_pay_refund_monitor.apply_async(args=(instance.order.id, -15))
+        order_deposit_pay_refund_monitor.apply_async(args=(instance.order.id,))
+        OrderOperateLog.logging(order=instance.order, user=self.request.user, message='管理员取消')
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

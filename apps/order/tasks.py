@@ -111,8 +111,8 @@ def order_deposit_pay_refund_monitor(self, order_id):
     except Exception as e:
         return
     # 正常退押金 状态必为20+
-    if order.status <= 20:
-        return
+    # if order.status <= 20:
+    #     return
 
     reward_pay_order_list = PayOrder.objects.filter(order=order, order_type=1, status=3)
     logger.info('支付订单总数in line:{}'.format(reward_pay_order_list.count()))
