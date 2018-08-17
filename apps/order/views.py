@@ -7,13 +7,13 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
+from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import SubCategory, OrderInfo, OrderOperateLog, OrdersImage, OrderAdminCancel
 from .serializers import (
     SubCategorySerializer, OrderInfoSerializer, OrderInfoCreateSerializer,
-    OrderInfoListSerializer, OrderInfoReceiptSerializer, OrderAdminCancelSerializer
+    OrderInfoListSerializer, OrderInfoReceiptSerializer, OrderAdminCancelSerializer, OrderInfoUpdateSerializer
 )
 from utils.common import generate_order_id
 from utils.authentication import CommonAuthentication
@@ -36,7 +36,7 @@ class SubCategoryViewset(ListModelMixin, viewsets.GenericViewSet):
 
 
 class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
-                   viewsets.GenericViewSet):
+                   UpdateModelMixin, viewsets.GenericViewSet):
     """订单相关接口
     list:
         订单发现页列表
@@ -81,10 +81,13 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             return OrderInfoReceiptSerializer
         elif self.action in ['find', 'release', 'service', 'admin_list']:
             return OrderInfoListSerializer
-        elif self.action in ['retrieve']:
+        elif self.action in ['retrieve',]:
             return OrderInfoSerializer
-        elif self.action == 'admin_cancel':
+        elif self.action in ['admin_cancel',]:
             return OrderAdminCancelSerializer
+        elif self.action in ['update',]:
+            return OrderInfoUpdateSerializer
+
         return OrderInfoSerializer
 
     @staticmethod
@@ -265,3 +268,5 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         order_deposit_pay_refund_monitor.apply_async(args=(instance.order.id,))
         OrderOperateLog.logging(order=instance.order, user=request.user, message='管理员取消')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+

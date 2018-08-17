@@ -15,4 +15,4 @@ class OrderFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = OrderInfo
-        fields = ['school', 'category', 'status__in']
+        fields = ['school', 'category', 'status__in', 'is_hot']

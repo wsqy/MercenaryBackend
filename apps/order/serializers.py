@@ -107,3 +107,8 @@ class OrderAdminCancelSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('无权取消此订单')
         return attrs
 
+
+class OrderInfoUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderInfo
+        fields = ('is_hot', )

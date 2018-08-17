@@ -99,6 +99,7 @@ class OrderInfo(models.Model):
     description = models.TextField(verbose_name='订单详细信息', help_text='订单详细信息', null=True)
     privacy = models.TextField(verbose_name='订单隐私信息', help_text='订单隐私信息', null=True)
     school = models.ForeignKey(School, verbose_name='订单所在学校', help_text='订单所在学校', null=True)
+    is_hot = models.BooleanField(verbose_name='热门订单', help_text='热门订单', default=False)
 
     # 金额相关信息
     deposit = models.PositiveSmallIntegerField(default=0, verbose_name='押金',
