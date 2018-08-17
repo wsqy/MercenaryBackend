@@ -263,5 +263,5 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         instance = serializer.save()
         order_reward_pay_refund_monitor.apply_async(args=(instance.order.id, -15))
         order_deposit_pay_refund_monitor.apply_async(args=(instance.order.id,))
-        OrderOperateLog.logging(order=instance.order, user=self.request.user, message='管理员取消')
+        OrderOperateLog.logging(order=instance.order, user=request.user, message='管理员取消')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
