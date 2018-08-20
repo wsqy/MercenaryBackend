@@ -108,7 +108,7 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
 @task(bind=True)
 def order_deposit_pay_refund_monitor(self, order_id):
     # 押金退款接口
-    logger.info('押金退款接口--{}, 待变更状态--{}'.format(order_id, status))
+    logger.info('押金退款接口--{}'.format(order_id))
     try:
         order = OrderInfo.objects.get(id=order_id)
     except Exception as e:
