@@ -195,29 +195,42 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
     @action(methods=['patch'], detail=True)
     def cancel(self, request, *args, **kwargs):
         # 取消订单
-
         instance = self.get_object()
+        if request.user == instance.employer_user:
+            logger.error('当前申请取消者是雇主')
+            # 订单状态判断
+            if instance.status < 0:
+                logger.error('订单已被取消')
+                return Response({'msg': '订单已被取消'}, status=status.HTTP_400_BAD_REQUEST)
+            elif instance.status > 11:
+                if instance.receiver_confirm_time and (timezone.now() - instance.receiver_confirm_time).total_seconds() < settings.ORDER_RUNNING_CANCEL_TIME:
+                    # 满足雇主取消订单条件
+                    order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
+                    order_deposit_pay_refund_monitor.apply_async(args=(instance.id,))
+                    OrderOperateLog.logging(order=instance, user=request.user, message='雇主主动取消订单')
+                    return Response({'msg': '雇主申请取消订单成功'}, status=status.HTTP_200_OK)
+                return Response({'msg': '订单正在进行中, 不能直接取消, 请联系客服'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            elif instance.status in [1, 2, 11]:
+                # 还未接单  可以取消
+                logger.info('准备进行退款操作')
+                OrderOperateLog.logging(order=instance, user=self.request.user, message='雇主主动取消订单')
+                order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
+                return Response({'msg': '订单已被成功取消'})
+        else:
+            logger.error('当前申请取消者是佣兵')
+            if instance.receiver_confirm_time and (timezone.now() - instance.receiver_confirm_time).total_seconds() < settings.ORDER_RUNNING_CANCEL_TIME:
+                # 满足雇主取消订单条件
+                order_deposit_pay_refund_monitor.apply_async(args=(instance.id,))
+                OrderOperateLog.logging(order=instance, user=request.user, message='佣兵取消订单')
+                instance.status = 11
+                instance.receiver_confirm_time = None
+                instance.receiver_user = None
+                instance.save()
+                return Response({'msg': '佣兵申请取消订单成功'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'msg': '订单正在进行中, 不能直接取消, 请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 判断接单者是否是订单创建者
-        # todo 佣兵取消订单
-        if request.user != instance.employer_user:
-            logger.error('当前操作者不是佣兵')
-            return Response({'msg': '只有佣兵才能取消订单'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # 订单状态判断
-        if instance.status < 0:
-            logger.error('订单已被取消')
-            return Response({'msg': '订单已被取消'}, status=status.HTTP_400_BAD_REQUEST)
-        elif instance.status > 11:
-            logger.error('订单正在进行中, 不能直接取消')
-            return Response({'msg': '订单正在进行中, 不能直接取消, 请联系客服'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        elif instance.status in [1, 2, 11]:
-            # 还未接单  可以取消
-            logger.info('准备进行退款操作')
-            OrderOperateLog.logging(order=instance, user=self.request.user, message='雇主主动取消订单')
-            order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
-            return Response({'msg': '订单已被成功取消'})
 
     @action(methods=['patch'], detail=True)
     def complete(self, request, *args, **kwargs):

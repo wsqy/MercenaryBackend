@@ -65,7 +65,7 @@ def paycenter_refund(reward_pay_order_list, refund_mes='订单退款'):
                 refund_fee=reward_pay_order.pay_cost,
                 refund_desc=refund_mes
             )
-            logger.info('wxpay订单状态{}'.format(alipay_response))
+            logger.info('wxpay订单状态{}'.format(r_dict))
             if not wxpay.is_pay_success(r_dict):
                 return False
         reward_pay_order.status = 4

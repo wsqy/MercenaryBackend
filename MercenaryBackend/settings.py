@@ -338,6 +338,9 @@ PAY_DEFAULT_EXPIRE_TIME = 30 * 60
 PAY_DEPOSIT_EXPIRE_TIME = 5 * 60
 # 佣兵点击完成到订单完成的时间间隔
 PAY_COMPLETE_EXPIRE_TIME = 2 * 60 * 60
+# 订单进行中取消无责时间 单位秒
+ORDER_RUNNING_CANCEL_TIME = 5 * 60
+
 #####  支付相关  #####
 PAY_KEY_BASE_URL = os.path.join(BASE_DIR, 'apps/utils/keys')
 ALIPAY_APPID = '2017080508049336'
