@@ -98,6 +98,10 @@ class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
             for filter_one in filter_res:
                 if filter_one.name != rec_dict.get('name'):
                     return Response({'msg': '验证失败,姓名填写错误'}, status=status.HTTP_403_FORBIDDEN)
+                if filter_one.user != rec_dict.get('user'):
+                    return Response({'msg': '验证失败, 该银行已被绑定, 如有疑问, 请联系客服处理'}, status=status.HTTP_403_FORBIDDEN)
+                if filter_one.id_card != rec_dict.get('id_card'):
+                    return Response({'msg': '验证失败, 身份证填写错误'}, status=status.HTTP_403_FORBIDDEN)
                 filter_one.is_activate = True
                 filter_one.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
