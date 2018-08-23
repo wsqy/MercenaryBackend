@@ -96,14 +96,16 @@ class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
         filter_res = BankCard.objects.filter(card_no=rec_dict.get('card_no', ''))
         if filter_res.count() != 0:
             for filter_one in filter_res:
+                if filter_one.name != rec_dict.get('name'):
+                    return Response({'msg': '验证失败,姓名填写错误'}, status=status.HTTP_403_FORBIDDEN)
                 filter_one.is_activate = True
                 filter_one.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         auth_res = realname_authentication(
-            acct_pan=rec_dict.get('card_no', ''),
-            acct_name=rec_dict.get('name', ''),
-            cert_id=rec_dict.get('id_card', ''),
+            acct_pan=rec_dict.get('card_no'),
+            acct_name=rec_dict.get('name'),
+            cert_id=rec_dict.get('id_card'),
             phone_num=self.request.user.mobile,
         )
 

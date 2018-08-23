@@ -2,7 +2,7 @@ import requests
 from django.conf import settings
 
 
-def realname_authentication(acct_pan='', acct_name='', cert_id='', phone_num='',
+def realname_authentication(acct_pan, acct_name, cert_id, phone_num,
                             appcode=settings.ALIPAY_MARKET_AUTH_APPCODE,
                             url='http://lundroid.market.alicloudapi.com/lianzhuo/verifi'):
     """
