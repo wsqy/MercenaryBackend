@@ -122,7 +122,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
                                                      countdown=settings.PAY_DEFAULT_EXPIRE_TIME)
         # 订单 to_time 到期 查询 订单是否未接,进行是否退押金步骤
         order_reward_pay_refund_monitor.apply_async(args=(rec_dict['id'], -23),
-                                                    eta=rec_dict['to_time'])
+                                                    eta=(rec_dict['to_time'] - timezone.timedelta(hours=8)))
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

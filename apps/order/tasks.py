@@ -44,7 +44,7 @@ def paycenter_refund(reward_pay_order_list, refund_mes='订单退款'):
     """
     logger.info('支付订单总数:{}'.format(reward_pay_order_list.count()))
     for reward_pay_order in reward_pay_order_list:
-        logger.info('待退款{}--支付方式{}'.format(reward_pay_order.id, reward_pay_order.pay_method))
+        logger.info('待退款{}--支付方式{}--类型{}'.format(reward_pay_order.id, reward_pay_order.pay_method, reward_pay_order.order_type))
         if reward_pay_order.pay_method == 1:
             logger.info('alipay订单退款')
             r_dict = alipay.refund_request(
@@ -98,7 +98,7 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
         assert refund_status
         OrderOperateLog.logging(order=order, message=refund_mes)
     except Exception as e:
-        logging.error('退款失败, 再次发起退款')
+        logging.error('佣金/赏金退款失败, 再次发起退款')
         raise self.retry(exc=e, countdown=60, max_retries=5)
 
     order.status = status
@@ -112,6 +112,7 @@ def order_deposit_pay_refund_monitor(self, order_id):
     try:
         order = OrderInfo.objects.get(id=order_id)
     except Exception as e:
+        logger.error('押金退款接口, 获取订单异常--{}'.format(e))
         return
     # 正常退押金 状态必为20+
     # if order.status <= 20:
@@ -119,12 +120,12 @@ def order_deposit_pay_refund_monitor(self, order_id):
 
     reward_pay_order_list = PayOrder.objects.filter(order=order, order_type=1, status=3)
     logger.info('支付订单总数in line:{}'.format(reward_pay_order_list.count()))
-    refund_status = paycenter_refund(reward_pay_order_list, refund_mes='订单已完成, 退还押金')
-    OrderOperateLog.logging(order=order, message='订单已完成, 退还押金')
+    refund_status = paycenter_refund(reward_pay_order_list, refund_mes='退还押金')
     try:
         assert refund_status
+        OrderOperateLog.logging(order=order, message='订单已完成, 退还押金')
     except Exception as e:
-        logging.error('退款失败, 再次发起退款')
+        logging.error('押金退款失败, 再次发起退款')
         raise self.retry(exc=e, countdown=60, max_retries=5)
 
 
