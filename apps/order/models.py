@@ -102,12 +102,11 @@ class OrderInfo(models.Model):
     is_hot = models.BooleanField(verbose_name='热门订单', help_text='热门订单', default=False)
 
     # 金额相关信息
-    deposit = models.PositiveSmallIntegerField(default=0, verbose_name='押金',
+    deposit = models.PositiveIntegerField(default=0, verbose_name='押金',
                                                help_text='押金(分)')
-    reward = models.PositiveSmallIntegerField(verbose_name='佣金', default=1,
+    reward = models.PositiveIntegerField(verbose_name='佣金', default=1,
                                               help_text='佣兵应得赏金(分)')
-    pay_cost = models.PositiveSmallIntegerField(verbose_name='实付金额', default=1,
-                                                help_text='雇主实付金额(分)')
+    pay_cost = models.PositiveIntegerField(verbose_name='实付金额', default=1, help_text='雇主实付金额(分)')
 
     # 雇主相关信息
     employer_user = models.ForeignKey(User, verbose_name='雇主', help_text='雇主',
