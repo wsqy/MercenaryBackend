@@ -159,7 +159,7 @@ class PayReturnViewSet(viewsets.GenericViewSet):
                 logger.debug('原先支付金额-{};原先商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
                 if existed_pay_order.order.status == 11:
                     existed_pay_order.order.pay_cost += pay_total_amount
-                    existed_pay_order.order.reward += (pay_total_amount - service_cost_calc.service_cost_calc(pay_total_amount))
+                    existed_pay_order.order.reward += (pay_total_amount - service_cost_calc.service_calc(pay_total_amount))
                     logger.debug('最新支付金额-{};最新商金-{}'.format(existed_pay_order.order.pay_cost, existed_pay_order.order.reward))
                     existed_pay_order.order.save()
                     OrderOperateLog.logging(order=existed_pay_order.order, message='加赏{}成功'.format(pay_total_amount))
@@ -188,8 +188,10 @@ class PayReturnViewSet(viewsets.GenericViewSet):
                 processed_dict[key] = value
 
             sign = processed_dict.pop('sign', None)
+            logger.debug('支付宝回调参数--sign:{}'.format(sign))
 
             verify_re = alipay.verify(processed_dict, sign)
+            logger.debug('支付宝回调验证结果--verify_re:{}'.format(verify_re))
 
             # 验签不过的消息不管
             # if verify_re is False:
