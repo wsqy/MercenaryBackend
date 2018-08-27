@@ -5,12 +5,14 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.mixins import CreateModelMixin, ListModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from .models import Province, City, District, School
-from .serializers import DistrictSerializer, SchoolSerializer, NearestSchoolSerializer
+from .models import Province, City, District, School, Address
+from .serializers import DistrictSerializer, SchoolSerializer, NearestSchoolSerializer, AddressInfoSerializer, AddressCreateSerializer
 from utils.common import response_data_group
+from utils.authentication import CommonAuthentication
+from utils.pagination import CommonPagination
 
 
 class DistrictViewset(CreateModelMixin, viewsets.GenericViewSet):
@@ -106,3 +108,26 @@ class SchoolViewSet(ListModelMixin, viewsets.GenericViewSet):
                 serializer = SchoolSerializer(near_school)
                 return Response(serializer.data)
         return Response({'msg': '未定位到最近的学校'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class AddressViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+    authentication_classes = CommonAuthentication()
+    queryset = Address.objects.filter(is_active=True)
+    pagination_class = CommonPagination
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return AddressCreateSerializer
+        elif self.action in ['retrieve', 'list', 'company']:
+            return AddressInfoSerializer
+        return AddressInfoSerializer
+
+    def get_queryset(self):
+        if self.action == 'company':
+            return Address.objects.filter(is_active=True, user=self.request.user)
+        return self.queryset
+
+    @action(methods=['get'], detail=False)
+    def company(self, request, *args, **kwargs):
+        # 企业地址
+        return self.list(request, *args, **kwargs)

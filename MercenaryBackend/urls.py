@@ -23,7 +23,7 @@ from rest_framework_jwt.views import refresh_jwt_token
 
 from users.views import DeviceRegisterViewset, SmsCodeViewset, UserViewset
 from utils.views import get_celery_task_status
-from area.views import DistrictViewset, SchoolViewSet
+from area.views import DistrictViewset, SchoolViewSet, AddressViewSet
 from order.views import OrderViewSet
 # from order.views import SubCategoryViewset, OrderViewSet
 from paycenter.views import PayOrderViewSet, PayReturnViewSet
@@ -46,6 +46,7 @@ router.register(r'resource', ResourceMaterialViewset, base_name='resource')
 router.register(r'school', SchoolViewSet, base_name='school')
 router.register(r'company', CompanyViewset, base_name='company')
 router.register(r'with_draw', WithDrawViewset, base_name='with_draw')
+router.register(r'address', AddressViewSet, base_name='address')
 
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),

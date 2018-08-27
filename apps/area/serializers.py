@@ -67,3 +67,14 @@ class AddressShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = ('id', 'name', 'detail', 'user')
+
+
+class AddressCreateSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+    class Meta:
+        model = Address
+        fields = ('id', 'name', 'detail', 'latitude', 'longitude', 'district', 'user')
+        read_only_fields = ('id',)
+
