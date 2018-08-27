@@ -243,19 +243,25 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         # 雇主确认完成
         if request.user == instance.employer_user:
             # 本来应该是改为22 雇主确认  现在直接更改为 订单已完成 50
-            instance.status = 50
-            instance.complete_time = timezone.now()
-            instance.employer_complete_time = timezone.now()
-            instance.save()
-            OrderOperateLog.logging(order=instance, user=self.request.user, message='雇主点击完成')
+            if instance.status in (20,21):
+                instance.status = 50
+                instance.complete_time = timezone.now()
+                instance.employer_complete_time = timezone.now()
+                instance.save()
+                OrderOperateLog.logging(order=instance, user=self.request.user, message='雇主点击完成')
+            else:
+                return Response({'msg': '确认失败,当前订单状态: {}'.format(instance.get_status_display())}, status=status.HTTP_400_BAD_REQUEST)
         # 佣兵确认完成
         elif request.user == instance.receiver_user:
-            instance.status = 21
-            instance.receiver_complete_time = timezone.now()
-            instance.save()
-            OrderOperateLog.logging(order=instance, user=self.request.user, message='佣兵点击完成')
-            order_complete_monitor.apply_async(args=(instance.id,),
-                                               countdown=settings.PAY_COMPLETE_EXPIRE_TIME)
+            if instance.status in (20, ):
+                instance.status = 21
+                instance.receiver_complete_time = timezone.now()
+                instance.save()
+                OrderOperateLog.logging(order=instance, user=self.request.user, message='佣兵点击完成')
+                order_complete_monitor.apply_async(args=(instance.id,),
+                                                   countdown=settings.PAY_COMPLETE_EXPIRE_TIME)
+            else:
+                return Response({'msg': '确认失败,当前订单状态: {}'.format(instance.get_status_display())}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'msg': '确认成功'})
 
