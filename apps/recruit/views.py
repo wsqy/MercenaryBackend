@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from .models import Company, CompanyLog
 from .serializers import CompanyInfoSerializer, CompanyListSerializer, CompanyCreateSerializer
@@ -27,11 +28,20 @@ class CompanyViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, views
             return CompanyListSerializer
         elif self.action == 'retrieve':
             return CompanyInfoSerializer
+        elif self.action == 'application':
+            return CompanyInfoSerializer
         elif self.action == 'create':
             return CompanyCreateSerializer
+        return CompanyInfoSerializer
 
     def get_queryset(self):
         queryset = self.queryset
         if self.action == 'list':
             queryset = queryset.filter(status=30)
         return queryset
+
+    @action(methods=['get'], detail=False)
+    def application(self, request, *args, **kwargs):
+        company = Company.objects.filter(user=request.user).first()
+        serializer = self.get_serializer(company)
+        return Response(serializer.data)

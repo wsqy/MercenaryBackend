@@ -12,7 +12,7 @@ class CompanyListSerializer(serializers.ModelSerializer):
 
 
 class CompanyInfoSerializer(serializers.ModelSerializer):
-    status = serializers.CharField(source='get_status_display')
+    status_name = serializers.CharField(source='get_status_display')
     address = AddressShortSerializer()
     class Meta:
         model = Company
@@ -31,5 +31,5 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        exclude = ('weight', 'add_time',)
-        read_only_fields = ('status',)
+        fields = ('name', 'user', 'telephone', 'address', 'logo')
+
