@@ -40,8 +40,12 @@ class CompanyViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, views
             queryset = queryset.filter(status=30)
         return queryset
 
+    def get_object(self):
+        if self.action == 'retrieve':
+            return super(CompanyViewset, self).get_object()
+        elif self.action == 'application':
+            return  Company.objects.filter(user=self.request.user).first()
+
     @action(methods=['get'], detail=False)
     def application(self, request, *args, **kwargs):
-        company = Company.objects.filter(user=request.user).first()
-        serializer = self.get_serializer(company)
-        return Response(serializer.data)
+        return self.retrieve(request, *args, **kwargs)
