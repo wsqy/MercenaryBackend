@@ -1,3 +1,4 @@
+import logging
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -17,6 +18,8 @@ from utils.pagination import CommonPagination
 from utils.authentication import CommonAuthentication
 from utils.bank_card import realname_authentication
 
+
+logger = logging.getLogger('accounts')
 
 class BalanceViewset(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     """余额相关相关接口
@@ -120,6 +123,7 @@ class BankCardViewset(ListModelMixin, CreateModelMixin, DestroyModelMixin,
                             status=status.HTTP_201_CREATED,
                             headers=headers)
         else:
+            logger.error('绑定银行卡失败,错误信息:{}'.format(auth_res))
             return Response({'msg': '验证失败,请检查填写是否正确'}, status=status.HTTP_403_FORBIDDEN)
 
 
