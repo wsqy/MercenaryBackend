@@ -44,3 +44,8 @@ def with_draw_insert(sender, instance=None, created=False, **kwargs):
             profile_extend_instance = ProfileExtendInfo.objects.get(user=instance.user)
             profile_extend_instance.deposit_freeze -= abs(instance.balance)
             profile_extend_instance.save()
+        elif instance.status == '3':
+            profile_extend_instance = ProfileExtendInfo.objects.get(user=instance.user)
+            profile_extend_instance.deposit_freeze -= abs(instance.balance)
+            profile_extend_instance.balance += abs(instance.balance)
+            profile_extend_instance.save()
