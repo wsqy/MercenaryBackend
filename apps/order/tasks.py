@@ -144,5 +144,5 @@ def order_complete_monitor(self, order_id):
 def order_create_send_email_notice(self, message):
     subject = '新订单提醒'
     from_email = settings.DEFAULT_FROM_EMAIL
-    to_email = ['qiyuan@mercenary.com.cn']
+    to_email = settings.EMAIL_ORDER_CREATE_NOTICE
     send_mail(subject, message, from_email, to_email, fail_silently=False)
