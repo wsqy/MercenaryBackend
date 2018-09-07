@@ -147,5 +147,6 @@ def order_create_send_email_notice(self, message):
     to_email = settings.EMAIL_ORDER_CREATE_NOTICE
     try:
         result = send_mail(subject, message, from_email, to_email, fail_silently=False)
+        logging.info('邮件发送结果: {}-{}--结果{}'.format(from_email, to_email, result))
     except Exception as e:
         logging.error('邮件发送失败: {}-{}--结果{}--异常原因{}'.format(from_email, to_email, result, e))
