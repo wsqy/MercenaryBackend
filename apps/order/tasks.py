@@ -145,4 +145,7 @@ def order_create_send_email_notice(self, message):
     subject = '新订单提醒'
     from_email = settings.DEFAULT_FROM_EMAIL
     to_email = settings.EMAIL_ORDER_CREATE_NOTICE
-    send_mail(subject, message, from_email, to_email, fail_silently=False)
+    try:
+        result = send_mail(subject, message, from_email, to_email, fail_silently=False)
+    except Exception as e:
+        logging.error('邮件发送失败: {}-{}--结果{}--异常原因{}'.format(from_email, to_email, result, e))
