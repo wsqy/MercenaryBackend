@@ -197,10 +197,10 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         # 取消订单
         instance = self.get_object()
         if request.user == instance.employer_user:
-            logger.error('当前申请取消者是雇主')
+            logger.info('当前申请取消者是雇主')
             # 订单状态判断
             if instance.status < 0:
-                logger.error('订单已被取消')
+                logger.info('订单已被取消')
                 return Response({'msg': '订单已被取消'}, status=status.HTTP_400_BAD_REQUEST)
             elif instance.status > 11:
                 if instance.receiver_confirm_time and (timezone.now() - instance.receiver_confirm_time).total_seconds() < settings.ORDER_RUNNING_CANCEL_TIME:
@@ -218,7 +218,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
                 order_reward_pay_refund_monitor.apply_async(args=(instance.id, -12))
                 return Response({'msg': '订单已被成功取消'})
         else:
-            logger.error('当前申请取消者是佣兵')
+            logger.info('当前申请取消者是佣兵')
             if instance.receiver_confirm_time and (timezone.now() - instance.receiver_confirm_time).total_seconds() < settings.ORDER_RUNNING_CANCEL_TIME:
                 # 满足雇主取消订单条件
                 order_deposit_pay_refund_monitor.apply_async(args=(instance.id,))
