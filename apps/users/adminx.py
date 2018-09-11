@@ -28,6 +28,8 @@ class ProfileExtendInfoAdmin:
 
 
 class ProfileInfoAdmin(UserAdmin):
+    list_display = ['id', 'username', 'nickname', 'first_name', 'date_joined']
+    list_display_links = ['id', 'username']
     inlines = [ProfileExtendInfoAdmin, ]
 
 
