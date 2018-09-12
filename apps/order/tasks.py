@@ -88,6 +88,9 @@ def order_reward_pay_refund_monitor(self, order_id, status=-23):
     logger.info('支付订单总数in line:{}'.format(reward_pay_order_list.count()))
     refund_mes = '订单超时未接, 全额退款'
     if status == -23:
+        if order.status not in (1, 2, 11):
+            logger.info('订单:{}-不符合超时取消条件'.format(order_id))
+            return
         refund_mes = '订单超时未接, 全额退款'
     elif status == -12:
         refund_mes = '雇主主动取消, 全额退款'
