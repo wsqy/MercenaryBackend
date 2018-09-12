@@ -282,10 +282,12 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         # 管理员取消订单
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        if serializer.validated_data.get('order').status < 0:
+            return Response({'msg': '订单已为取消状态'}, status=status.HTTP_400_BAD_REQUEST)
+        elif serializer.validated_data.get('order').status >= 50:
+            return Response({'msg': '订单已完成,不能取消，请联系管理员'}, status=status.HTTP_400_BAD_REQUEST)
         instance = serializer.save()
         order_reward_pay_refund_monitor.apply_async(args=(instance.order.id, -15))
         order_deposit_pay_refund_monitor.apply_async(args=(instance.order.id,))
         OrderOperateLog.logging(order=instance.order, user=request.user, message='管理员取消')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
