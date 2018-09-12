@@ -135,7 +135,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         elif self.action == 'find':
             queryset = OrderInfo.objects.filter(status=11, to_time__gt=timezone.now())
         elif self.action == 'admin_list':
-            queryset = OrderInfo.objects.filter(school=self.request.user.profileextendinfo.admin_school)
+            queryset = OrderInfo.objects.filter(school=self.request.user.profileextendinfo.admin_school, status__gt=1)
         else:
             queryset = OrderInfo.objects.all()
         return queryset
