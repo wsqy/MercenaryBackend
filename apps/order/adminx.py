@@ -11,6 +11,7 @@ class SubCategoryAdmin:
 
 class OrderInfoAdmin:
     list_display = ['id', 'description', 'category', 'school', 'status']
+    list_filter = ['category', 'school', 'is_hot', 'status']
 
 
 xadmin.site.register(SubCategory, SubCategoryAdmin)
