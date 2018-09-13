@@ -144,10 +144,9 @@ def order_complete_monitor(self, order_id):
 
 
 @task(bind=True)
-def order_create_send_email_notice(self, message):
+def order_create_send_email_notice(self, message, to_email):
     subject = '新订单提醒'
     from_email = settings.DEFAULT_FROM_EMAIL
-    to_email = settings.EMAIL_ORDER_CREATE_NOTICE
     try:
         result = send_mail(subject, message, from_email, to_email, fail_silently=False)
         logging.info('邮件发送结果: {}-{}--结果{}'.format(from_email, to_email, result))
