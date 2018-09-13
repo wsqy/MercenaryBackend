@@ -20,7 +20,7 @@ class WithDrawAdmin:
 
 
 class WithDrawDealAdmin:
-    list_display = ['user', 'type', 'account', 'balance', 'status', 'add_time']
+    list_display = ['user', 'type', 'account', 'get_real_money', 'status', 'add_time']
     list_filter = ['user', 'account']
     list_editable = ['status']
     ordering = ['add_time']

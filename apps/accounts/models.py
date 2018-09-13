@@ -114,6 +114,10 @@ class WithDraw(models.Model):
 
 
 class WithDrawDeal(WithDraw):
+    def get_real_money(self):
+        return self.balance / 100
+    get_real_money.short_description = '提现金额(元)'
+
     class Meta:
         verbose_name = '待处理提现'
         verbose_name_plural = verbose_name
