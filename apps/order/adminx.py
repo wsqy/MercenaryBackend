@@ -10,7 +10,7 @@ class SubCategoryAdmin:
 
 
 class OrderInfoAdmin:
-    list_display = ['id', 'description', 'category', 'school', 'status']
+    list_display = ['id', 'category', 'school', 'status', 'employer_user', 'receiver_user', 'description']
     list_filter = ['category', 'school', 'is_hot', 'status']
 
 
