@@ -326,7 +326,7 @@ LOGGING = {
 
 # 项目的基本配置
 # 手续费(百分制)
-SERVICE_COST = 15
+SERVICE_COST = 10
 # 招募令接单押金(百分制)
 RECRUIT_DEPOSIT_COST = 10
 # 招募令手续费(百分制)
