@@ -136,7 +136,7 @@ class OrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
             if self.request.query_params.get('is_hot'):
                 queryset = OrderInfo.objects.filter(status=11)
             else:
-                queryset = OrderInfo.objects.filter(status__in=[11, 50]).order_by('status', '-create_time')
+                queryset = OrderInfo.objects.filter(status__in=[11, 20, 50]).order_by('status', '-create_time')
         elif self.action == 'admin_list':
             queryset = OrderInfo.objects.filter(school=self.request.user.profileextendinfo.admin_school, status__gt=1)
         else:
