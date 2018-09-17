@@ -74,64 +74,108 @@ class CompanyLog(models.Model):
         return self.message
 
 
-class RecruitOrder(models.Model):
+class PartTimeOrder(models.Model):
     """
-    招募令
+    招募令 兼职
     """
-    OrderStatus = ()
-    SignDeposit = (
-        (0, '0元'),
-        (500, '5元'),
-        (1000, '10元'),
-        (1500, '15元'),
-        (2000, '20元')
+    OrderStatus = (
+        (10, '待审核'),
+        (20, '进行中'),
+        (30, '已完成'),
+        (-10, '审核未通过'),
+        (-20, '商户取消'),
     )
-    name = models.CharField(blank=False, null=False, max_length=128, verbose_name='招募令标题', help_text='招募令标题')
-    company = models.ForeignKey(Company, null=False, verbose_name='所属公司', help_text='所属公司')
+    name = models.CharField(max_length=32, verbose_name='招募令标题', help_text='招募令标题')
+    company = models.ForeignKey(Company, verbose_name='所属公司', help_text='所属公司')
     description = models.TextField(blank=True, null=True, verbose_name='任务描述', help_text='任务描述')
     requirement = models.TextField(blank=True, null=True, verbose_name='任务要求', help_text='任务要求')
-    enrolment_max_num = models.PositiveSmallIntegerField(default=1, verbose_name='最大报名人数', help_text='最大报名人数')
-    enrolment_min_num = models.PositiveSmallIntegerField(default=1, verbose_name='最少报名人数', help_text='最少报名人数')
-    sign_start_time = models.DateTimeField(default=timezone.now, verbose_name='报名开始时间', help_text='报名开始时间')
-    sign_end_time = models.DateTimeField(default=timezone.now, verbose_name='报名结束时间', help_text='报名结束时间')
-    task_start_time = models.DateTimeField(default=timezone.now, verbose_name='任务开始时间', help_text='任务开始时间')
-    task_end_time = models.DateTimeField(default=timezone.now, verbose_name='任务结束时间', help_text='任务结束时间')
+    wages = models.PositiveIntegerField(default=0, verbose_name='佣金/小时(单位:分)', help_text='佣金/小时(单位:分)')
+    settlement_method = models.CharField(max_length=2, verbose_name='结算方式', help_text='结算方式')
+    deposit = models.PositiveIntegerField(default=0, verbose_name='招募令押金(单位:分)', help_text='招募令押金(单位:分)')
+    start_time = models.DateTimeField(null=True, blank=True, verbose_name='任务开始时间', help_text='任务开始时间')
+    end_time = models.DateTimeField(null=True, blank=True, verbose_name='任务结束时间', help_text='任务结束时间')
     create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
     status = models.IntegerField(verbose_name='招募令状态', help_text='招募令状态', choices=OrderStatus, default=10)
-    recruit_deposit = models.PositiveIntegerField(default=0, verbose_name='招募令押金', help_text='招募令押金(单位:分)')
-    sign_deposit = models.PositiveIntegerField(default=0, choices=SignDeposit, verbose_name='报名所需押金', help_text='报名所需押金(单位:分)')
     weight = models.PositiveIntegerField(default=1, verbose_name='权重', help_text='权重')
-    total_sign_num = models.PositiveSmallIntegerField(default=1, verbose_name='实际总报名人数', help_text='实际总报名人数')
+    enrol_total = models.PositiveIntegerField(default=0, verbose_name='报名人数', help_text='报名人数')
+    liaison = models.ForeignKey(User, blank=True, null=True, verbose_name='对接负责人', help_text='对接负责人')
 
     class Meta:
-        verbose_name = '招募令表'
+        verbose_name = '兼职招募令表'
         verbose_name_plural = verbose_name
         ordering = ('-weight', '-create_time',)
 
     def __str__(self):
-        return self.name
+        return '{}招聘{}'.format(self.company.name, self.name)
 
 
-class RecruitCard(models.Model):
+class PartTimeOrderCard(models.Model):
     """
-    招募令卡片
+    兼职卡片
     """
-    recruit = models.ForeignKey(RecruitOrder, null=False, verbose_name='所属招募令', help_text='所属招募令')
-    adress = models.ForeignKey(Address, null=False, verbose_name='任务地址', help_text='任务地址')
-    sign_start_time = models.DateTimeField(default=timezone.now, verbose_name='报名开始时间', help_text='报名开始时间')
-    sign_end_time = models.DateTimeField(default=timezone.now, verbose_name='报名结束时间', help_text='报名结束时间')
-    task_start_time = models.DateTimeField(default=timezone.now, verbose_name='任务开始时间', help_text='任务开始时间')
-    task_end_time = models.DateTimeField(default=timezone.now, verbose_name='任务结束时间', help_text='任务结束时间')
-    min_num = models.PositiveSmallIntegerField(default=1, verbose_name='最小报名人数', help_text='最小报名人数')
-    max_num = models.PositiveSmallIntegerField(default=1, verbose_name='最大报名人数', help_text='最大报名人数')
-    sign_num = models.PositiveSmallIntegerField(default=1, verbose_name='实际报名人数', help_text='实际报名人数')
-    status = models.IntegerField(verbose_name='状态', help_text='状态', default=0)
-    wages = models.PositiveIntegerField(default=0, verbose_name='工资', help_text='工资')
+    CardStatus = (
+        (10, '报名未开始'),
+        (20, '报名中'),
+        (30, '任务未开始'),
+        (40, '进行中'),
+        (50, '结算中'),
+        (60, '已完成'),
+        (-10, '商户取消'),
+    )
+    recruit = models.ForeignKey(PartTimeOrder, verbose_name='所属招募令', help_text='所属招募令', related_name='cards')
+    address = models.ForeignKey(Address, verbose_name='任务地址', help_text='任务地址')
+    start_time = models.DateTimeField(verbose_name='任务开始时间', help_text='任务开始时间')
+    end_time = models.DateTimeField(verbose_name='任务结束时间', help_text='任务结束时间')
+    work_time = models.FloatField(default=0, verbose_name='工作时长', help_text='工作时长')
+    reward = models.PositiveIntegerField(default=0, verbose_name='预计佣金', help_text='预计佣金')
+    enrol_count = models.PositiveIntegerField(default=0, verbose_name='需要人数', help_text='需要人数')
+    status = models.IntegerField(verbose_name='状态', help_text='状态', default=10, choices=CardStatus)
+
+    def save(self, *args, **kwargs):
+        """
+        保存时自动计算佣金
+        """
+        if not self.reward:
+            self.reward = self.work_time * self.recruit.wages
+            super(PartTimeOrderCard, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name = '招募令卡片'
+        verbose_name = '兼职卡片'
         verbose_name_plural = verbose_name
-        ordering = ('-task_start_time',)
+        ordering = ('start_time',)
 
     def __str__(self):
-        return '{}-{}'.format(self.recruit.name, self.task_start_time)
+        return '{}-{}'.format(self.recruit.name, self.start_time)
+
+
+class PartTimeOrderCardSignUp(models.Model):
+    """
+    兼职卡片报名表
+    """
+    SignStatus = (
+        (1, '押金支付中'),
+        (2, '商户审核中'),
+        (10, '任务未开始'),
+        (11, '任务进行中'),
+        (20, '结算中'),
+        (30, '已完成'),
+        (-1, '押金支付超时取消'),
+        (-10, '商户取消'),
+        (-20, '任务开始前取消'),
+        (-30, '任务开始中有责取消'),
+        (-40, '旷工'),
+    )
+    user = models.ForeignKey(User, verbose_name='报名用户', help_text='报名用户')
+    card = models.ForeignKey(PartTimeOrderCard, verbose_name='所属卡片', help_text='所属卡片', related_name='users')
+    status = models.IntegerField(verbose_name='状态', help_text='状态', default=0, choices=SignStatus)
+    create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
+    reward = models.PositiveIntegerField(default=0, verbose_name='佣金', help_text='佣金')
+
+    def save(self, *args, **kwargs):
+        """
+        保存时自动计算佣金
+        """
+        if not self.reward:
+            self.reward = self.card.reward
+            super(PartTimeOrderCardSignUp, self).save(*args, **kwargs)
+
