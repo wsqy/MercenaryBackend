@@ -1,9 +1,11 @@
+from django.conf import settings
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 
 from .models import BalanceDetail, BankCard, WithDraw
 from users.models import ProfileExtendInfo
+from .tasks import with_draw_send_email_notice
 
 User = get_user_model()
 
@@ -39,6 +41,8 @@ def with_draw_insert(sender, instance=None, created=False, **kwargs):
             order=instance.id,
             balance=instance.balance * -1
         )
+
+        with_draw_send_email_notice.apply_async(args=(settings.WITH_DRAW_NOTICE,), )
     else:
         if instance.status == '2':
             profile_extend_instance = ProfileExtendInfo.objects.get(user=instance.user)

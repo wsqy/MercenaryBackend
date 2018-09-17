@@ -556,6 +556,9 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # 新订单提醒
 EMAIL_ORDER_CREATE_NOTICE = ['qiyuan@mercenary.com.cn']
 
+# 提现申请
+WITH_DRAW_NOTICE = ['linhuiding@mercenary.com.cn']
+
 # 百度地图web端key
 BMAP_KEY = 'WGHYeCpb0aNcXYZnnttlTpBCkpZcfWb0'
 

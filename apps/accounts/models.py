@@ -87,6 +87,7 @@ class WithDraw(models.Model):
     )
     STATUS = (
         ('1', '待处理'),
+        ('20', '已处理, 待银行打款'),
         ('2', '提现完成'),
         ('3', '提现异常'),
     )
@@ -98,11 +99,26 @@ class WithDraw(models.Model):
                                max_length=64, blank=True, null=True)
     balance = models.IntegerField(default=0, verbose_name='金额', help_text='提现金额(分)')
     status = models.CharField(verbose_name='状态', help_text='提现状态',
-                              max_length=1, choices=STATUS, default='1')
+                              max_length=2, choices=STATUS, default='1')
     remark = models.CharField(verbose_name='备注信息', blank=True, null=True,
                               help_text='备注信息', max_length=128)
     add_time = models.DateTimeField(default=timezone.now, verbose_name='申请时间',
                                     help_text='申请时间')
+
+    def get_real_money(self):
+        return self.balance / 100
+    get_real_money.short_description = '提现金额(元)'
+
+    def get_bank_name(self):
+        if self.type == '4':
+            bankcards = BankCard.objects.filter(card_no=self.account)
+            if bankcards.count():
+                return settings.BANK_CARD.get(bankcards[0].bank)
+            else:
+                return '未知银行'
+        else:
+            return dict(self.ORIGIN_TYPE).get(self.type)
+    get_bank_name.short_description = '银行名'
 
     class Meta:
         verbose_name = '提现信息表'
@@ -114,9 +130,6 @@ class WithDraw(models.Model):
 
 
 class WithDrawDeal(WithDraw):
-    def get_real_money(self):
-        return self.balance / 100
-    get_real_money.short_description = '提现金额(元)'
 
     class Meta:
         verbose_name = '待处理提现'
