@@ -1,3 +1,4 @@
+import copy
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
@@ -15,7 +16,7 @@ User = get_user_model()
 def order_complete(sender, instance=None, created=False, **kwargs):
     if created:
         messgae = '{}有新订单({})啦, 内容"{}" ；请尽快处理'.format(instance.school.name, instance.id, instance.description)
-        email_list = settings.EMAIL_ORDER_CREATE_NOTICE
+        email_list = copy.deepcopy(settings.EMAIL_ORDER_CREATE_NOTICE)
         user_list = User.objects.filter(profileextendinfo__admin_school=instance.school)
         for user in user_list:
             if user.email:
