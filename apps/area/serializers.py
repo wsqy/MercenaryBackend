@@ -17,6 +17,12 @@ class CitySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DistrictListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = District
+        fields = ('id', 'name')
+
+
 class DistrictSerializer(serializers.ModelSerializer):
     province = serializers.CharField(help_text='所属省份', label='省份', )
     city = serializers.CharField(help_text='所属市', label='市', )

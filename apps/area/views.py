@@ -7,18 +7,37 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Province, City, District, School, Address
-from .serializers import DistrictSerializer, SchoolSerializer, NearestSchoolSerializer, AddressInfoSerializer, AddressCreateSerializer
+from .serializers import DistrictSerializer, DistrictListSerializer, SchoolSerializer, NearestSchoolSerializer, AddressInfoSerializer, AddressCreateSerializer
+from .filters import DistrictFilter
 from utils.common import response_data_group
 from utils.authentication import CommonAuthentication
 from utils.pagination import CommonPagination
 
 
-class DistrictViewset(CreateModelMixin, viewsets.GenericViewSet):
-    serializer_class = DistrictSerializer
-    authentication_classes = (JSONWebTokenAuthentication, )
-    permission_classes = (permissions.IsAuthenticated,)
+class DistrictPagination(CommonPagination):
+    page_size = 100
+    max_page_size = 200
+
+
+class DistrictViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
+    queryset = District.objects.all()
+    # authentication_classes = CommonAuthentication
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = DistrictFilter
+    pagination_class = DistrictPagination
+
+    def get_permissions(self):
+        if self.action in ['create', ]:
+            return [permissions.IsAuthenticated()]
+        return []
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return DistrictListSerializer
+        return DistrictSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
