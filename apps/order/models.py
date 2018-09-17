@@ -94,11 +94,11 @@ class OrderInfo(models.Model):
         default=1, verbose_name='所属分类', help_text='所属分类')
     create_time = models.DateTimeField(default=timezone.now, verbose_name='订单创建时间',
                                        help_text='订单创建时间')
-    complete_time = models.DateTimeField(null=True, help_text='订单完成时间',
+    complete_time = models.DateTimeField(null=True, blank=True, help_text='订单完成时间',
                                          verbose_name='订单完成时间')
-    description = models.TextField(verbose_name='订单详细信息', help_text='订单详细信息', null=True)
-    privacy = models.TextField(verbose_name='订单隐私信息', help_text='订单隐私信息', null=True)
-    school = models.ForeignKey(School, verbose_name='订单所在学校', help_text='订单所在学校', null=True)
+    description = models.TextField(verbose_name='订单详细信息', help_text='订单详细信息', null=True, blank=True)
+    privacy = models.TextField(verbose_name='订单隐私信息', help_text='订单隐私信息', null=True, blank=True)
+    school = models.ForeignKey(School, verbose_name='订单所在学校', help_text='订单所在学校', null=True, blank=True)
     is_hot = models.BooleanField(verbose_name='热门订单', help_text='热门订单', default=False)
 
     # 金额相关信息
@@ -112,29 +112,29 @@ class OrderInfo(models.Model):
     employer_user = models.ForeignKey(User, verbose_name='雇主', help_text='雇主',
                                       related_name='employer_user')
     employer_receive_name = models.CharField(max_length=30, verbose_name='联系人姓名',
-                                             help_text='联系人姓名', null=True)
+                                             help_text='联系人姓名', null=True, blank=True)
     employer_receive_mobile = models.CharField(max_length=15, verbose_name='联系人手机号',
-                                               help_text='联系人手机号', null=True)
-    employer_complete_time = models.DateTimeField(null=True,
+                                               help_text='联系人手机号', null=True, blank=True)
+    employer_complete_time = models.DateTimeField(null=True, blank=True,
         verbose_name='雇主确认完成时间', help_text='雇主确认完成时间')
 
     # 接单相关信息
-    receiver_user = models.ForeignKey(User, null=True, verbose_name='佣兵',
+    receiver_user = models.ForeignKey(User, null=True, blank=True, verbose_name='佣兵',
                                       help_text='佣兵', related_name='receiver_user')
-    receiver_confirm_time = models.DateTimeField(null=True, verbose_name='佣兵接单时间',
+    receiver_confirm_time = models.DateTimeField(null=True, blank=True, verbose_name='佣兵接单时间',
                                                  help_text='佣兵接单时间')
-    receiver_complete_time = models.DateTimeField(null=True,
+    receiver_complete_time = models.DateTimeField(null=True, blank=True,
         verbose_name='佣兵确认完成时间', help_text='佣兵确认完成时间')
 
     # 任务地点
-    from_addr = models.CharField(max_length=128, null=True, help_text='任务地点', verbose_name='任务地点')
+    from_addr = models.CharField(max_length=128, null=True, blank=True, help_text='任务地点', verbose_name='任务地点')
     # 交付地点
-    to_addr = models.CharField(max_length=128, null=True, help_text='交付地点', verbose_name='交付地点')
+    to_addr = models.CharField(max_length=128, null=True, blank=True, help_text='交付地点', verbose_name='交付地点')
 
     # 任务开始时间
-    from_time = models.DateTimeField(null=True, verbose_name='任务开始时间', help_text='任务开始时间')
+    from_time = models.DateTimeField(null=True, blank=True, verbose_name='任务开始时间', help_text='任务开始时间')
     # 任务结束时间
-    to_time = models.DateTimeField(null=True, verbose_name='任务结束时间', help_text='任务结束时间')
+    to_time = models.DateTimeField(null=True, blank=True, verbose_name='任务结束时间', help_text='任务结束时间')
 
     class Meta:
         verbose_name = '订单'
