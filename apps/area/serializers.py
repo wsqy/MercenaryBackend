@@ -17,6 +17,16 @@ class CitySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CityListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = City
+        fields = '__all__'
+
+    def validate(self, attrs):
+        pass
+
+
 class DistrictListSerializer(serializers.ModelSerializer):
     class Meta:
         model = District

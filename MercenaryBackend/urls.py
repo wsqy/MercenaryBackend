@@ -35,7 +35,7 @@ router = DefaultRouter()
 router.register(r'users', UserViewset, base_name='users')
 router.register(r'devices', DeviceRegisterViewset, base_name='devices')
 router.register(r'codes', SmsCodeViewset, base_name='codes')
-router.register(r'district', DistrictViewset, base_name='district')
+router.register(r'district', DistrictViewset, base_name='district')  # 即将废弃   请使用 area/district
 # router.register(r'category', SubCategoryViewset, base_name='category')
 router.register(r'order', OrderViewSet, base_name='order')
 router.register(r'paycenter', PayOrderViewSet, base_name='paycenter')
@@ -43,10 +43,10 @@ router.register(r'pay/return', PayReturnViewSet, base_name='pay_return')
 router.register(r'balance', BalanceViewset, base_name='balance')
 router.register(r'bank_card', BankCardViewset, base_name='bank_card')
 router.register(r'resource', ResourceMaterialViewset, base_name='resource')
-router.register(r'school', SchoolViewSet, base_name='school')
+router.register(r'school', SchoolViewSet, base_name='school')   # 即将废弃   请使用 area/school
 router.register(r'company', CompanyViewset, base_name='company')
 router.register(r'with_draw', WithDrawViewset, base_name='with_draw')
-router.register(r'address', AddressViewSet, base_name='address')
+router.register(r'address', AddressViewSet, base_name='address')  # 即将废弃   请使用 area/address
 router.register(r'recruit/part-time', PartTimeOrderViewset, base_name='part-time')
 router.register(r'recruit/part-time-card', PartTimeOrderCardViewset, base_name='part-time-card')
 
@@ -57,6 +57,7 @@ urlpatterns = [
     # celery 查询任务状态
     url(r'^get_celery_task_status/$', get_celery_task_status),
     url(r'^', include(router.urls)),
+    url(r'^area/', include('area.urls')),
 ]
 
 if settings.DEBUG:

@@ -10,16 +10,35 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Province, City, District, School, Address
-from .serializers import DistrictSerializer, DistrictListSerializer, SchoolSerializer, NearestSchoolSerializer, AddressInfoSerializer, AddressCreateSerializer
-from .filters import DistrictFilter
+from .serializers import (
+    ProvinceSerializer, CitySerializer, CityListSerializer, DistrictSerializer, DistrictListSerializer,
+    SchoolSerializer, NearestSchoolSerializer, AddressInfoSerializer, AddressCreateSerializer
+)
+from .filters import DistrictFilter, CityFilter
 from utils.common import response_data_group
 from utils.authentication import CommonAuthentication
 from utils.pagination import CommonPagination
 
 
-class DistrictPagination(CommonPagination):
+class AreaPagination(CommonPagination):
     page_size = 100
     max_page_size = 200
+
+
+class ProvinceViewset(ListModelMixin, viewsets.GenericViewSet):
+    queryset = Province.objects.all()
+    serializer_class = ProvinceSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_fields = ('id', 'name')
+    pagination_class = AreaPagination
+
+
+class CityViewset(ListModelMixin, viewsets.GenericViewSet):
+    queryset = City.objects.all()
+    serializer_class = CityListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = CityFilter
+    pagination_class = AreaPagination
 
 
 class DistrictViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
@@ -27,7 +46,7 @@ class DistrictViewset(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet)
     # authentication_classes = CommonAuthentication
     filter_backends = (DjangoFilterBackend,)
     filter_class = DistrictFilter
-    pagination_class = DistrictPagination
+    pagination_class = AreaPagination
 
     def get_permissions(self):
         if self.action in ['create', ]:
