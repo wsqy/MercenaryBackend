@@ -56,8 +56,16 @@ class PartTimeOrderCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         cards_data = validated_data.pop('cards')
         order = PartTimeOrder.objects.create(**validated_data)
+        address_list = []
         for card_data in cards_data:
             PartTimeOrderCard.objects.create(recruit=order, **card_data)
+            address_list.append(card_data.get('address').district)
+        address_list = list(set(address_list))
+        address_info = '多地址可选'
+        if len(address_list) == 1:
+            address_info = '{}-{}'.format(address_list[0].city.name, address_list[0].name)
+        order.address_info=address_info
+        order.save()
         return order
 
     def validate(self, attrs):
@@ -65,6 +73,7 @@ class PartTimeOrderCreateSerializer(serializers.ModelSerializer):
             if attrs.get('user').profileextendinfo.admin_company != attrs.get('company'):
                 raise serializers.ValidationError('非法请求:企业管理员信息与用户信息不一致')
             else:
+                attrs.pop('user')
                 return attrs
         else:
             raise serializers.ValidationError('非企业管理员不能创建招募令')
@@ -83,4 +92,4 @@ class PartTimeOrderListSerializer(serializers.ModelSerializer):
     cards = PartTimeOrderCardSerializer(many=True)
     class Meta:
         model = PartTimeOrder
-        fields = ('id', 'name', 'cards',)
+        fields = ('id', 'name', 'settlement_method', 'wages', 'cards',)

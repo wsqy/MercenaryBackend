@@ -78,6 +78,10 @@ class PartTimeOrder(models.Model):
     """
     招募令 兼职
     """
+    SettlementMethodChoices = (
+        ('1', '日结'),
+        ('2', '月结'),
+    )
     OrderStatus = (
         (10, '待审核'),
         (20, '进行中'),
@@ -90,15 +94,15 @@ class PartTimeOrder(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name='任务描述', help_text='任务描述')
     requirement = models.TextField(blank=True, null=True, verbose_name='任务要求', help_text='任务要求')
     wages = models.PositiveIntegerField(default=0, verbose_name='佣金/小时(单位:分)', help_text='佣金/小时(单位:分)')
-    settlement_method = models.CharField(max_length=2, verbose_name='结算方式', help_text='结算方式')
+    settlement_method = models.CharField(max_length=2, verbose_name='结算方式', help_text='结算方式', choices=SettlementMethodChoices, default='1')
     deposit = models.PositiveIntegerField(default=0, verbose_name='招募令押金(单位:分)', help_text='招募令押金(单位:分)')
-    start_time = models.DateTimeField(null=True, blank=True, verbose_name='任务开始时间', help_text='任务开始时间')
-    end_time = models.DateTimeField(null=True, blank=True, verbose_name='任务结束时间', help_text='任务结束时间')
+    end_time = models.DateTimeField(null=True, blank=True, verbose_name='报名截止时间', help_text='报名截止时间')
     create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
     status = models.IntegerField(verbose_name='招募令状态', help_text='招募令状态', choices=OrderStatus, default=10)
     weight = models.PositiveIntegerField(default=1, verbose_name='权重', help_text='权重')
     enrol_total = models.PositiveIntegerField(default=0, verbose_name='报名人数', help_text='报名人数')
     liaison = models.ForeignKey(User, blank=True, null=True, verbose_name='对接负责人', help_text='对接负责人')
+    address_info = models.CharField(max_length=128, verbose_name='任务地址信息', help_text='任务地址信息', blank=True, null=True)
 
     class Meta:
         verbose_name = '兼职招募令表'
@@ -135,9 +139,11 @@ class PartTimeOrderCard(models.Model):
         """
         保存时自动计算佣金
         """
+        if not self.work_time:
+            self.work_time = round((self.end_time-self.start_time).seconds / 3600, 1)
         if not self.reward:
-            self.reward = self.work_time * self.recruit.wages
-            super(PartTimeOrderCard, self).save(*args, **kwargs)
+            self.reward = int(self.work_time * self.recruit.wages)
+        super(PartTimeOrderCard, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = '兼职卡片'
