@@ -29,7 +29,7 @@ from order.views import OrderViewSet
 from paycenter.views import PayOrderViewSet, PayReturnViewSet
 from accounts.views import BalanceViewset, BankCardViewset, WithDrawViewset
 from resources.views import ResourceMaterialViewset
-from recruit.views import CompanyViewset, PartTimeOrderViewset, PartTimeOrderCardViewset
+from recruit.views import CompanyViewset
 router = DefaultRouter()
 
 router.register(r'users', UserViewset, base_name='users')
@@ -44,11 +44,10 @@ router.register(r'balance', BalanceViewset, base_name='balance')
 router.register(r'bank_card', BankCardViewset, base_name='bank_card')
 router.register(r'resource', ResourceMaterialViewset, base_name='resource')
 router.register(r'school', SchoolViewSet, base_name='school')   # 即将废弃   请使用 area/school
-router.register(r'company', CompanyViewset, base_name='company')
+router.register(r'company', CompanyViewset, base_name='company')  # 即将废弃   请使用 area/school
 router.register(r'with_draw', WithDrawViewset, base_name='with_draw')
 router.register(r'address', AddressViewSet, base_name='address')  # 即将废弃   请使用 area/address
-router.register(r'recruit/part-time', PartTimeOrderViewset, base_name='part-time')
-router.register(r'recruit/part-time-card', PartTimeOrderCardViewset, base_name='part-time-card')
+
 
 urlpatterns = [
     url(r'^mercenary-admin/', xadmin.site.urls),
@@ -58,6 +57,7 @@ urlpatterns = [
     url(r'^get_celery_task_status/$', get_celery_task_status),
     url(r'^', include(router.urls)),
     url(r'^area/', include('area.urls')),
+    url(r'^recruit/', include('recruit.urls')),
 ]
 
 if settings.DEBUG:
