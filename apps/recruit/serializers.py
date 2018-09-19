@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Company, PartTimeOrder, PartTimeOrderCard
+from .models import Company, PartTimeOrder, PartTimeOrderCard, PartTimeOrderCardSignUp
 from area.serializers import AddressShortSerializer
 from users.serializers import UserOrderListSerializer
 
@@ -97,3 +97,14 @@ class PartTimeOrderListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartTimeOrder
         fields = ('id', 'name', 'settlement_method', 'wages', 'address_info', 'end_time')
+        
+
+class PartTimeOrderSignSerializer(serializers.Serializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+    cards = serializers.ListField(
+        child=serializers.IntegerField()
+    )
+    class Meta:
+        fields = ('user', 'cards')

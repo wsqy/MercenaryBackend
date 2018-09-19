@@ -5,11 +5,11 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Company, CompanyLog, PartTimeOrder, PartTimeOrderCard
+from .models import Company, CompanyLog, PartTimeOrder, PartTimeOrderCard, PartTimeOrderCardSignUp
 from .serializers import (
     CompanyInfoSerializer, CompanyListSerializer, CompanyCreateSerializer,
     PartTimeOrderInfoSerializer, PartTimeOrderListSerializer, PartTimeOrderCreateSerializer,
-    PartTimeOrderCardSerializer
+    PartTimeOrderCardSerializer, PartTimeOrderSignSerializer
 )
 from .filters import PartTimeOrderFilter
 
@@ -81,11 +81,38 @@ class PartTimeOrderViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
             return PartTimeOrderListSerializer
         elif self.action == 'create':
             return PartTimeOrderCreateSerializer
+        elif self.action == 'sign':
+            return PartTimeOrderSignSerializer
         return PartTimeOrderInfoSerializer
 
     def get_queryset(self):
         queryset = self.queryset
         return queryset
+
+    @action(methods=['post'], detail=True)
+    def sign(self, request, *args, **kwargs):
+        # 招募令报名
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=False)
+        cards_data = serializer.validated_data.get('cards')
+        _user = serializer.validated_data.get('user')
+        _status = 2
+        if instance.deposit:
+            _status = 1
+        for card_data in cards_data:
+            try:
+                card = PartTimeOrderCard.objects.get(id=card_data)
+                if card.recruit == instance:
+                    try:
+                        PartTimeOrderCardSignUp.objects.create(user=_user, card=card, status=_status)
+                    except Exception as e:
+                        return Response({'msg': '已报名次招募令卡片'}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'msg': '所选卡片:{}不属于招募令:{}'.format(card_data, instance.name)}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({'msg': '所选卡片:{}不存在'.format(card_data)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class PartTimeOrderCardViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, viewsets.GenericViewSet):

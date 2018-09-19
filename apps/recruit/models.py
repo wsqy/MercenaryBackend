@@ -130,6 +130,7 @@ class PartTimeOrderCard(models.Model):
     address = models.ForeignKey(Address, verbose_name='任务地址', help_text='任务地址')
     start_time = models.DateTimeField(verbose_name='任务开始时间', help_text='任务开始时间')
     end_time = models.DateTimeField(verbose_name='任务结束时间', help_text='任务结束时间')
+    registration_deadline_time = models.DateTimeField(blank=True, null=True, verbose_name='报名截止时间', help_text='报名截止时间')
     work_time = models.FloatField(default=0, verbose_name='工作时长', help_text='工作时长')
     reward = models.PositiveIntegerField(default=0, verbose_name='预计佣金', help_text='预计佣金')
     enrol_count = models.PositiveIntegerField(default=0, verbose_name='需要人数', help_text='需要人数')
@@ -167,13 +168,12 @@ class PartTimeOrderCardSignUp(models.Model):
         (30, '已完成'),
         (-1, '押金支付超时取消'),
         (-10, '商户取消'),
-        (-20, '任务开始前取消'),
-        (-30, '任务开始中有责取消'),
+        (-20, '用户取消'),
         (-40, '旷工'),
     )
     user = models.ForeignKey(User, verbose_name='报名用户', help_text='报名用户')
-    card = models.ForeignKey(PartTimeOrderCard, verbose_name='所属卡片', help_text='所属卡片', related_name='users')
-    status = models.IntegerField(verbose_name='状态', help_text='状态', default=0, choices=SignStatus)
+    card = models.ForeignKey(PartTimeOrderCard, verbose_name='所属卡片', help_text='所属卡片', related_name='cards')
+    status = models.IntegerField(verbose_name='状态', help_text='状态', default=1, choices=SignStatus)
     create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
     reward = models.PositiveIntegerField(default=0, verbose_name='佣金', help_text='佣金')
 
@@ -184,4 +184,14 @@ class PartTimeOrderCardSignUp(models.Model):
         if not self.reward:
             self.reward = self.card.reward
             super(PartTimeOrderCardSignUp, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = '兼职报名表'
+        verbose_name_plural = verbose_name
+        ordering = ('create_time',)
+        unique_together = (('user', 'card'),)
+
+    def __str__(self):
+        return '{} 报名了 {}'.format(self.user, self.card)
+
 
