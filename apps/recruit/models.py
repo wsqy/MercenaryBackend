@@ -102,7 +102,7 @@ class PartTimeOrder(models.Model):
     weight = models.PositiveIntegerField(default=1, verbose_name='权重', help_text='权重')
     enrol_total = models.PositiveIntegerField(default=0, verbose_name='报名人数', help_text='报名人数')
     liaison = models.ForeignKey(User, blank=True, null=True, verbose_name='对接负责人', help_text='对接负责人')
-    address_info = models.CharField(max_length=128, verbose_name='任务地址信息', help_text='任务地址信息', blank=True, null=True)
+    address_info = models.CharField(max_length=128, verbose_name='任务地址信息', help_text='任务地址信息', default='多地址可选')
 
     class Meta:
         verbose_name = '兼职招募令表'

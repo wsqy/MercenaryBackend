@@ -36,11 +36,16 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
 
 
 class PartTimeOrderCardSerializer(serializers.ModelSerializer):
-    # address = AddressShortSerializer()
     class Meta:
         model = PartTimeOrderCard
         fields = ('address', 'start_time', 'end_time', 'enrol_count')
-        # read_only_fields = ('id', 'work_time', 'status')
+
+
+class PartTimeOrderCardInfoSerializer(serializers.ModelSerializer):
+    address = AddressShortSerializer()
+    class Meta:
+        model = PartTimeOrderCard
+        fields = ('id', 'address', 'start_time', 'end_time', 'enrol_count')
 
 
 class PartTimeOrderCreateSerializer(serializers.ModelSerializer):
@@ -80,7 +85,7 @@ class PartTimeOrderCreateSerializer(serializers.ModelSerializer):
 
 
 class PartTimeOrderInfoSerializer(serializers.ModelSerializer):
-    cards = PartTimeOrderCardSerializer(many=True)
+    cards = PartTimeOrderCardInfoSerializer(many=True)
     company = CompanyListSerializer()
     liaison = UserOrderListSerializer()
     class Meta:
@@ -89,7 +94,6 @@ class PartTimeOrderInfoSerializer(serializers.ModelSerializer):
 
 
 class PartTimeOrderListSerializer(serializers.ModelSerializer):
-    cards = PartTimeOrderCardSerializer(many=True)
     class Meta:
         model = PartTimeOrder
-        fields = ('id', 'name', 'settlement_method', 'wages', 'cards',)
+        fields = ('id', 'name', 'settlement_method', 'wages', 'address_info', 'end_time')
