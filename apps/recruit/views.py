@@ -77,7 +77,7 @@ class PartTimeOrderViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
     filter_class = PartTimeOrderFilter
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action in ['list', 'publish']:
             return PartTimeOrderListSerializer
         elif self.action == 'create':
             return PartTimeOrderCreateSerializer
@@ -85,7 +85,14 @@ class PartTimeOrderViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
 
     def get_queryset(self):
         queryset = self.queryset
+        if self.action == 'publish':
+            queryset = queryset.filter(company=self.request.user.profileextendinfo.admin_company)
         return queryset
+
+    @action(methods=['get'], detail=False)
+    def publish(self, request, *args, **kwargs):
+        # 我发布的招募令
+        return self.list(request, *args, **kwargs)
 
 
 class PartTimeOrderCardViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
