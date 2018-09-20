@@ -133,6 +133,7 @@ class PartTimeOrderCard(models.Model):
     registration_deadline_time = models.DateTimeField(blank=True, null=True, verbose_name='报名截止时间', help_text='报名截止时间')
     work_time = models.FloatField(default=0, verbose_name='工作时长', help_text='工作时长')
     reward = models.PositiveIntegerField(default=0, verbose_name='预计佣金', help_text='预计佣金')
+    enrol_total = models.PositiveIntegerField(default=0, verbose_name='报名人数', help_text='报名人数')
     enrol_count = models.PositiveIntegerField(default=0, verbose_name='需要人数', help_text='需要人数')
     status = models.IntegerField(verbose_name='状态', help_text='状态', default=10, choices=CardStatus)
 
@@ -155,6 +156,33 @@ class PartTimeOrderCard(models.Model):
         return '{}-{}'.format(self.recruit.name, self.start_time)
 
 
+class PartTimeOrderSignUp(models.Model):
+    """
+    兼职报名表
+    """
+    SignStatus = (
+        (1, '押金支付中'),
+        (11, '任务进行中'),
+        (30, '已完成'),
+        (-1, '押金支付超时取消'),
+        (-10, '商户取消'),
+        (-20, '用户取消'),
+    )
+    user = models.ForeignKey(User, verbose_name='报名用户', help_text='报名用户')
+    recruit = models.ForeignKey(PartTimeOrder, verbose_name='所属招募令', help_text='所属招募令', related_name='recruits')
+    status = models.IntegerField(verbose_name='状态', help_text='状态', default=1, choices=SignStatus)
+    create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
+
+    class Meta:
+        verbose_name = '兼职报名表'
+        verbose_name_plural = verbose_name
+        ordering = ('create_time',)
+        unique_together = (('user', 'recruit'),)
+
+    def __str__(self):
+        return '{} 报名了 {}'.format(self.user, self.recruit)
+
+
 class PartTimeOrderCardSignUp(models.Model):
     """
     兼职卡片报名表
@@ -162,16 +190,15 @@ class PartTimeOrderCardSignUp(models.Model):
     SignStatus = (
         (1, '押金支付中'),
         (2, '商户审核中'),
-        (10, '任务未开始'),
         (11, '任务进行中'),
-        (20, '结算中'),
         (30, '已完成'),
         (-1, '押金支付超时取消'),
         (-10, '商户取消'),
         (-20, '用户取消'),
-        (-40, '旷工'),
     )
     user = models.ForeignKey(User, verbose_name='报名用户', help_text='报名用户')
+    recruit = models.ForeignKey(PartTimeOrder, verbose_name='所属招募令', help_text='所属招募令', related_name='card_recruits')
+    sign = models.ForeignKey(PartTimeOrderSignUp, verbose_name='所属报名', help_text='所属报名', related_name='signs')
     card = models.ForeignKey(PartTimeOrderCard, verbose_name='所属卡片', help_text='所属卡片', related_name='cards')
     status = models.IntegerField(verbose_name='状态', help_text='状态', default=1, choices=SignStatus)
     create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
@@ -186,7 +213,7 @@ class PartTimeOrderCardSignUp(models.Model):
             super(PartTimeOrderCardSignUp, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name = '兼职报名表'
+        verbose_name = '兼职卡片报名表'
         verbose_name_plural = verbose_name
         ordering = ('create_time',)
         unique_together = (('user', 'card'),)

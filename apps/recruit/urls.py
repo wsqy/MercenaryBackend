@@ -1,4 +1,4 @@
-from recruit.views import CompanyViewset, PartTimeOrderViewset, PartTimeOrderCardViewset
+from recruit.views import CompanyViewset, PartTimeOrderViewset, PartTimeOrderCardViewset, PartTimeOrderSignViewset
 from django.conf.urls import include, url
 
 from rest_framework.routers import DefaultRouter
@@ -9,6 +9,7 @@ router = DefaultRouter()
 router.register(r'company', CompanyViewset, base_name='company')
 router.register(r'part-time', PartTimeOrderViewset, base_name='part-time')
 router.register(r'part-time-card', PartTimeOrderCardViewset, base_name='part-time-card')
+router.register(r'part-time-sign', PartTimeOrderSignViewset, base_name='part-time-sign')
 
 
 urlpatterns = [
