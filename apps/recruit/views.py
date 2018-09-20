@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin
@@ -10,7 +11,7 @@ from .serializers import (
     CompanyInfoSerializer, CompanyListSerializer, CompanyCreateSerializer,
     PartTimeOrderInfoSerializer, PartTimeOrderListSerializer, PartTimeOrderCreateSerializer,
     PartTimeOrderSignListSerializer, PartTimeOrderSignSerializer, PartTimeOrderSignCreateSerializer,
-    PartTimeOrderCardSerializer
+    PartTimeOrderSignInfoSerializer, PartTimeOrderCardSerializer
 )
 from .filters import PartTimeOrderFilter
 
@@ -146,6 +147,8 @@ class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMi
             return PartTimeOrderSignCreateSerializer
         elif self.action in ['list', 'mine']:
             return PartTimeOrderSignListSerializer
+        elif self.action == 'retrieve':
+            return PartTimeOrderSignInfoSerializer
         return PartTimeOrderSignSerializer
 
     @action(methods=['get'], detail=False)
@@ -188,6 +191,8 @@ class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMi
             try:
                 card = PartTimeOrderCard.objects.get(id=card_data)
                 if card.recruit == recruit:
+                    if card.registration_deadline_time and card.registration_deadline_time < timezone.now():
+                        return Response({'msg': '该卡片已经停止报名'}, status=status.HTTP_400_BAD_REQUEST)
                     try:
                         PartTimeOrderCardSignUp.objects.create(sign=instance, user=_user, card=card, recruit=recruit, status=_status)
                         card.enrol_total += 1

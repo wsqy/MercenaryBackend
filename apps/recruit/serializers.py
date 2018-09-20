@@ -48,6 +48,12 @@ class PartTimeOrderCardInfoSerializer(serializers.ModelSerializer):
         fields = ('id', 'address', 'start_time', 'end_time', 'enrol_count')
 
 
+class PartTimeOrderCardSignUpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PartTimeOrderCardSignUp
+        fields = ('id', 'status', 'create_time', 'reward')
+
+
 class PartTimeOrderCreateSerializer(serializers.ModelSerializer):
     cards = PartTimeOrderCardSerializer(many=True)
     user = serializers.HiddenField(
@@ -100,7 +106,15 @@ class PartTimeOrderListSerializer(serializers.ModelSerializer):
         
 
 class PartTimeOrderSignSerializer(serializers.ModelSerializer):
-    recruit = PartTimeOrderInfoSerializer()
+    class Meta:
+        model = PartTimeOrderSignUp
+        fields = '__all__'
+
+
+class PartTimeOrderSignInfoSerializer(serializers.ModelSerializer):
+    signs = PartTimeOrderCardSignUpSerializer(many=True)
+    recruit =  PartTimeOrderInfoSerializer()
+
     class Meta:
         model = PartTimeOrderSignUp
         fields = '__all__'
