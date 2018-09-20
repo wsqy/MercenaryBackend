@@ -9,7 +9,8 @@ from .models import Company, CompanyLog, PartTimeOrder, PartTimeOrderSignUp, Par
 from .serializers import (
     CompanyInfoSerializer, CompanyListSerializer, CompanyCreateSerializer,
     PartTimeOrderInfoSerializer, PartTimeOrderListSerializer, PartTimeOrderCreateSerializer,
-    PartTimeOrderCardSerializer, PartTimeOrderSignSerializer, PartTimeOrderSignCreateSerializer
+    PartTimeOrderSignListSerializer, PartTimeOrderSignSerializer, PartTimeOrderSignCreateSerializer,
+    PartTimeOrderCardSerializer
 )
 from .filters import PartTimeOrderFilter
 
@@ -127,14 +128,30 @@ class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMi
         报名
     update:
         修改报名信息
+    mine:
+        我报名的招募令
     """
     queryset = PartTimeOrderSignUp.objects.all()
     pagination_class = CommonPagination
     authentication_classes = CommonAuthentication()
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action == 'mine':
+            queryset = queryset.filter(user=self.request.user)
+        return queryset
+
     def get_serializer_class(self):
         if self.action == 'create':
             return PartTimeOrderSignCreateSerializer
+        elif self.action in ['list', 'mine']:
+            return PartTimeOrderSignListSerializer
         return PartTimeOrderSignSerializer
+
+    @action(methods=['get'], detail=False)
+    def mine(self, request, *args, **kwargs):
+        # 我报名的招募令
+        return self.list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         # 招募令报名

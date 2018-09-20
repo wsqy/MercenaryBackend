@@ -105,6 +105,13 @@ class PartTimeOrderSignSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class PartTimeOrderSignListSerializer(serializers.ModelSerializer):
+    recruit = PartTimeOrderListSerializer()
+    class Meta:
+        model = PartTimeOrderSignUp
+        fields = '__all__'
+
+
 class PartTimeOrderSignCreateSerializer(serializers.Serializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
