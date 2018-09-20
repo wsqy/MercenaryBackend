@@ -100,6 +100,7 @@ class PartTimeOrderListSerializer(serializers.ModelSerializer):
         
 
 class PartTimeOrderSignSerializer(serializers.ModelSerializer):
+    recruit = PartTimeOrderInfoSerializer()
     class Meta:
         model = PartTimeOrderSignUp
         fields = '__all__'

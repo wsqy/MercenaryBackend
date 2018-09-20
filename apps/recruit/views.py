@@ -153,6 +153,14 @@ class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMi
         # 我报名的招募令
         return self.list(request, *args, **kwargs)
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.user == request.user:
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        else:
+            return Response({'msg:' '不得查看他人的报名信息'}, status=status.HTTP_400_BAD_REQUEST)
+
     def create(self, request, *args, **kwargs):
         # 招募令报名
         serializer = self.get_serializer(data=request.data)
