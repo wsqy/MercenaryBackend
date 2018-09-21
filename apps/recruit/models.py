@@ -103,6 +103,8 @@ class PartTimeOrder(models.Model):
     enrol_total = models.PositiveIntegerField(default=0, verbose_name='报名人数', help_text='报名人数')
     liaison = models.ForeignKey(User, blank=True, null=True, verbose_name='对接负责人', help_text='对接负责人')
     address_info = models.CharField(max_length=128, verbose_name='任务地址信息', help_text='任务地址信息', default='多地址可选')
+    cust_username = models.CharField(max_length=8, verbose_name='招募令联系人姓名', help_text='招募令联系人姓名', blank=True, null=True)
+    cust_mobile = models.CharField(max_length=15, verbose_name='招募令联系人电话', help_text='招募令联系人电话', blank=True, null=True)
 
     class Meta:
         verbose_name = '兼职招募令表'
@@ -172,6 +174,9 @@ class PartTimeOrderSignUp(models.Model):
     recruit = models.ForeignKey(PartTimeOrder, verbose_name='所属招募令', help_text='所属招募令', related_name='recruits')
     status = models.IntegerField(verbose_name='状态', help_text='状态', default=1, choices=SignStatus)
     create_time = models.DateTimeField(default=timezone.now, verbose_name='创建时间', help_text='创建时间')
+    cust_username = models.CharField(max_length=8, verbose_name='联系人姓名', help_text='联系人姓名', blank=True, null=True)
+    cust_mobile = models.CharField(max_length=15, verbose_name='联系人电话', help_text='联系人电话', blank=True, null=True)
+    cust_sex = models.BooleanField(verbose_name='联系人性别', help_text='联系性别', default=True)
 
     class Meta:
         verbose_name = '兼职报名表'
