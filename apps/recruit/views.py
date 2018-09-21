@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
@@ -11,7 +11,7 @@ from .serializers import (
     CompanyInfoSerializer, CompanyListSerializer, CompanyCreateSerializer,
     PartTimeOrderInfoSerializer, PartTimeOrderListSerializer, PartTimeOrderCreateSerializer,
     PartTimeOrderSignListSerializer, PartTimeOrderSignSerializer, PartTimeOrderSignCreateSerializer,
-    PartTimeOrderSignInfoSerializer, PartTimeOrderCardSerializer
+    PartTimeOrderSignInfoSerializer, PartTimeOrderCardSerializer, PartTimeOrderCardSignCreateSerializer
 )
 from .filters import PartTimeOrderFilter
 
@@ -60,7 +60,7 @@ class CompanyViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, views
         return self.retrieve(request, *args, **kwargs)
 
 
-class PartTimeOrderViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+class PartTimeOrderViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     """兼职招募令相关接口
     list:
         招募令列表
@@ -70,6 +70,8 @@ class PartTimeOrderViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
         新建招募令
     update:
         修改招募令信息
+    publish:
+        显示我发布的招募令(适用于企业的订单管理页面)
     """
     queryset = PartTimeOrder.objects.all()
     pagination_class = CommonPagination
@@ -97,7 +99,7 @@ class PartTimeOrderViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
         return self.list(request, *args, **kwargs)
 
 
-class PartTimeOrderCardViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+class PartTimeOrderCardViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     """兼职招募令卡片相关接口
     list:
         卡片列表
@@ -119,7 +121,7 @@ class PartTimeOrderCardViewset(ListModelMixin, RetrieveModelMixin, CreateModelMi
         return queryset
 
 
-class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     """兼职招募令报名相关接口
     list:
         报名列表
@@ -127,8 +129,6 @@ class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMi
         报名详情
     create:
         报名
-    update:
-        修改报名信息
     mine:
         我报名的招募令
     """
@@ -181,10 +181,8 @@ class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMi
             return Response({'msg': '已报名此招募令'}, status=status.HTTP_400_BAD_REQUEST)
         recruit.enrol_total += 1
         recruit.save()
-        _status = 2
-        if recruit.deposit:
-            _status = 1
-            instance.status = 1
+        if not recruit.deposit:
+            instance.status = 11
             instance.save()
 
         for card_data in cards_data:
@@ -194,6 +192,9 @@ class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMi
                     if card.registration_deadline_time and card.registration_deadline_time < timezone.now():
                         return Response({'msg': '该卡片已经停止报名'}, status=status.HTTP_400_BAD_REQUEST)
                     try:
+                        _status = 1
+                        if instance.status == 11:
+                            _status = 2
                         PartTimeOrderCardSignUp.objects.create(sign=instance, user=_user, card=card, recruit=recruit, status=_status)
                         card.enrol_total += 1
                         card.save()
@@ -204,3 +205,28 @@ class PartTimeOrderSignViewset(ListModelMixin, RetrieveModelMixin, CreateModelMi
             except Exception as e:
                 return Response({'msg': '所选卡片:{}不存在'.format(card_data)}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'msg': '报名成功'}, status=status.HTTP_201_CREATED)
+
+
+class PartTimeOrderCardSignViewset(CreateModelMixin, DestroyModelMixin, viewsets.GenericViewSet):
+    """兼职招募令卡片报名相关接口
+    create:
+        为招募令报名新增卡片
+    destroy:
+        取消报名
+    """
+    serializer_class = PartTimeOrderCardSignCreateSerializer
+    authentication_classes = CommonAuthentication()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        # 根据招募令报名状态确定卡片报名状态
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # 留着进行卡片状态更改 以及 招募令状态检查  及  退押金检查
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

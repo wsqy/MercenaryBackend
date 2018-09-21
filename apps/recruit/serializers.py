@@ -138,3 +138,12 @@ class PartTimeOrderSignCreateSerializer(serializers.Serializer):
         model = PartTimeOrderSignUp
         fields = ('user', 'cards', 'recruit')
 
+
+class PartTimeOrderCardSignCreateSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = PartTimeOrderCardSignUp
+        fields = ('user', 'sign', 'recruit', 'card')
