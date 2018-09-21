@@ -52,7 +52,7 @@ class ProfileInfo(AbstractUser):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.nickname
+        return self.mobile
 
 
 class ProfileExtendInfo(models.Model):
@@ -75,13 +75,14 @@ class ProfileExtendInfo(models.Model):
                                      help_text='管理学校/区域(外键)', related_name='admin_school')
     admin_company = models.ForeignKey('recruit.company', blank=True, null=True,
                                       verbose_name='企业用户', help_text='企业用户')
+    wechat_number = models.CharField(blank=True, null=True, max_length=64, verbose_name='微信号', help_text='微信号')
 
     class Meta:
         verbose_name = '用户扩展信息'
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.user.nickname
+        return self.user.mobile
 
 
 class VerifyCode(models.Model):

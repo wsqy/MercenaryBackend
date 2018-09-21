@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from .models import Company, PartTimeOrder, PartTimeOrderCard, PartTimeOrderSignUp, PartTimeOrderCardSignUp
 from area.serializers import AddressShortSerializer
-from users.serializers import UserOrderListSerializer
+from users.serializers import UserRecruitLiaisonSerializer
 
 
 class CompanyListSerializer(serializers.ModelSerializer):
@@ -93,7 +93,7 @@ class PartTimeOrderCreateSerializer(serializers.ModelSerializer):
 class PartTimeOrderInfoSerializer(serializers.ModelSerializer):
     cards = PartTimeOrderCardInfoSerializer(many=True)
     company = CompanyListSerializer()
-    liaison = UserOrderListSerializer()
+    liaison = UserRecruitLiaisonSerializer()
     class Meta:
         model = PartTimeOrder
         fields = '__all__'

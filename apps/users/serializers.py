@@ -127,6 +127,20 @@ class UserOrderListSerializer(serializers.ModelSerializer):
         fields = ('nickname', 'portrait',)
 
 
+class UserRecruitLiaisonSerializer(serializers.ModelSerializer):
+    """
+    招募令企业负责人信息序列化类
+    """
+    wechat_number = serializers.SerializerMethodField()
+
+    def get_wechat_number(self, obj):
+        return obj.profileextendinfo.wechat_number
+
+    class Meta:
+        model = User
+        fields = ('nickname', 'wechat_number', 'mobile')
+
+
 class UserOrderDetailSerializer(serializers.ModelSerializer):
     """
     订单详情用户序列化类
