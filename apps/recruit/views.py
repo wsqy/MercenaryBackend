@@ -218,12 +218,26 @@ class PartTimeOrderCardSignViewset(CreateModelMixin, DestroyModelMixin, viewsets
     authentication_classes = CommonAuthentication()
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        # 根据招募令报名状态确定卡片报名状态
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            instance = serializer.save()
+            # 根据招募令报名状态确定卡片报名状态
+            if instance.sign.status == 1:
+                instance.status = 1
+            else:
+                instance.status = 2
+            instance.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except Exception as e:
+            if 'non_field_errors' not in e.detail:
+                return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+            error_msg = str(e.detail.get('non_field_errors')[0])
+            if 'user' in error_msg and 'card' in error_msg:
+                return Response({'msg': '已报名过的卡片不能重复报名(取消后也无法报名)'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

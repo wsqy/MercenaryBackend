@@ -147,3 +147,29 @@ class PartTimeOrderCardSignCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartTimeOrderCardSignUp
         fields = ('user', 'sign', 'recruit', 'card')
+
+    def validate(self, attrs):
+        user = attrs.get('user')
+        sign = attrs.get('sign')
+        recruit = attrs.get('recruit')
+        card = attrs.get('card')
+        # 检查招募令状态
+        if recruit.status < 0:
+            raise serializers.ValidationError('所选招募令已取消')
+
+        # 检查报名状态
+        if sign.status < 0:
+            raise serializers.ValidationError('所选报名已取消')
+
+        # 检查 卡片是否属于 招募令
+        if card.recruit != recruit:
+            raise serializers.ValidationError('所选卡片不属于属于所选招募令')
+
+        #  检查 报名 对应的招募令是否属于提交的招募令
+        if sign.recruit != recruit:
+            raise serializers.ValidationError('所选报名不属于属于所选招募令')
+        # 3. 检查报名所属的卡片是否属于招募令
+        if sign.user != user:
+            raise serializers.ValidationError('所选报名非法: 不是本人的报名')
+
+        return attrs
