@@ -224,6 +224,6 @@ class PartTimeOrderCardSignUp(models.Model):
         unique_together = (('user', 'card'),)
 
     def __str__(self):
-        return '{} 报名了 {}'.format(self.user, self.card)
+        return '{} 报名了卡片 {}'.format(self.user, self.card)
 
 

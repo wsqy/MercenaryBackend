@@ -165,10 +165,10 @@ class PartTimeOrderCardSignCreateSerializer(serializers.ModelSerializer):
         if card.recruit != recruit:
             raise serializers.ValidationError('所选卡片不属于属于所选招募令')
 
-        #  检查 报名 对应的招募令是否属于提交的招募令
+        # 检查 报名 对应的招募令是否属于提交的招募令
         if sign.recruit != recruit:
             raise serializers.ValidationError('所选报名不属于属于所选招募令')
-        # 3. 检查报名所属的卡片是否属于招募令
+        # 检查报名所属的卡片是否属于招募令
         if sign.user != user:
             raise serializers.ValidationError('所选报名非法: 不是本人的报名')
 
