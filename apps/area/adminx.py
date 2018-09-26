@@ -22,9 +22,9 @@ class DistrictAdmin:
 
 
 class SchoolAdmin:
-    list_display = ['name', 'district']
+    list_display = ['name', 'district', 'is_active']
     search_fields = ['name', 'district__name']
-    list_filter = ['name', ]
+    list_filter = ['name', 'is_active']
     readonly_fields = ['geohash']
     open_bmap = True
 
