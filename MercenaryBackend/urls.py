@@ -38,8 +38,8 @@ router.register(r'codes', SmsCodeViewset, base_name='codes')
 router.register(r'district', DistrictViewset, base_name='district')  # 即将废弃   请使用 area/district
 # router.register(r'category', SubCategoryViewset, base_name='category')
 router.register(r'order', OrderViewSet, base_name='order')
-router.register(r'paycenter', PayOrderViewSet, base_name='paycenter')
-router.register(r'pay/return', PayReturnViewSet, base_name='pay_return')
+router.register(r'paycenter', PayOrderViewSet, base_name='paycenter')    # 即将废弃   请使用 pay/paycenter
+router.register(r'pay/return', PayReturnViewSet, base_name='pay_return')  # 即将废弃   请使用 pay/paycenter
 router.register(r'balance', BalanceViewset, base_name='balance')
 router.register(r'bank_card', BankCardViewset, base_name='bank_card')
 router.register(r'resource', ResourceMaterialViewset, base_name='resource')
@@ -58,6 +58,7 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^area/', include('area.urls')),
     url(r'^recruit/', include('recruit.urls')),
+    url(r'^pay/', include('paycenter.urls')),
 ]
 
 if settings.DEBUG:

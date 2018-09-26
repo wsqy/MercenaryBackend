@@ -12,13 +12,14 @@ from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.decorators import action
 
-from .models import PayOrder
-from .serializers import PayOrderCreateSerializer, PayReturnSerializer
+from .models import PayOrder, PartTimePayOrder
+from .serializers import PayOrderCreateSerializer, PayReturnSerializer, PartTimePayOrderCreateSerializer
 from utils.common import generate_pay_order_id, get_request_ip
 from utils.authentication import CommonAuthentication
 from utils.pay import alipay, wxpay
 from utils.cost import service_cost_calc
 from order.models import OrderOperateLog
+from recruit.models import PartTimeOrderSignUp, PartTimeOrderCardSignUp
 
 logger = logging.getLogger('paycenter')
 
@@ -126,6 +127,84 @@ class PayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         return Response(response_dict, status=status.HTTP_201_CREATED)
 
 
+
+class PartTimePayOrderViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
+                      viewsets.GenericViewSet):
+    queryset = PartTimePayOrder.objects.all()
+    authentication_classes = CommonAuthentication()
+
+    def get_permissions(self):
+        if self.action in ['create', ]:
+            return [permissions.IsAuthenticated()]
+        return []
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return PartTimePayOrderCreateSerializer
+        return PartTimePayOrderCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        rec_dict = serializer.validated_data
+        if rec_dict['order'].status < 0:
+            return Response({'msg': '当前订单已被取消'}, status=status.HTTP_400_BAD_REQUEST)
+
+        pay_info = '押金支付'
+        # 判断当前用户是否为接单者
+        if rec_dict.get('order').user != rec_dict.get('user'):
+            return Response({'msg': '当前支付用户不是接单者'}, status=status.HTTP_400_BAD_REQUEST)
+
+        rec_dict['order_type'] = 1
+        pay_order_list = PartTimePayOrder.objects.filter(order=rec_dict.get('order'), user=request.user, order_type=rec_dict.get('order_type'))
+        if pay_order_list.count() == 0:
+            # 填充支付订单金额为押金
+            rec_dict['pay_cost'] = rec_dict.get('order').recruit.deposit
+
+            # 填充 id
+            rec_dict['id'] = generate_pay_order_id(status=rec_dict.get('order_type'), order_type='20')
+            # 填充 expire_time
+            rec_dict['expire_time'] = timezone.now() + timezone.timedelta(seconds=settings.ALIPAT_PART_TIME_EXPIRE_TIME)
+
+            rec_dict['status'] = 2
+
+            instance = serializer.save()
+        else:
+            instance = pay_order_list[0]
+            instance.pay_method = rec_dict.get('pay_method')
+            instance.expire_time = timezone.now() + timezone.timedelta(seconds=settings.ALIPAT_PART_TIME_EXPIRE_TIME)
+            instance.save()
+        return self.generate_payorder(request, pay_info, instance)
+
+    def generate_payorder(self, request, pay_desc, instance):
+        """
+        生成支付订单信息
+        :param rec_dict:
+        :return:
+        """
+        # 生成支付信息
+        if instance.pay_method == 1:
+            pay_info = alipay.app_pay(
+                subject='{}-{}'.format(pay_desc, instance.order.recruit.name),
+                out_trade_no=instance.id,
+                total_amount=instance.pay_cost / 100,
+            )
+        elif instance.pay_method == 2:
+            pay_info = wxpay.app_pay(
+                body='{}-{}'.format(pay_desc, instance.order.recruit.name),
+                out_trade_no=instance.id,
+                total_fee=instance.pay_cost,
+                spbill_create_ip=get_request_ip(request),
+                trade_type='APP',
+                notify_url=settings.WXPAY_APP_NOTIFY_URL
+            )
+        response_dict = {
+            'pay_info': pay_info
+        }
+
+        return Response(response_dict, status=status.HTTP_201_CREATED)
+
+
 class PayReturnViewSet(viewsets.GenericViewSet):
     """
     支付回调处理
@@ -174,6 +253,30 @@ class PayReturnViewSet(viewsets.GenericViewSet):
             existed_pay_order.pay_time = timezone.now()
             existed_pay_order.save()
 
+    def set_part_time_pay_status(self, request, pay_total_amount, pay_order_id):
+        existed_pay_orders = PartTimePayOrder.objects.filter(id=pay_order_id, status=2)
+        for existed_pay_order in existed_pay_orders:
+            # 金额不符合 跳过
+            if existed_pay_order.pay_cost != pay_total_amount:
+                continue
+
+            if existed_pay_order.order_type == 1:
+                # 如果是押金支付则设置订单状态为 进行中
+                existed_pay_order.order.status = 11
+                existed_pay_order.order.save()
+                logging.info('押金支付成功')
+                PartTimeOrderCardSignUp.objects.filter(sign=existed_pay_order.order, status=1).update(status=2)
+
+            existed_pay_order.status = 3
+            existed_pay_order.pay_time = timezone.now()
+            existed_pay_order.save()
+
+    def route_pay_order(self, request, pay_total_amount, pay_order_id):
+        if pay_order_id[1:3] == '10':
+            self.set_pay_status(request, pay_total_amount, pay_order_id)
+        elif pay_order_id[1:3] == '20':
+            self.set_part_time_pay_status(request, pay_total_amount, pay_order_id)
+
     @action(methods=['post'], detail=False)
     def alipay(self, request, *args, **kwargs):
         """
@@ -207,7 +310,7 @@ class PayReturnViewSet(viewsets.GenericViewSet):
             #     return Response({'msg': 'status unsuccess'}, status.HTTP_401_UNAUTHORIZED)
             assert trade_status == 'TRADE_SUCCESS'
 
-            self.set_pay_status(request, pay_total_amount, pay_order_id)
+            self.route_pay_order(request, pay_total_amount, pay_order_id)
             return HttpResponse('success')
         except Exception as e:
             return HttpResponse('error', status.HTTP_401_UNAUTHORIZED)
@@ -221,7 +324,7 @@ class PayReturnViewSet(viewsets.GenericViewSet):
             if is_valid and is_success:
                 pay_total_amount = int(notify_dict.get('total_fee', 0))
                 pay_order_id = notify_dict.get('out_trade_no')
-                self.set_pay_status(request, pay_total_amount, pay_order_id)
+                self.route_pay_order(request, pay_total_amount, pay_order_id)
                 return Response({
                     'return_code': 'SUCCESS',
                     'return_msg': 'OK'
