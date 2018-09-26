@@ -219,45 +219,42 @@ class PartTimeOrderCardSignViewset(CreateModelMixin, DestroyModelMixin, viewsets
     queryset = PartTimeOrderCardSignUp.objects.all()
 
     def create(self, request, *args, **kwargs):
-        try:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            instance = serializer.save()
-            # 根据招募令报名状态确定卡片报名状态
-            if instance.sign.status == 1:
-                instance.status = 1
-            else:
-                instance.status = 2
-            instance.save()
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        except Exception as e:
-            if 'non_field_errors' not in e.detail:
-                return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
-            error_msg = str(e.detail.get('non_field_errors')[0])
-            if 'user' in error_msg and 'card' in error_msg:
-                return Response({'msg': '已报名过的卡片不能重复报名(取消后也无法报名)'}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        # 根据招募令报名状态确定卡片报名状态
+        if instance.sign.status == 1:
+            instance.status = 1
+        else:
+            instance.status = 2
+        instance.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        # 留着进行卡片状态更改 以及 招募令状态检查  及  退押金检查
-        if instance.card.registration_deadline_time:
-            if instance.card.registration_deadline_time < timezone.now():
-                return Response({'msg': '截止时间已到, 不能取消.如要取消请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
-        elif instance.card.start_time and instance.card.start_time < timezone.now():
-            return Response({'msg': '任务时间已到, 不能取消.如要取消请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
+        sign = instance.sign
+        recruit = instance.recruit
+        card = instance.card
 
-        instance.status = -20
-        instance.save()
-        card_sign_list = PartTimeOrderCardSignUp.objects.filter(user=request.user, sign=instance.sign, status__gt=0)
-        if not card_sign_list.count():
-            has_pay = instance.recruit.deposit > 0 and instance.sign.status > 10
-            instance.sign.status = -20
-            instance.sign.save()
+        # 检查报名所属的卡片是否属于招募令
+        if instance.user != request.user:
+            return Response({'msg': '所选报名非法: 不是本人的报名'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if card.registration_deadline_time:
+            if card.registration_deadline_time < timezone.now():
+                return Response({'msg': '截止时间已到, 不能取消.如要取消请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
+        elif card.start_time and card.start_time < timezone.now():
+            return Response({'msg': '任务时间已到, 不能取消.如要取消请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
+        instance.delete()
+        if PartTimeOrderCardSignUp.objects.filter(user=request.user, sign=sign, status__gt=0).count() == 0:
+            print('报名已经没有卡片了')
+            has_pay = recruit.deposit > 0 and sign.status > 10
+            sign.status = -20
+            sign.save()
             if has_pay:
                 # todo 退款
                 print('退款')
                 pass
+
         return Response({'msg': '取消报名成功'}, status=status.HTTP_204_NO_CONTENT)

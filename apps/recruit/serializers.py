@@ -171,5 +171,8 @@ class PartTimeOrderCardSignCreateSerializer(serializers.ModelSerializer):
         # 检查报名所属的卡片是否属于招募令
         if sign.user != user:
             raise serializers.ValidationError('所选报名非法: 不是本人的报名')
+        # 检查是否已报名过此报名
+        if PartTimeOrderCardSignUp.objects.filter(user=user, card=card).count():
+            raise serializers.ValidationError('不能重复报名卡片')
 
         return attrs

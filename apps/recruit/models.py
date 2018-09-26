@@ -191,6 +191,7 @@ class PartTimeOrderSignUp(models.Model):
 class PartTimeOrderCardSignUp(models.Model):
     """
     兼职卡片报名表
+    用户取消现在直接删除
     """
     SignStatus = (
         (1, '押金支付中'),
@@ -221,9 +222,6 @@ class PartTimeOrderCardSignUp(models.Model):
         verbose_name = '兼职卡片报名表'
         verbose_name_plural = verbose_name
         ordering = ('create_time',)
-        unique_together = (('user', 'card'),)
 
     def __str__(self):
-        return '{} 报名了卡片 {}'.format(self.user, self.card)
-
-
+        return '{} 报名了卡片 {}'.format(self.user, self.card.id)
