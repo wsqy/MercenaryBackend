@@ -91,6 +91,8 @@ class PartTimeOrderViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
         queryset = self.queryset
         if self.action == 'publish':
             queryset = queryset.filter(company=self.request.user.profileextendinfo.admin_company)
+        elif self.action == 'list':
+            queryset = queryset.filter(Q(end_time__gt=timezone.now()) | Q(end_time__isnull=True))
         return queryset
 
     @action(methods=['get'], detail=False)
