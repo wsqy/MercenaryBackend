@@ -14,6 +14,7 @@ from .serializers import (
     PartTimeOrderSignInfoSerializer, PartTimeOrderCardSerializer, PartTimeOrderCardSignCreateSerializer
 )
 from .filters import PartTimeOrderFilter
+from .tasks import check_order_signup_status
 
 from utils.pagination import CommonPagination
 from utils.authentication import CommonAuthentication
@@ -92,6 +93,7 @@ class PartTimeOrderViewset(ListModelMixin, RetrieveModelMixin, CreateModelMixin,
         if self.action == 'publish':
             queryset = queryset.filter(company=self.request.user.profileextendinfo.admin_company)
         elif self.action == 'list':
+            queryset = queryset.filter(status=20)
             queryset = queryset.filter(Q(end_time__gt=timezone.now()) | Q(end_time__isnull=True))
         return queryset
 
@@ -249,14 +251,6 @@ class PartTimeOrderCardSignViewset(CreateModelMixin, DestroyModelMixin, viewsets
         elif card.start_time and card.start_time < timezone.now():
             return Response({'msg': '任务时间已到, 不能取消.如要取消请联系客服'}, status=status.HTTP_400_BAD_REQUEST)
         instance.delete()
-        if PartTimeOrderCardSignUp.objects.filter(user=request.user, sign=sign, status__gt=0).count() == 0:
-            print('报名已经没有卡片了')
-            has_pay = recruit.deposit > 0 and sign.status > 10
-            sign.status = -20
-            sign.save()
-            if has_pay:
-                # todo 退款
-                print('退款')
-                pass
+        check_order_signup_status.apply_async(args=(sign.id, -20, '兼职招募令报名取消退款'))
 
         return Response({'msg': '取消报名成功'}, status=status.HTTP_204_NO_CONTENT)
