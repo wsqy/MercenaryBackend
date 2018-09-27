@@ -112,7 +112,7 @@ class PartTimeOrder(models.Model):
         ordering = ('-weight', '-create_time',)
 
     def __str__(self):
-        return '{}招聘{}'.format(self.company.name, self.name)
+        return '{} 招聘 {}'.format(self.company.name, self.name)
 
 
 class PartTimeOrderCard(models.Model):
@@ -155,7 +155,7 @@ class PartTimeOrderCard(models.Model):
         ordering = ('start_time',)
 
     def __str__(self):
-        return '{}-{}'.format(self.recruit.name, self.start_time)
+        return '{} - {}'.format(self.recruit.name, self.start_time)
 
 
 class PartTimeOrderSignUp(models.Model):
