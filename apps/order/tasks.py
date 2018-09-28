@@ -135,7 +135,9 @@ def order_deposit_pay_refund_monitor(self, order_id):
 @task(bind=True)
 def order_complete_monitor(self, order_id):
     # 佣兵点击完成后
+    logger.info('超时自动点击确认 任务')
     order_list = OrderInfo.objects.filter(id=order_id, status=21)
+    logger.info('超时自动点击确认 任务id:{}, 总订单数:{}'.format(order_id, order_list.count()))
     for order in order_list:
         order.status = 50
         order.complete_time = timezone.now()
