@@ -140,7 +140,7 @@ class SchoolViewSet(ListModelMixin, viewsets.GenericViewSet):
         now_geohash = School.get_geohash(lat=rec_dict.get('latitude'), lon=rec_dict.get('longitude'), deep=6)
         for length in range(6, 3, -1):
             geohash_str = now_geohash[0:length]
-            near_schools = School.objects.filter(geohash__startswith=geohash_str)
+            near_schools = School.objects.filter(geohash__startswith=geohash_str, is_active=True)
             if near_schools.count() > 0:
                 near_school = near_schools.first()
                 serializer = SchoolSerializer(near_school)
